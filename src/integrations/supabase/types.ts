@@ -14,7 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      doctors: {
+        Row: {
+          bio: string | null
+          created_at: string
+          crm: string
+          crm_uf: string
+          id: string
+          specialty: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          crm: string
+          crm_uf: string
+          id: string
+          specialty: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          crm?: string
+          crm_uf?: string
+          id?: string
+          specialty?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctors_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      networks: {
+        Row: {
+          cnpj: string
+          created_at: string
+          id: string
+          network_name: string
+        }
+        Insert: {
+          cnpj: string
+          created_at?: string
+          id: string
+          network_name: string
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string
+          id?: string
+          network_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "networks_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          created_at: string
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          full_name: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          created_at?: string
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shift_requests: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          duration_hours: number
+          end_time: string
+          id: string
+          network_id: string
+          notes: string | null
+          responded_at: string | null
+          response_message: string | null
+          shift_date: string
+          start_time: string
+          status: Database["public"]["Enums"]["request_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          duration_hours: number
+          end_time: string
+          id?: string
+          network_id: string
+          notes?: string | null
+          responded_at?: string | null
+          response_message?: string | null
+          shift_date: string
+          start_time: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          duration_hours?: number
+          end_time?: string
+          id?: string
+          network_id?: string
+          notes?: string | null
+          responded_at?: string | null
+          response_message?: string | null
+          shift_date?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_requests_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_requests_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +173,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      account_type: "doctor" | "network"
+      request_status: "pending" | "accepted" | "declined" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +301,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_type: ["doctor", "network"],
+      request_status: ["pending", "accepted", "declined", "cancelled"],
+    },
   },
 } as const
