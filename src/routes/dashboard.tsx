@@ -30,8 +30,7 @@ interface ShiftRequest {
   responded_at: string | null;
   created_at: string;
   network?: { network_name: string } | null;
-  doctor_profile?: { full_name: string } | null;
-  doctor?: { specialty: string; crm: string; crm_uf: string } | null;
+  doctor?: { specialty: string; crm: string; crm_uf: string; profile?: { full_name: string } | null } | null;
 }
 
 interface DoctorOption {
@@ -186,7 +185,7 @@ function NetworkPanel({ userId }: { userId: string }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("shift_requests")
-      .select("*, doctor:doctors(specialty, crm, crm_uf), doctor_profile:profiles!shift_requests_doctor_id_fkey(full_name)")
+      .select("*, doctor:doctors(specialty, crm, crm_uf, profile:profiles(full_name))")
       .eq("network_id", userId)
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
@@ -349,7 +348,7 @@ function RequestCard({
 }) {
   const counterpart = viewerType === "doctor"
     ? req.network?.network_name ?? "Rede"
-    : `${req.doctor_profile?.full_name ?? "Médico"} — ${req.doctor?.specialty ?? ""}`;
+    : `${req.doctor?.profile?.full_name ?? "Médico"} — ${req.doctor?.specialty ?? ""}`;
 
   return (
     <div className="rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
