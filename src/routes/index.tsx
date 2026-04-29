@@ -33,7 +33,7 @@ function LandingPage() {
                   Começar agora <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/auth" search={{ mode: "signin" }}>
                 <Button size="lg" variant="outline">Já tenho conta</Button>
               </Link>
             </div>
