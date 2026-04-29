@@ -121,8 +121,6 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
-  const [cvOpen, setCvOpen] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
