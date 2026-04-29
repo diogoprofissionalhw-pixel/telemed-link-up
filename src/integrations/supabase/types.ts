@@ -17,27 +17,39 @@ export type Database = {
       doctors: {
         Row: {
           bio: string | null
+          certifications: string | null
           created_at: string
           crm: string
           crm_uf: string
+          education: string | null
           id: string
+          languages: string | null
           specialty: string
+          years_experience: number | null
         }
         Insert: {
           bio?: string | null
+          certifications?: string | null
           created_at?: string
           crm: string
           crm_uf: string
+          education?: string | null
           id: string
+          languages?: string | null
           specialty: string
+          years_experience?: number | null
         }
         Update: {
           bio?: string | null
+          certifications?: string | null
           created_at?: string
           crm?: string
           crm_uf?: string
+          education?: string | null
           id?: string
+          languages?: string | null
           specialty?: string
+          years_experience?: number | null
         }
         Relationships: [
           {
@@ -45,6 +57,44 @@ export type Database = {
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_id: string
+          request_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          request_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          request_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "shift_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -101,6 +151,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          doctor_id: string
+          id: string
+          network_id: string
+          request_id: string
+          stars: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          doctor_id: string
+          id?: string
+          network_id: string
+          request_id: string
+          stars: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          network_id?: string
+          request_id?: string
+          stars?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "shift_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shift_requests: {
         Row: {
