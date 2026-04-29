@@ -197,7 +197,6 @@ function DoctorPanel({ userId }: { userId: string }) {
           otherName={chatReq.network?.network_name ?? "Rede"}
         />
       )}
-      <CvEditDialog open={cvOpen} onOpenChange={setCvOpen} doctorId={userId} />
     </div>
   );
 }
