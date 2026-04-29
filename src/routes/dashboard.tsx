@@ -152,9 +152,11 @@ function DoctorPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-8">
       <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setCvOpen(true)} className="gap-2">
-          <FileEdit className="h-4 w-4" /> Editar meu currículo
-        </Button>
+        <Link to="/profile">
+          <Button variant="outline" className="gap-2">
+            <UserCog className="h-4 w-4" /> Editar meu perfil
+          </Button>
+        </Link>
       </div>
 
       <section>
