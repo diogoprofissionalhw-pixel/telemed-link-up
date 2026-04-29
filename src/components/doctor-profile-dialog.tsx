@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/star-rating";
 
 interface DoctorFull {
@@ -15,6 +16,8 @@ interface DoctorFull {
   certifications: string | null;
   languages: string | null;
   full_name: string;
+  avatar_url: string | null;
+  cv_pdf_url: string | null;
 }
 
 interface RatingItem {
