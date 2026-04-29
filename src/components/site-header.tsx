@@ -1,10 +1,22 @@
 import { Link } from "@tanstack/react-router";
-import { Stethoscope, LogOut } from "lucide-react";
+import { Stethoscope, LogOut, UserCircle2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SiteHeader() {
   const { user, profile, signOut } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !profile) { setAvatarUrl(null); return; }
+    const table = profile.account_type === "doctor" ? "doctors" : "networks";
+    supabase.from(table).select("avatar_url").eq("id", user.id).maybeSingle().then(({ data }) => {
+      setAvatarUrl((data as any)?.avatar_url ?? null);
+    });
+  }, [user, profile]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
@@ -21,12 +33,18 @@ export function SiteHeader() {
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Painel</Button>
               </Link>
-              <span className="hidden sm:inline text-sm text-muted-foreground">
-                {profile?.full_name}
-              </span>
+              <Link to="/profile" className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent">
+                <Avatar className="h-8 w-8">
+                  {avatarUrl && <AvatarImage src={avatarUrl} alt={profile?.full_name ?? ""} />}
+                  <AvatarFallback className="bg-accent text-xs">
+                    {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : <UserCircle2 className="h-4 w-4" />}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden sm:inline text-sm font-medium">{profile?.full_name}</span>
+              </Link>
               <Button variant="outline" size="sm" onClick={() => signOut()}>
                 <LogOut className="h-4 w-4" />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
               </Button>
             </>
           ) : (
