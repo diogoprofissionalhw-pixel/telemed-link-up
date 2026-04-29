@@ -16,11 +16,13 @@ export type Database = {
     Tables: {
       doctors: {
         Row: {
+          avatar_url: string | null
           bio: string | null
           certifications: string | null
           created_at: string
           crm: string
           crm_uf: string
+          cv_pdf_url: string | null
           education: string | null
           id: string
           languages: string | null
@@ -28,11 +30,13 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          avatar_url?: string | null
           bio?: string | null
           certifications?: string | null
           created_at?: string
           crm: string
           crm_uf: string
+          cv_pdf_url?: string | null
           education?: string | null
           id: string
           languages?: string | null
@@ -40,11 +44,13 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          avatar_url?: string | null
           bio?: string | null
           certifications?: string | null
           created_at?: string
           crm?: string
           crm_uf?: string
+          cv_pdf_url?: string | null
           education?: string | null
           id?: string
           languages?: string | null
@@ -101,18 +107,21 @@ export type Database = {
       }
       networks: {
         Row: {
+          avatar_url: string | null
           cnpj: string
           created_at: string
           id: string
           network_name: string
         }
         Insert: {
+          avatar_url?: string | null
           cnpj: string
           created_at?: string
           id: string
           network_name: string
         }
         Update: {
+          avatar_url?: string | null
           cnpj?: string
           created_at?: string
           id?: string

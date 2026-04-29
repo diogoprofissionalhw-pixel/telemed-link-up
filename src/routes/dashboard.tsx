@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, FileEdit } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { SiteHeader } from "@/components/site-header";
@@ -13,7 +13,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChatDialog } from "@/components/chat-dialog";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
-import { CvEditDialog } from "@/components/cv-edit-dialog";
 import { RatingDialog } from "@/components/rating-dialog";
 import { StarRating } from "@/components/star-rating";
 
@@ -122,8 +121,6 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
-  const [cvOpen, setCvOpen] = useState(false);
-
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -155,9 +152,11 @@ function DoctorPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-8">
       <div className="flex justify-end">
-        <Button variant="outline" onClick={() => setCvOpen(true)} className="gap-2">
-          <FileEdit className="h-4 w-4" /> Editar meu currículo
-        </Button>
+        <Link to="/profile">
+          <Button variant="outline" className="gap-2">
+            <UserCog className="h-4 w-4" /> Editar meu perfil
+          </Button>
+        </Link>
       </div>
 
       <section>
@@ -198,7 +197,6 @@ function DoctorPanel({ userId }: { userId: string }) {
           otherName={chatReq.network?.network_name ?? "Rede"}
         />
       )}
-      <CvEditDialog open={cvOpen} onOpenChange={setCvOpen} doctorId={userId} />
     </div>
   );
 }
@@ -514,8 +512,15 @@ function RequestCard({
             <Star className="h-4 w-4" /> Avaliar
           </Button>
         )}
-        {viewerType === "network" && req.status === "pending" && onCancel && (
-          <Button onClick={() => onCancel(req.id)} variant="outline" size="sm" className="flex-1">
+        {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
+          <Button
+            onClick={() => {
+              if (confirm("Tem certeza que deseja cancelar esta solicitação?")) onCancel(req.id);
+            }}
+            variant="outline"
+            size="sm"
+            className="flex-1 text-destructive hover:text-destructive"
+          >
             Cancelar
           </Button>
         )}

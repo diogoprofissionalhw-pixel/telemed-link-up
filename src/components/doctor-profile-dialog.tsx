@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/star-rating";
 
 interface DoctorFull {
@@ -15,6 +16,8 @@ interface DoctorFull {
   certifications: string | null;
   languages: string | null;
   full_name: string;
+  avatar_url: string | null;
+  cv_pdf_url: string | null;
 }
 
 interface RatingItem {
@@ -42,7 +45,7 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
           .from("doctors")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, profiles!inner(full_name)")
+          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, profiles!inner(full_name)")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -63,6 +66,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           education: (d as any).education,
           certifications: (d as any).certifications,
           languages: (d as any).languages,
+          avatar_url: (d as any).avatar_url ?? null,
+          cv_pdf_url: (d as any).cv_pdf_url ?? null,
           full_name: profileData?.full_name ?? "Médico",
         });
       }
@@ -84,9 +89,12 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
         ) : (
           <div className="space-y-5">
             <div className="flex items-start gap-3">
-              <div className="grid h-14 w-14 place-items-center rounded-xl bg-accent">
-                <Stethoscope className="h-7 w-7 text-primary" />
-              </div>
+              <Avatar className="h-14 w-14 border-2 border-border">
+                {doctor.avatar_url && <AvatarImage src={doctor.avatar_url} alt={doctor.full_name} />}
+                <AvatarFallback className="bg-accent">
+                  {doctor.full_name ? doctor.full_name.charAt(0).toUpperCase() : <Stethoscope className="h-7 w-7 text-primary" />}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1">
                 <h3 className="text-lg font-bold">{doctor.full_name}</h3>
                 <p className="text-sm text-muted-foreground">
@@ -100,6 +108,18 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                 </div>
               </div>
             </div>
+
+            {doctor.cv_pdf_url && (
+              <a
+                href={doctor.cv_pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between rounded-lg border bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10"
+              >
+                <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Baixar currículo (PDF)</span>
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
 
             <div className="grid gap-3 text-sm">
               <CvRow icon={Award} label="Experiência">
