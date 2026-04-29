@@ -512,8 +512,15 @@ function RequestCard({
             <Star className="h-4 w-4" /> Avaliar
           </Button>
         )}
-        {viewerType === "network" && req.status === "pending" && onCancel && (
-          <Button onClick={() => onCancel(req.id)} variant="outline" size="sm" className="flex-1">
+        {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
+          <Button
+            onClick={() => {
+              if (confirm("Tem certeza que deseja cancelar esta solicitação?")) onCancel(req.id);
+            }}
+            variant="outline"
+            size="sm"
+            className="flex-1 text-destructive hover:text-destructive"
+          >
             Cancelar
           </Button>
         )}
