@@ -89,9 +89,12 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
         ) : (
           <div className="space-y-5">
             <div className="flex items-start gap-3">
-              <div className="grid h-14 w-14 place-items-center rounded-xl bg-accent">
-                <Stethoscope className="h-7 w-7 text-primary" />
-              </div>
+              <Avatar className="h-14 w-14 border-2 border-border">
+                {doctor.avatar_url && <AvatarImage src={doctor.avatar_url} alt={doctor.full_name} />}
+                <AvatarFallback className="bg-accent">
+                  {doctor.full_name ? doctor.full_name.charAt(0).toUpperCase() : <Stethoscope className="h-7 w-7 text-primary" />}
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1">
                 <h3 className="text-lg font-bold">{doctor.full_name}</h3>
                 <p className="text-sm text-muted-foreground">
@@ -105,6 +108,18 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                 </div>
               </div>
             </div>
+
+            {doctor.cv_pdf_url && (
+              <a
+                href={doctor.cv_pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between rounded-lg border bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10"
+              >
+                <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Baixar currículo (PDF)</span>
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
 
             <div className="grid gap-3 text-sm">
               <CvRow icon={Award} label="Experiência">
