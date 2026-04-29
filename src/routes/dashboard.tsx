@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, Ban } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, FileEdit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { SiteHeader } from "@/components/site-header";
@@ -11,6 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChatDialog } from "@/components/chat-dialog";
+import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
+import { CvEditDialog } from "@/components/cv-edit-dialog";
+import { RatingDialog } from "@/components/rating-dialog";
+import { StarRating } from "@/components/star-rating";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -26,8 +31,6 @@ interface ShiftRequest {
   duration_hours: number;
   notes: string | null;
   status: "pending" | "accepted" | "declined" | "cancelled";
-  response_message: string | null;
-  responded_at: string | null;
   created_at: string;
   network?: { network_name: string } | null;
   doctor?: { specialty: string; crm: string; crm_uf: string; profile?: { full_name: string } | null } | null;
@@ -39,14 +42,16 @@ interface DoctorOption {
   crm: string;
   crm_uf: string;
   full_name: string;
+  avg_stars: number;
+  rating_count: number;
 }
 
 function statusBadge(status: ShiftRequest["status"]) {
   const map = {
-    pending:   { icon: Hourglass,    label: "Pendente",  cls: "bg-warning/15 text-warning-foreground", style: { color: "oklch(0.45 0.12 60)" } },
+    pending:   { icon: Hourglass,    label: "Pendente",  cls: "bg-warning/15", style: { color: "oklch(0.45 0.12 60)" } },
     accepted:  { icon: CheckCircle2, label: "Aceito",    cls: "bg-success/15", style: { color: "oklch(0.40 0.14 150)" } },
     declined:  { icon: XCircle,      label: "Recusado",  cls: "bg-destructive/10", style: { color: "oklch(0.50 0.20 25)" } },
-    cancelled: { icon: Ban,          label: "Cancelado", cls: "bg-muted", style: { color: "var(--muted-foreground)" } },
+    cancelled: { icon: XCircle,      label: "Cancelado", cls: "bg-muted", style: { color: "var(--muted-foreground)" } },
   } as const;
   const { icon: Icon, label, cls, style } = map[status];
   return (
@@ -65,7 +70,7 @@ function calcHours(start: string, end: string): number {
   const [sh, sm] = start.split(":").map(Number);
   const [eh, em] = end.split(":").map(Number);
   let mins = (eh * 60 + em) - (sh * 60 + sm);
-  if (mins <= 0) mins += 24 * 60; // virou o dia
+  if (mins <= 0) mins += 24 * 60;
   return Math.round((mins / 60) * 100) / 100;
 }
 
@@ -74,7 +79,7 @@ function DashboardPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth" });
+    if (!loading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
   }, [user, loading, navigate]);
 
   if (loading || !user || !profile) {
@@ -116,6 +121,8 @@ function DashboardPage() {
 function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
+  const [cvOpen, setCvOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -123,6 +130,7 @@ function DoctorPanel({ userId }: { userId: string }) {
       .from("shift_requests")
       .select("*, network:networks(network_name)")
       .eq("doctor_id", userId)
+      .neq("status", "cancelled")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
@@ -146,6 +154,12 @@ function DoctorPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-end">
+        <Button variant="outline" onClick={() => setCvOpen(true)} className="gap-2">
+          <FileEdit className="h-4 w-4" /> Editar meu currículo
+        </Button>
+      </div>
+
       <section>
         <h2 className="mb-3 text-lg font-semibold">Solicitações pendentes ({pending.length})</h2>
         {loading ? (
@@ -155,7 +169,7 @@ function DoctorPanel({ userId }: { userId: string }) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {pending.map(r => (
-              <RequestCard key={r.id} req={r} viewerType="doctor" onRespond={respond} />
+              <RequestCard key={r.id} req={r} viewerType="doctor" onRespond={respond} onChat={() => setChatReq(r)} />
             ))}
           </div>
         )}
@@ -167,10 +181,24 @@ function DoctorPanel({ userId }: { userId: string }) {
           <p className="text-sm text-muted-foreground">Sem registros ainda.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
-            {others.map(r => <RequestCard key={r.id} req={r} viewerType="doctor" />)}
+            {others.map(r => (
+              <RequestCard key={r.id} req={r} viewerType="doctor" onChat={() => setChatReq(r)} />
+            ))}
           </div>
         )}
       </section>
+
+      {chatReq && (
+        <ChatDialog
+          open={!!chatReq}
+          onOpenChange={(v) => !v && setChatReq(null)}
+          requestId={chatReq.id}
+          currentUserId={userId}
+          otherUserId={chatReq.network_id}
+          otherName={chatReq.network?.network_name ?? "Rede"}
+        />
+      )}
+      <CvEditDialog open={cvOpen} onOpenChange={setCvOpen} doctorId={userId} />
     </div>
   );
 }
@@ -180,6 +208,9 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
+  const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
+  const [ratingReq, setRatingReq] = useState<ShiftRequest | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -187,6 +218,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       .from("shift_requests")
       .select("*, doctor:doctors(specialty, crm, crm_uf, profile:profiles(full_name))")
       .eq("network_id", userId)
+      .neq("status", "cancelled")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
@@ -201,8 +233,8 @@ function NetworkPanel({ userId }: { userId: string }) {
       .update({ status: "cancelled" })
       .eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Solicitação cancelada");
-    load();
+    toast.success("Solicitação cancelada e removida da lista");
+    setRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
   return (
@@ -216,6 +248,7 @@ function NetworkPanel({ userId }: { userId: string }) {
           <NewRequestDialog
             networkId={userId}
             onCreated={() => { setOpen(false); load(); }}
+            onViewProfile={(id) => setProfileDoctorId(id)}
           />
         </Dialog>
       </div>
@@ -227,16 +260,53 @@ function NetworkPanel({ userId }: { userId: string }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {requests.map(r => (
-            <RequestCard key={r.id} req={r} viewerType="network" onCancel={cancel} />
+            <RequestCard
+              key={r.id}
+              req={r}
+              viewerType="network"
+              onCancel={cancel}
+              onChat={() => setChatReq(r)}
+              onViewProfile={() => setProfileDoctorId(r.doctor_id)}
+              onRate={() => setRatingReq(r)}
+            />
           ))}
         </div>
+      )}
+
+      {chatReq && (
+        <ChatDialog
+          open={!!chatReq}
+          onOpenChange={(v) => !v && setChatReq(null)}
+          requestId={chatReq.id}
+          currentUserId={userId}
+          otherUserId={chatReq.doctor_id}
+          otherName={chatReq.doctor?.profile?.full_name ?? "Médico"}
+        />
+      )}
+      {profileDoctorId && (
+        <DoctorProfileDialog
+          open={!!profileDoctorId}
+          onOpenChange={(v) => !v && setProfileDoctorId(null)}
+          doctorId={profileDoctorId}
+        />
+      )}
+      {ratingReq && (
+        <RatingDialog
+          open={!!ratingReq}
+          onOpenChange={(v) => !v && setRatingReq(null)}
+          requestId={ratingReq.id}
+          doctorId={ratingReq.doctor_id}
+          networkId={userId}
+        />
       )}
     </div>
   );
 }
 
 /* ----------------- NEW REQUEST DIALOG ----------------- */
-function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreated: () => void }) {
+function NewRequestDialog({
+  networkId, onCreated, onViewProfile,
+}: { networkId: string; onCreated: () => void; onViewProfile: (id: string) => void }) {
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [doctorId, setDoctorId] = useState<string>("");
   const [date, setDate] = useState("");
@@ -247,16 +317,28 @@ function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreat
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("doctors")
-        .select("id, specialty, crm, crm_uf, profiles!inner(full_name)");
-      const list: DoctorOption[] = (data ?? []).map((d: any) => ({
-        id: d.id,
-        specialty: d.specialty,
-        crm: d.crm,
-        crm_uf: d.crm_uf,
-        full_name: d.profiles?.full_name ?? "Médico",
-      }));
+      const [{ data: docs }, { data: ratings }] = await Promise.all([
+        supabase.from("doctors").select("id, specialty, crm, crm_uf, profiles!inner(full_name)"),
+        supabase.from("ratings").select("doctor_id, stars"),
+      ]);
+      const ratingMap = new Map<string, { sum: number; n: number }>();
+      (ratings ?? []).forEach((r: any) => {
+        const cur = ratingMap.get(r.doctor_id) ?? { sum: 0, n: 0 };
+        cur.sum += r.stars; cur.n += 1;
+        ratingMap.set(r.doctor_id, cur);
+      });
+      const list: DoctorOption[] = (docs ?? []).map((d: any) => {
+        const ag = ratingMap.get(d.id);
+        return {
+          id: d.id,
+          specialty: d.specialty,
+          crm: d.crm,
+          crm_uf: d.crm_uf,
+          full_name: d.profiles?.full_name ?? "Médico",
+          avg_stars: ag ? ag.sum / ag.n : 0,
+          rating_count: ag?.n ?? 0,
+        };
+      });
       setDoctors(list);
     })();
   }, []);
@@ -265,7 +347,6 @@ function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreat
     e.preventDefault();
     if (!doctorId) return toast.error("Selecione um médico");
     if (!date || !start || !end) return toast.error("Preencha data e horários");
-
     const hours = calcHours(start, end);
     if (hours <= 0) return toast.error("Horário inválido");
 
@@ -285,8 +366,10 @@ function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreat
     onCreated();
   };
 
+  const selected = doctors.find(d => d.id === doctorId);
+
   return (
-    <DialogContent className="sm:max-w-lg">
+    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Nova solicitação de plantão</DialogTitle>
       </DialogHeader>
@@ -300,11 +383,25 @@ function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreat
             <SelectContent>
               {doctors.map(d => (
                 <SelectItem key={d.id} value={d.id}>
-                  {d.full_name} — {d.specialty} (CRM {d.crm}/{d.crm_uf})
+                  {d.full_name} — {d.specialty}
+                  {d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {selected && (
+            <div className="mt-2 flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs">
+              <div className="flex items-center gap-2">
+                <StarRating value={selected.avg_stars} readonly size={14} />
+                <span className="text-muted-foreground">
+                  {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
+                </span>
+              </div>
+              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline">
+                Ver currículo
+              </button>
+            </div>
+          )}
         </div>
         <div>
           <Label htmlFor="d">Data do plantão</Label>
@@ -339,12 +436,15 @@ function NewRequestDialog({ networkId, onCreated }: { networkId: string; onCreat
 
 /* ----------------- REQUEST CARD ----------------- */
 function RequestCard({
-  req, viewerType, onRespond, onCancel,
+  req, viewerType, onRespond, onCancel, onChat, onViewProfile, onRate,
 }: {
   req: ShiftRequest;
   viewerType: "doctor" | "network";
   onRespond?: (id: string, status: "accepted" | "declined") => void;
   onCancel?: (id: string) => void;
+  onChat?: () => void;
+  onViewProfile?: () => void;
+  onRate?: () => void;
 }) {
   const counterpart = viewerType === "doctor"
     ? req.network?.network_name ?? "Rede"
@@ -398,11 +498,28 @@ function RequestCard({
         </div>
       )}
 
-      {viewerType === "network" && req.status === "pending" && onCancel && (
-        <Button onClick={() => onCancel(req.id)} variant="outline" size="sm" className="mt-4 w-full">
-          Cancelar solicitação
-        </Button>
-      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {onChat && (
+          <Button onClick={onChat} variant="outline" size="sm" className="gap-1.5 flex-1">
+            <MessageSquare className="h-4 w-4" /> Mensagens
+          </Button>
+        )}
+        {viewerType === "network" && onViewProfile && (
+          <Button onClick={onViewProfile} variant="outline" size="sm" className="gap-1.5 flex-1">
+            <UserIcon className="h-4 w-4" /> Currículo
+          </Button>
+        )}
+        {viewerType === "network" && req.status === "accepted" && onRate && (
+          <Button onClick={onRate} variant="outline" size="sm" className="gap-1.5 flex-1">
+            <Star className="h-4 w-4" /> Avaliar
+          </Button>
+        )}
+        {viewerType === "network" && req.status === "pending" && onCancel && (
+          <Button onClick={() => onCancel(req.id)} variant="outline" size="sm" className="flex-1">
+            Cancelar
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
