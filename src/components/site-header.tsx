@@ -31,6 +31,7 @@ export function SiteHeader() {
         <nav className="flex items-center gap-2">
           {user ? (
             <>
+              {user && <NotificationsBell userId={user.id} />}
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Painel</Button>
               </Link>
