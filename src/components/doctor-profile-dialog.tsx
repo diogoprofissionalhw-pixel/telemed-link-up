@@ -18,6 +18,11 @@ interface DoctorFull {
   full_name: string;
   avatar_url: string | null;
   cv_pdf_url: string | null;
+  cpf: string | null;
+  email: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
 }
 
 interface RatingItem {
