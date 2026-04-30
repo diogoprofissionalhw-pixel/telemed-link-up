@@ -73,6 +73,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           languages: (d as any).languages,
           avatar_url: (d as any).avatar_url ?? null,
           cv_pdf_url: (d as any).cv_pdf_url ?? null,
+          cpf: (d as any).cpf ?? null,
+          email: (d as any).email ?? null,
+          city: (d as any).city ?? null,
+          state: (d as any).state ?? null,
+          country: (d as any).country ?? null,
           full_name: profileData?.full_name ?? "Médico",
         });
       }
