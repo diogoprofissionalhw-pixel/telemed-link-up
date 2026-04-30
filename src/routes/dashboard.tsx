@@ -30,11 +30,13 @@ interface ShiftRequest {
   start_time: string;
   end_time: string;
   duration_hours: number;
+  shift_period: "morning" | "night" | "custom";
+  agreed_value: number | null;
   notes: string | null;
-  status: "pending" | "accepted" | "declined" | "cancelled";
+  status: "pending" | "accepted" | "declined" | "cancelled" | "completed";
   created_at: string;
-  network?: { network_name: string } | null;
-  doctor?: { specialty: string; crm: string; crm_uf: string; profile?: { full_name: string } | null } | null;
+  network?: { network_name: string; avatar_url?: string | null } | null;
+  doctor?: { specialty: string; crm: string; crm_uf: string; avatar_url?: string | null; profile?: { full_name: string } | null } | null;
 }
 
 interface DoctorOption {
@@ -43,6 +45,9 @@ interface DoctorOption {
   crm: string;
   crm_uf: string;
   full_name: string;
+  avatar_url: string | null;
+  city: string | null;
+  state: string | null;
   avg_stars: number;
   rating_count: number;
 }
@@ -53,6 +58,7 @@ function statusBadge(status: ShiftRequest["status"]) {
     accepted:  { icon: CheckCircle2, label: "Aceito",    cls: "bg-success/15", style: { color: "oklch(0.40 0.14 150)" } },
     declined:  { icon: XCircle,      label: "Recusado",  cls: "bg-destructive/10", style: { color: "oklch(0.50 0.20 25)" } },
     cancelled: { icon: XCircle,      label: "Cancelado", cls: "bg-muted", style: { color: "var(--muted-foreground)" } },
+    completed: { icon: CheckCircle2, label: "Concluído", cls: "bg-primary/10", style: { color: "var(--primary)" } },
   } as const;
   const { icon: Icon, label, cls, style } = map[status];
   return (
@@ -61,6 +67,13 @@ function statusBadge(status: ShiftRequest["status"]) {
       {label}
     </span>
   );
+}
+
+function periodLabel(p: ShiftRequest["shift_period"]) {
+  return p === "morning" ? "Manhã" : p === "night" ? "Noite" : "Personalizado";
+}
+function periodIcon(p: ShiftRequest["shift_period"]) {
+  return p === "morning" ? Sun : p === "night" ? Moon : Clock;
 }
 
 function formatDate(d: string) {
