@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { SiteHeader } from "@/components/site-header";
@@ -10,7 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChatDialog } from "@/components/chat-dialog";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
 import { RatingDialog } from "@/components/rating-dialog";
@@ -28,11 +30,13 @@ interface ShiftRequest {
   start_time: string;
   end_time: string;
   duration_hours: number;
+  shift_period: "morning" | "night" | "custom";
+  agreed_value: number | null;
   notes: string | null;
-  status: "pending" | "accepted" | "declined" | "cancelled";
+  status: "pending" | "accepted" | "declined" | "cancelled" | "completed";
   created_at: string;
-  network?: { network_name: string } | null;
-  doctor?: { specialty: string; crm: string; crm_uf: string; profile?: { full_name: string } | null } | null;
+  network?: { network_name: string; avatar_url?: string | null } | null;
+  doctor?: { specialty: string; crm: string; crm_uf: string; avatar_url?: string | null; profile?: { full_name: string } | null } | null;
 }
 
 interface DoctorOption {
@@ -41,6 +45,9 @@ interface DoctorOption {
   crm: string;
   crm_uf: string;
   full_name: string;
+  avatar_url: string | null;
+  city: string | null;
+  state: string | null;
   avg_stars: number;
   rating_count: number;
 }
@@ -51,6 +58,7 @@ function statusBadge(status: ShiftRequest["status"]) {
     accepted:  { icon: CheckCircle2, label: "Aceito",    cls: "bg-success/15", style: { color: "oklch(0.40 0.14 150)" } },
     declined:  { icon: XCircle,      label: "Recusado",  cls: "bg-destructive/10", style: { color: "oklch(0.50 0.20 25)" } },
     cancelled: { icon: XCircle,      label: "Cancelado", cls: "bg-muted", style: { color: "var(--muted-foreground)" } },
+    completed: { icon: CheckCircle2, label: "Concluído", cls: "bg-primary/10", style: { color: "var(--primary)" } },
   } as const;
   const { icon: Icon, label, cls, style } = map[status];
   return (
@@ -59,6 +67,13 @@ function statusBadge(status: ShiftRequest["status"]) {
       {label}
     </span>
   );
+}
+
+function periodLabel(p: ShiftRequest["shift_period"]) {
+  return p === "morning" ? "Manhã" : p === "night" ? "Noite" : "Personalizado";
+}
+function periodIcon(p: ShiftRequest["shift_period"]) {
+  return p === "morning" ? Sun : p === "night" ? Moon : Clock;
 }
 
 function formatDate(d: string) {
@@ -121,20 +136,31 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
+  const [declineId, setDeclineId] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("shift_requests")
-      .select("*, network:networks(network_name)")
+      .select("*, network:networks(network_name, avatar_url)")
       .eq("doctor_id", userId)
-      .neq("status", "cancelled")
+      .not("status", "in", "(cancelled,completed)")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`req-doctor-${userId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "shift_requests", filter: `doctor_id=eq.${userId}` },
+        () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, load]);
 
   const respond = async (id: string, status: "accepted" | "declined") => {
     const { error } = await supabase
@@ -168,7 +194,10 @@ function DoctorPanel({ userId }: { userId: string }) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {pending.map(r => (
-              <RequestCard key={r.id} req={r} viewerType="doctor" onRespond={respond} onChat={() => setChatReq(r)} />
+              <RequestCard key={r.id} req={r} viewerType="doctor"
+                onAccept={() => respond(r.id, "accepted")}
+                onDecline={() => setDeclineId(r.id)}
+                onChat={() => setChatReq(r)} />
             ))}
           </div>
         )}
@@ -197,11 +226,32 @@ function DoctorPanel({ userId }: { userId: string }) {
           otherName={chatReq.network?.network_name ?? "Rede"}
         />
       )}
+
+      <AlertDialog open={!!declineId} onOpenChange={(v) => !v && setDeclineId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar recusa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja recusar este plantão? A rede será notificada e a ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (declineId) await respond(declineId, "declined");
+                setDeclineId(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, recusar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-/* ----------------- NETWORK PANEL ----------------- */
 function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -214,16 +264,25 @@ function NetworkPanel({ userId }: { userId: string }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("shift_requests")
-      .select("*, doctor:doctors(specialty, crm, crm_uf, profile:profiles(full_name))")
+      .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
       .eq("network_id", userId)
-      .neq("status", "cancelled")
+      .not("status", "in", "(cancelled,completed)")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`req-network-${userId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "shift_requests", filter: `network_id=eq.${userId}` },
+        () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, load]);
 
   const cancel = async (id: string) => {
     const { error } = await supabase
@@ -231,7 +290,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       .update({ status: "cancelled" })
       .eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Solicitação cancelada e removida da lista");
+    toast.success("Solicitação cancelada — médico será notificado");
     setRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
@@ -302,21 +361,28 @@ function NetworkPanel({ userId }: { userId: string }) {
 }
 
 /* ----------------- NEW REQUEST DIALOG ----------------- */
+const PRESETS: Record<"morning" | "night", { start: string; end: string }> = {
+  morning: { start: "07:00", end: "13:00" },
+  night:   { start: "19:00", end: "07:00" },
+};
+
 function NewRequestDialog({
   networkId, onCreated, onViewProfile,
 }: { networkId: string; onCreated: () => void; onViewProfile: (id: string) => void }) {
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [doctorId, setDoctorId] = useState<string>("");
+  const [period, setPeriod] = useState<"morning" | "night" | "custom">("night");
   const [date, setDate] = useState("");
   const [start, setStart] = useState("19:00");
   const [end, setEnd] = useState("07:00");
+  const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
       const [{ data: docs }, { data: ratings }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, profiles!inner(full_name)"),
+        supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
       ]);
       const ratingMap = new Map<string, { sum: number; n: number }>();
@@ -332,6 +398,9 @@ function NewRequestDialog({
           specialty: d.specialty,
           crm: d.crm,
           crm_uf: d.crm_uf,
+          avatar_url: d.avatar_url ?? null,
+          city: d.city ?? null,
+          state: d.state ?? null,
           full_name: d.profiles?.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
@@ -341,12 +410,24 @@ function NewRequestDialog({
     })();
   }, []);
 
+  const onPeriodChange = (p: "morning" | "night" | "custom") => {
+    setPeriod(p);
+    if (p !== "custom") {
+      setStart(PRESETS[p].start);
+      setEnd(PRESETS[p].end);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!doctorId) return toast.error("Selecione um médico");
     if (!date || !start || !end) return toast.error("Preencha data e horários");
     const hours = calcHours(start, end);
     if (hours <= 0) return toast.error("Horário inválido");
+    const valNum = value.trim() ? Number(value.replace(",", ".")) : null;
+    if (value.trim() && (valNum === null || isNaN(valNum) || valNum < 0)) {
+      return toast.error("Valor inválido");
+    }
 
     setSubmitting(true);
     const { error } = await supabase.from("shift_requests").insert({
@@ -356,6 +437,8 @@ function NewRequestDialog({
       start_time: start,
       end_time: end,
       duration_hours: hours,
+      shift_period: period,
+      agreed_value: valNum,
       notes: notes.trim() || null,
     });
     setSubmitting(false);
@@ -381,26 +464,64 @@ function NewRequestDialog({
             <SelectContent>
               {doctors.map(d => (
                 <SelectItem key={d.id} value={d.id}>
-                  {d.full_name} — {d.specialty}
-                  {d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                      <AvatarFallback className="text-[10px]">{d.full_name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span>{d.full_name} — {d.specialty}{d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selected && (
-            <div className="mt-2 flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs">
+            <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-xs">
               <div className="flex items-center gap-2">
-                <StarRating value={selected.avg_stars} readonly size={14} />
-                <span className="text-muted-foreground">
-                  {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
-                </span>
+                <Avatar className="h-9 w-9">
+                  {selected.avatar_url && <AvatarImage src={selected.avatar_url} alt={selected.full_name} />}
+                  <AvatarFallback>{selected.full_name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-foreground">{selected.full_name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <StarRating value={selected.avg_stars} readonly size={12} />
+                    <span className="text-muted-foreground">
+                      {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
+                      {selected.city ? ` • ${selected.city}/${selected.state ?? ""}` : ""}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline">
+              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline whitespace-nowrap">
                 Ver currículo
               </button>
             </div>
           )}
         </div>
+
+        <div>
+          <Label>Turno</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { v: "morning" as const, label: "Manhã", icon: Sun },
+              { v: "night"   as const, label: "Noite", icon: Moon },
+              { v: "custom"  as const, label: "Outro", icon: Clock },
+            ]).map((opt) => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => onPeriodChange(opt.v)}
+                className={`flex items-center justify-center gap-2 rounded-lg border p-2 text-sm font-medium transition-colors ${
+                  period === opt.v ? "border-primary bg-accent" : "border-border hover:bg-muted"
+                }`}
+              >
+                <opt.icon className="h-4 w-4" /> {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <Label htmlFor="d">Data do plantão</Label>
           <Input id="d" type="date" value={date} onChange={e => setDate(e.target.value)} required />
@@ -408,16 +529,26 @@ function NewRequestDialog({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="s">Início</Label>
-            <Input id="s" type="time" value={start} onChange={e => setStart(e.target.value)} required />
+            <Input id="s" type="time" value={start} onChange={e => { setStart(e.target.value); setPeriod("custom"); }} required />
           </div>
           <div>
             <Label htmlFor="e">Fim</Label>
-            <Input id="e" type="time" value={end} onChange={e => setEnd(e.target.value)} required />
+            <Input id="e" type="time" value={end} onChange={e => { setEnd(e.target.value); setPeriod("custom"); }} required />
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
           Duração: <strong>{calcHours(start, end)}h</strong> (atravessa o dia se necessário)
         </p>
+
+        <div>
+          <Label htmlFor="v">Valor acordado (R$)</Label>
+          <div className="relative">
+            <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="v" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" className="pl-8" />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Opcional. Valor combinado entre rede e médico.</p>
+        </div>
+
         <div>
           <Label htmlFor="n">Observações (opcional)</Label>
           <Textarea id="n" value={notes} onChange={e => setNotes(e.target.value)} maxLength={500} placeholder="Detalhes do plantão, área, especificidades..." />
@@ -434,32 +565,41 @@ function NewRequestDialog({
 
 /* ----------------- REQUEST CARD ----------------- */
 function RequestCard({
-  req, viewerType, onRespond, onCancel, onChat, onViewProfile, onRate,
+  req, viewerType, onAccept, onDecline, onCancel, onChat, onViewProfile, onRate,
 }: {
   req: ShiftRequest;
   viewerType: "doctor" | "network";
-  onRespond?: (id: string, status: "accepted" | "declined") => void;
+  onAccept?: () => void;
+  onDecline?: () => void;
   onCancel?: (id: string) => void;
   onChat?: () => void;
   onViewProfile?: () => void;
   onRate?: () => void;
 }) {
-  const counterpart = viewerType === "doctor"
+  const counterpartName = viewerType === "doctor"
     ? req.network?.network_name ?? "Rede"
-    : `${req.doctor?.profile?.full_name ?? "Médico"} — ${req.doctor?.specialty ?? ""}`;
+    : req.doctor?.profile?.full_name ?? "Médico";
+  const counterpartSubtitle = viewerType === "doctor"
+    ? "Solicitação recebida"
+    : req.doctor?.specialty ?? "";
+  const avatarUrl = viewerType === "doctor" ? req.network?.avatar_url : req.doctor?.avatar_url;
+  const PIcon = periodIcon(req.shift_period);
 
   return (
     <div className="rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {viewerType === "doctor"
-            ? <Building2 className="h-5 w-5 text-primary" />
-            : <Stethoscope className="h-5 w-5 text-primary" />}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={counterpartName} />}
+            <AvatarFallback className="bg-accent">
+              {viewerType === "doctor"
+                ? <Building2 className="h-5 w-5 text-primary" />
+                : <Stethoscope className="h-5 w-5 text-primary" />}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="font-semibold leading-tight">{counterpart}</p>
-            <p className="text-xs text-muted-foreground">
-              {viewerType === "doctor" ? "Solicitação recebida" : "Solicitação enviada"}
-            </p>
+            <p className="font-semibold leading-tight">{counterpartName}</p>
+            <p className="text-xs text-muted-foreground">{counterpartSubtitle}</p>
           </div>
         </div>
         {statusBadge(req.status)}
@@ -471,8 +611,20 @@ function RequestCard({
           <span className="font-medium capitalize">{formatDate(req.shift_date)}</span>
         </div>
         <div className="flex items-center gap-2">
+          <PIcon className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{periodLabel(req.shift_period)}</span>
+        </div>
+        <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{req.start_time.slice(0,5)} → {req.end_time.slice(0,5)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">
+            {req.agreed_value != null
+              ? req.agreed_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : "A combinar"}
+          </span>
         </div>
         <div className="col-span-2 text-xs text-muted-foreground">
           Duração: <strong className="text-foreground">{req.duration_hours}h</strong>
@@ -485,12 +637,12 @@ function RequestCard({
         </p>
       )}
 
-      {viewerType === "doctor" && req.status === "pending" && onRespond && (
+      {viewerType === "doctor" && req.status === "pending" && onAccept && onDecline && (
         <div className="mt-4 flex gap-2">
-          <Button onClick={() => onRespond(req.id, "accepted")} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
+          <Button onClick={onAccept} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
             Aceitar
           </Button>
-          <Button onClick={() => onRespond(req.id, "declined")} variant="outline" className="flex-1">
+          <Button onClick={onDecline} variant="outline" className="flex-1">
             Recusar
           </Button>
         </div>
@@ -515,7 +667,7 @@ function RequestCard({
         {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
           <Button
             onClick={() => {
-              if (confirm("Tem certeza que deseja cancelar esta solicitação?")) onCancel(req.id);
+              if (confirm("Tem certeza que deseja cancelar esta solicitação? O médico será notificado.")) onCancel(req.id);
             }}
             variant="outline"
             size="sm"

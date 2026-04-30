@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Mail, IdCard, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,11 @@ interface DoctorFull {
   full_name: string;
   avatar_url: string | null;
   cv_pdf_url: string | null;
+  cpf: string | null;
+  email: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
 }
 
 interface RatingItem {
@@ -45,7 +50,7 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
           .from("doctors")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, profiles!inner(full_name)")
+          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country, profiles!inner(full_name)")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -68,6 +73,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           languages: (d as any).languages,
           avatar_url: (d as any).avatar_url ?? null,
           cv_pdf_url: (d as any).cv_pdf_url ?? null,
+          cpf: (d as any).cpf ?? null,
+          email: (d as any).email ?? null,
+          city: (d as any).city ?? null,
+          state: (d as any).state ?? null,
+          country: (d as any).country ?? null,
           full_name: profileData?.full_name ?? "Médico",
         });
       }
@@ -110,18 +120,32 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
             </div>
 
             {doctor.cv_pdf_url && (
-              <a
-                href={doctor.cv_pdf_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between rounded-lg border bg-primary/5 px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10"
-              >
-                <span className="flex items-center gap-2"><FileText className="h-4 w-4" /> Baixar currículo (PDF)</span>
-                <ExternalLink className="h-4 w-4" />
-              </a>
+              <div className="rounded-lg border bg-primary/5 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 text-sm font-medium text-primary">
+                    <FileText className="h-4 w-4" /> Currículo em PDF
+                  </span>
+                  <div className="flex gap-1">
+                    <a href={doctor.cv_pdf_url} target="_blank" rel="noopener noreferrer"
+                       className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                      <Eye className="h-3 w-3" /> Visualizar
+                    </a>
+                    <a href={doctor.cv_pdf_url} download
+                       className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                      <ExternalLink className="h-3 w-3" /> Baixar
+                    </a>
+                  </div>
+                </div>
+                <iframe src={doctor.cv_pdf_url} className="mt-2 h-72 w-full rounded-md border bg-white" title="Currículo em PDF" />
+              </div>
             )}
 
             <div className="grid gap-3 text-sm">
+              <CvRow icon={MapPin} label="Localização">
+                {[doctor.city, doctor.state, doctor.country].filter(Boolean).join(" • ") || "—"}
+              </CvRow>
+              <CvRow icon={Mail} label="E-mail">{doctor.email || "—"}</CvRow>
+              <CvRow icon={IdCard} label="CPF">{doctor.cpf || "—"}</CvRow>
               <CvRow icon={Award} label="Experiência">
                 {doctor.years_experience ? `${doctor.years_experience} anos` : "—"}
               </CvRow>

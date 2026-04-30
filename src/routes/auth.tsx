@@ -86,12 +86,17 @@ function AuthPage() {
       const crm = String(fd.get("crm") ?? "").trim();
       const crm_uf = String(fd.get("crm_uf") ?? "").trim().toUpperCase();
       const specialty = String(fd.get("specialty") ?? "").trim();
-      if (!crm || !crm_uf || !specialty) {
+      const cpf = String(fd.get("cpf") ?? "").trim();
+      const city = String(fd.get("city") ?? "").trim();
+      const state = String(fd.get("state") ?? "").trim().toUpperCase();
+      const country = String(fd.get("country") ?? "").trim() || "Brasil";
+      if (!crm || !crm_uf || !specialty || !cpf || !city || !state) {
         setSubmitting(false);
-        return toast.error("Preencha CRM, UF e especialidade.");
+        return toast.error("Preencha todos os campos obrigatórios.");
       }
       const { error: docErr } = await supabase.from("doctors").insert({
-        id: userId, crm, crm_uf, specialty,
+        id: userId, crm, crm_uf, specialty, cpf, city, state, country,
+        email: parsed.data.email,
       });
       if (docErr) { setSubmitting(false); return toast.error(docErr.message); }
     } else {
@@ -191,6 +196,22 @@ function AuthPage() {
                     <div className="col-span-3">
                       <Label htmlFor="specialty">Especialidade</Label>
                       <Input id="specialty" name="specialty" required maxLength={80} placeholder="Clínica geral" />
+                    </div>
+                    <div className="col-span-3">
+                      <Label htmlFor="cpf">CPF</Label>
+                      <Input id="cpf" name="cpf" required maxLength={14} placeholder="000.000.000-00" />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor="city">Cidade</Label>
+                      <Input id="city" name="city" required maxLength={80} placeholder="São Paulo" />
+                    </div>
+                    <div>
+                      <Label htmlFor="state">Estado</Label>
+                      <Input id="state" name="state" required maxLength={2} placeholder="SP" />
+                    </div>
+                    <div className="col-span-3">
+                      <Label htmlFor="country">País</Label>
+                      <Input id="country" name="country" maxLength={60} defaultValue="Brasil" />
                     </div>
                   </div>
                 ) : (

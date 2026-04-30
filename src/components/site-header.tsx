@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationsBell } from "@/components/notifications-bell";
 
 export function SiteHeader() {
   const { user, profile, signOut } = useAuth();
@@ -30,6 +31,7 @@ export function SiteHeader() {
         <nav className="flex items-center gap-2">
           {user ? (
             <>
+              {user && <NotificationsBell userId={user.id} />}
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Painel</Button>
               </Link>

@@ -19,42 +19,57 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           certifications: string | null
+          city: string | null
+          country: string | null
+          cpf: string | null
           created_at: string
           crm: string
           crm_uf: string
           cv_pdf_url: string | null
           education: string | null
+          email: string | null
           id: string
           languages: string | null
           specialty: string
+          state: string | null
           years_experience: number | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
           certifications?: string | null
+          city?: string | null
+          country?: string | null
+          cpf?: string | null
           created_at?: string
           crm: string
           crm_uf: string
           cv_pdf_url?: string | null
           education?: string | null
+          email?: string | null
           id: string
           languages?: string | null
           specialty: string
+          state?: string | null
           years_experience?: number | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
           certifications?: string | null
+          city?: string | null
+          country?: string | null
+          cpf?: string | null
           created_at?: string
           crm?: string
           crm_uf?: string
           cv_pdf_url?: string | null
           education?: string | null
+          email?: string | null
           id?: string
           languages?: string | null
           specialty?: string
+          state?: string | null
           years_experience?: number | null
         }
         Relationships: [
@@ -137,6 +152,39 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read_at: string | null
+          request_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          request_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          request_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
@@ -201,6 +249,7 @@ export type Database = {
       }
       shift_requests: {
         Row: {
+          agreed_value: number | null
           created_at: string
           doctor_id: string
           duration_hours: number
@@ -211,11 +260,13 @@ export type Database = {
           responded_at: string | null
           response_message: string | null
           shift_date: string
+          shift_period: Database["public"]["Enums"]["shift_period"]
           start_time: string
           status: Database["public"]["Enums"]["request_status"]
           updated_at: string
         }
         Insert: {
+          agreed_value?: number | null
           created_at?: string
           doctor_id: string
           duration_hours: number
@@ -226,11 +277,13 @@ export type Database = {
           responded_at?: string | null
           response_message?: string | null
           shift_date: string
+          shift_period?: Database["public"]["Enums"]["shift_period"]
           start_time: string
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
         }
         Update: {
+          agreed_value?: number | null
           created_at?: string
           doctor_id?: string
           duration_hours?: number
@@ -241,6 +294,7 @@ export type Database = {
           responded_at?: string | null
           response_message?: string | null
           shift_date?: string
+          shift_period?: Database["public"]["Enums"]["shift_period"]
           start_time?: string
           status?: Database["public"]["Enums"]["request_status"]
           updated_at?: string
@@ -267,11 +321,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      auto_finalize_shifts: { Args: never; Returns: undefined }
     }
     Enums: {
       account_type: "doctor" | "network"
-      request_status: "pending" | "accepted" | "declined" | "cancelled"
+      request_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "cancelled"
+        | "completed"
+      shift_period: "morning" | "night" | "custom"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -400,7 +460,14 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["doctor", "network"],
-      request_status: ["pending", "accepted", "declined", "cancelled"],
+      request_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "cancelled",
+        "completed",
+      ],
+      shift_period: ["morning", "night", "custom"],
     },
   },
 } as const
