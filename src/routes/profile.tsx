@@ -179,6 +179,11 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const [langs, setLangs] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
   const [cv, setCv] = useState<string | null>(null);
+  const [cpf, setCpf] = useState("");
+  const [email, setEmail] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("Brasil");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -186,7 +191,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
     (async () => {
       const { data } = await supabase
         .from("doctors")
-        .select("bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url")
+        .select("bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country")
         .eq("id", userId)
         .maybeSingle();
       if (data) {
@@ -197,6 +202,11 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
         setLangs(data.languages ?? "");
         setAvatar(data.avatar_url ?? null);
         setCv(data.cv_pdf_url ?? null);
+        setCpf((data as any).cpf ?? "");
+        setEmail((data as any).email ?? "");
+        setCity((data as any).city ?? "");
+        setState((data as any).state ?? "");
+        setCountry((data as any).country ?? "Brasil");
       }
       setLoading(false);
     })();
@@ -218,6 +228,11 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
         languages: langs.trim() || null,
         avatar_url: avatar,
         cv_pdf_url: cv,
+        cpf: cpf.trim() || null,
+        email: email.trim() || null,
+        city: city.trim() || null,
+        state: state.trim().toUpperCase() || null,
+        country: country.trim() || null,
       }).eq("id", userId),
     ]);
     setSaving(false);
@@ -235,6 +250,32 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
       <div>
         <Label htmlFor="name">Nome completo</Label>
         <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="cpf">CPF</Label>
+          <Input id="cpf" value={cpf} maxLength={14} onChange={(e) => setCpf(e.target.value)} placeholder="000.000.000-00" />
+        </div>
+        <div>
+          <Label htmlFor="emailp">E-mail</Label>
+          <Input id="emailp" type="email" value={email} maxLength={120} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="sm:col-span-2">
+          <Label htmlFor="city">Cidade</Label>
+          <Input id="city" value={city} maxLength={80} onChange={(e) => setCity(e.target.value)} />
+        </div>
+        <div>
+          <Label htmlFor="state">Estado (UF)</Label>
+          <Input id="state" value={state} maxLength={2} onChange={(e) => setState(e.target.value)} />
+        </div>
+        <div className="sm:col-span-3">
+          <Label htmlFor="country">País</Label>
+          <Input id="country" value={country} maxLength={60} onChange={(e) => setCountry(e.target.value)} />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
