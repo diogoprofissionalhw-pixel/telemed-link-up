@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
+import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -16,6 +17,7 @@ function LandingPage() {
       <section className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
+            <img src={logo} alt="Connect-Med" className="mb-6 h-20 w-auto" />
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-success" />
               Plataforma para telemedicina
