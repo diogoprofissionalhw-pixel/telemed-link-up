@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Stethoscope, LogOut, UserCircle2 } from "lucide-react";
+import { LogOut, UserCircle2 } from "lucide-react";
+import logo from "@/assets/connect-med-logo.webp";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,11 +23,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-          <span className="grid h-9 w-9 place-items-center rounded-lg" style={{ background: "var(--gradient-hero)" }}>
-            <Stethoscope className="h-5 w-5 text-primary-foreground" />
-          </span>
-          <span>Connect<span className="text-primary">-Med</span></span>
+        <Link to="/" className="flex items-center gap-2 font-bold text-lg" aria-label="Connect-Med">
+          <img src={logo} alt="Connect-Med" className="h-10 w-auto" />
         </Link>
         <nav className="flex items-center gap-2">
           {user ? (
