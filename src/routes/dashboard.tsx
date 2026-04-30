@@ -361,21 +361,28 @@ function NetworkPanel({ userId }: { userId: string }) {
 }
 
 /* ----------------- NEW REQUEST DIALOG ----------------- */
+const PRESETS: Record<"morning" | "night", { start: string; end: string }> = {
+  morning: { start: "07:00", end: "13:00" },
+  night:   { start: "19:00", end: "07:00" },
+};
+
 function NewRequestDialog({
   networkId, onCreated, onViewProfile,
 }: { networkId: string; onCreated: () => void; onViewProfile: (id: string) => void }) {
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
   const [doctorId, setDoctorId] = useState<string>("");
+  const [period, setPeriod] = useState<"morning" | "night" | "custom">("night");
   const [date, setDate] = useState("");
   const [start, setStart] = useState("19:00");
   const [end, setEnd] = useState("07:00");
+  const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     (async () => {
       const [{ data: docs }, { data: ratings }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, profiles!inner(full_name)"),
+        supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
       ]);
       const ratingMap = new Map<string, { sum: number; n: number }>();
@@ -391,6 +398,9 @@ function NewRequestDialog({
           specialty: d.specialty,
           crm: d.crm,
           crm_uf: d.crm_uf,
+          avatar_url: d.avatar_url ?? null,
+          city: d.city ?? null,
+          state: d.state ?? null,
           full_name: d.profiles?.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
@@ -400,12 +410,24 @@ function NewRequestDialog({
     })();
   }, []);
 
+  const onPeriodChange = (p: "morning" | "night" | "custom") => {
+    setPeriod(p);
+    if (p !== "custom") {
+      setStart(PRESETS[p].start);
+      setEnd(PRESETS[p].end);
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!doctorId) return toast.error("Selecione um médico");
     if (!date || !start || !end) return toast.error("Preencha data e horários");
     const hours = calcHours(start, end);
     if (hours <= 0) return toast.error("Horário inválido");
+    const valNum = value.trim() ? Number(value.replace(",", ".")) : null;
+    if (value.trim() && (valNum === null || isNaN(valNum) || valNum < 0)) {
+      return toast.error("Valor inválido");
+    }
 
     setSubmitting(true);
     const { error } = await supabase.from("shift_requests").insert({
@@ -415,6 +437,8 @@ function NewRequestDialog({
       start_time: start,
       end_time: end,
       duration_hours: hours,
+      shift_period: period,
+      agreed_value: valNum,
       notes: notes.trim() || null,
     });
     setSubmitting(false);
@@ -440,26 +464,64 @@ function NewRequestDialog({
             <SelectContent>
               {doctors.map(d => (
                 <SelectItem key={d.id} value={d.id}>
-                  {d.full_name} — {d.specialty}
-                  {d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                      <AvatarFallback className="text-[10px]">{d.full_name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span>{d.full_name} — {d.specialty}{d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}</span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selected && (
-            <div className="mt-2 flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-xs">
+            <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-xs">
               <div className="flex items-center gap-2">
-                <StarRating value={selected.avg_stars} readonly size={14} />
-                <span className="text-muted-foreground">
-                  {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
-                </span>
+                <Avatar className="h-9 w-9">
+                  {selected.avatar_url && <AvatarImage src={selected.avatar_url} alt={selected.full_name} />}
+                  <AvatarFallback>{selected.full_name.charAt(0).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-foreground">{selected.full_name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <StarRating value={selected.avg_stars} readonly size={12} />
+                    <span className="text-muted-foreground">
+                      {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
+                      {selected.city ? ` • ${selected.city}/${selected.state ?? ""}` : ""}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline">
+              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline whitespace-nowrap">
                 Ver currículo
               </button>
             </div>
           )}
         </div>
+
+        <div>
+          <Label>Turno</Label>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { v: "morning" as const, label: "Manhã", icon: Sun },
+              { v: "night"   as const, label: "Noite", icon: Moon },
+              { v: "custom"  as const, label: "Outro", icon: Clock },
+            ]).map((opt) => (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => onPeriodChange(opt.v)}
+                className={`flex items-center justify-center gap-2 rounded-lg border p-2 text-sm font-medium transition-colors ${
+                  period === opt.v ? "border-primary bg-accent" : "border-border hover:bg-muted"
+                }`}
+              >
+                <opt.icon className="h-4 w-4" /> {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <Label htmlFor="d">Data do plantão</Label>
           <Input id="d" type="date" value={date} onChange={e => setDate(e.target.value)} required />
@@ -467,16 +529,26 @@ function NewRequestDialog({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Label htmlFor="s">Início</Label>
-            <Input id="s" type="time" value={start} onChange={e => setStart(e.target.value)} required />
+            <Input id="s" type="time" value={start} onChange={e => { setStart(e.target.value); setPeriod("custom"); }} required />
           </div>
           <div>
             <Label htmlFor="e">Fim</Label>
-            <Input id="e" type="time" value={end} onChange={e => setEnd(e.target.value)} required />
+            <Input id="e" type="time" value={end} onChange={e => { setEnd(e.target.value); setPeriod("custom"); }} required />
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
           Duração: <strong>{calcHours(start, end)}h</strong> (atravessa o dia se necessário)
         </p>
+
+        <div>
+          <Label htmlFor="v">Valor acordado (R$)</Label>
+          <div className="relative">
+            <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input id="v" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" className="pl-8" />
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Opcional. Valor combinado entre rede e médico.</p>
+        </div>
+
         <div>
           <Label htmlFor="n">Observações (opcional)</Label>
           <Textarea id="n" value={notes} onChange={e => setNotes(e.target.value)} maxLength={500} placeholder="Detalhes do plantão, área, especificidades..." />
