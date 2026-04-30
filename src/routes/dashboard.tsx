@@ -136,20 +136,31 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
+  const [declineId, setDeclineId] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("shift_requests")
-      .select("*, network:networks(network_name)")
+      .select("*, network:networks(network_name, avatar_url)")
       .eq("doctor_id", userId)
-      .neq("status", "cancelled")
+      .not("status", "in", "(cancelled,completed)")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`req-doctor-${userId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "shift_requests", filter: `doctor_id=eq.${userId}` },
+        () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, load]);
 
   const respond = async (id: string, status: "accepted" | "declined") => {
     const { error } = await supabase
@@ -183,7 +194,10 @@ function DoctorPanel({ userId }: { userId: string }) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {pending.map(r => (
-              <RequestCard key={r.id} req={r} viewerType="doctor" onRespond={respond} onChat={() => setChatReq(r)} />
+              <RequestCard key={r.id} req={r} viewerType="doctor"
+                onAccept={() => respond(r.id, "accepted")}
+                onDecline={() => setDeclineId(r.id)}
+                onChat={() => setChatReq(r)} />
             ))}
           </div>
         )}
@@ -212,11 +226,32 @@ function DoctorPanel({ userId }: { userId: string }) {
           otherName={chatReq.network?.network_name ?? "Rede"}
         />
       )}
+
+      <AlertDialog open={!!declineId} onOpenChange={(v) => !v && setDeclineId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar recusa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja recusar este plantão? A rede será notificada e a ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Voltar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (declineId) await respond(declineId, "declined");
+                setDeclineId(null);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, recusar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-/* ----------------- NETWORK PANEL ----------------- */
 function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [loading, setLoading] = useState(true);
