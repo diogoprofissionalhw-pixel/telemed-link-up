@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Mail, IdCard, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
