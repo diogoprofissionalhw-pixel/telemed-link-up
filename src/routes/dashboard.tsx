@@ -565,32 +565,41 @@ function NewRequestDialog({
 
 /* ----------------- REQUEST CARD ----------------- */
 function RequestCard({
-  req, viewerType, onRespond, onCancel, onChat, onViewProfile, onRate,
+  req, viewerType, onAccept, onDecline, onCancel, onChat, onViewProfile, onRate,
 }: {
   req: ShiftRequest;
   viewerType: "doctor" | "network";
-  onRespond?: (id: string, status: "accepted" | "declined") => void;
+  onAccept?: () => void;
+  onDecline?: () => void;
   onCancel?: (id: string) => void;
   onChat?: () => void;
   onViewProfile?: () => void;
   onRate?: () => void;
 }) {
-  const counterpart = viewerType === "doctor"
+  const counterpartName = viewerType === "doctor"
     ? req.network?.network_name ?? "Rede"
-    : `${req.doctor?.profile?.full_name ?? "Médico"} — ${req.doctor?.specialty ?? ""}`;
+    : req.doctor?.profile?.full_name ?? "Médico";
+  const counterpartSubtitle = viewerType === "doctor"
+    ? "Solicitação recebida"
+    : req.doctor?.specialty ?? "";
+  const avatarUrl = viewerType === "doctor" ? req.network?.avatar_url : req.doctor?.avatar_url;
+  const PIcon = periodIcon(req.shift_period);
 
   return (
     <div className="rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-2">
-          {viewerType === "doctor"
-            ? <Building2 className="h-5 w-5 text-primary" />
-            : <Stethoscope className="h-5 w-5 text-primary" />}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border">
+            {avatarUrl && <AvatarImage src={avatarUrl} alt={counterpartName} />}
+            <AvatarFallback className="bg-accent">
+              {viewerType === "doctor"
+                ? <Building2 className="h-5 w-5 text-primary" />
+                : <Stethoscope className="h-5 w-5 text-primary" />}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="font-semibold leading-tight">{counterpart}</p>
-            <p className="text-xs text-muted-foreground">
-              {viewerType === "doctor" ? "Solicitação recebida" : "Solicitação enviada"}
-            </p>
+            <p className="font-semibold leading-tight">{counterpartName}</p>
+            <p className="text-xs text-muted-foreground">{counterpartSubtitle}</p>
           </div>
         </div>
         {statusBadge(req.status)}
@@ -602,8 +611,20 @@ function RequestCard({
           <span className="font-medium capitalize">{formatDate(req.shift_date)}</span>
         </div>
         <div className="flex items-center gap-2">
+          <PIcon className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{periodLabel(req.shift_period)}</span>
+        </div>
+        <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium">{req.start_time.slice(0,5)} → {req.end_time.slice(0,5)}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">
+            {req.agreed_value != null
+              ? req.agreed_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : "A combinar"}
+          </span>
         </div>
         <div className="col-span-2 text-xs text-muted-foreground">
           Duração: <strong className="text-foreground">{req.duration_hours}h</strong>
@@ -616,12 +637,12 @@ function RequestCard({
         </p>
       )}
 
-      {viewerType === "doctor" && req.status === "pending" && onRespond && (
+      {viewerType === "doctor" && req.status === "pending" && onAccept && onDecline && (
         <div className="mt-4 flex gap-2">
-          <Button onClick={() => onRespond(req.id, "accepted")} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
+          <Button onClick={onAccept} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
             Aceitar
           </Button>
-          <Button onClick={() => onRespond(req.id, "declined")} variant="outline" className="flex-1">
+          <Button onClick={onDecline} variant="outline" className="flex-1">
             Recusar
           </Button>
         </div>
@@ -646,7 +667,7 @@ function RequestCard({
         {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
           <Button
             onClick={() => {
-              if (confirm("Tem certeza que deseja cancelar esta solicitação?")) onCancel(req.id);
+              if (confirm("Tem certeza que deseja cancelar esta solicitação? O médico será notificado.")) onCancel(req.id);
             }}
             variant="outline"
             size="sm"
