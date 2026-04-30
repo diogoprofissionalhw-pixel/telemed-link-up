@@ -197,6 +197,22 @@ function AuthPage() {
                       <Label htmlFor="specialty">Especialidade</Label>
                       <Input id="specialty" name="specialty" required maxLength={80} placeholder="Clínica geral" />
                     </div>
+                    <div className="col-span-3">
+                      <Label htmlFor="cpf">CPF</Label>
+                      <Input id="cpf" name="cpf" required maxLength={14} placeholder="000.000.000-00" />
+                    </div>
+                    <div className="col-span-2">
+                      <Label htmlFor="city">Cidade</Label>
+                      <Input id="city" name="city" required maxLength={80} placeholder="São Paulo" />
+                    </div>
+                    <div>
+                      <Label htmlFor="state">Estado</Label>
+                      <Input id="state" name="state" required maxLength={2} placeholder="SP" />
+                    </div>
+                    <div className="col-span-3">
+                      <Label htmlFor="country">País</Label>
+                      <Input id="country" name="country" maxLength={60} defaultValue="Brasil" />
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
