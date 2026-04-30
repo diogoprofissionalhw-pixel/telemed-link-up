@@ -264,16 +264,25 @@ function NetworkPanel({ userId }: { userId: string }) {
     setLoading(true);
     const { data, error } = await supabase
       .from("shift_requests")
-      .select("*, doctor:doctors(specialty, crm, crm_uf, profile:profiles(full_name))")
+      .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
       .eq("network_id", userId)
-      .neq("status", "cancelled")
+      .not("status", "in", "(cancelled,completed)")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     else setRequests((data ?? []) as ShiftRequest[]);
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const channel = supabase
+      .channel(`req-network-${userId}`)
+      .on("postgres_changes",
+        { event: "*", schema: "public", table: "shift_requests", filter: `network_id=eq.${userId}` },
+        () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, load]);
 
   const cancel = async (id: string) => {
     const { error } = await supabase
@@ -281,7 +290,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       .update({ status: "cancelled" })
       .eq("id", id);
     if (error) return toast.error(error.message);
-    toast.success("Solicitação cancelada e removida da lista");
+    toast.success("Solicitação cancelada — médico será notificado");
     setRequests((prev) => prev.filter((r) => r.id !== id));
   };
 
