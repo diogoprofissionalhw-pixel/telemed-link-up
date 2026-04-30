@@ -86,12 +86,17 @@ function AuthPage() {
       const crm = String(fd.get("crm") ?? "").trim();
       const crm_uf = String(fd.get("crm_uf") ?? "").trim().toUpperCase();
       const specialty = String(fd.get("specialty") ?? "").trim();
-      if (!crm || !crm_uf || !specialty) {
+      const cpf = String(fd.get("cpf") ?? "").trim();
+      const city = String(fd.get("city") ?? "").trim();
+      const state = String(fd.get("state") ?? "").trim().toUpperCase();
+      const country = String(fd.get("country") ?? "").trim() || "Brasil";
+      if (!crm || !crm_uf || !specialty || !cpf || !city || !state) {
         setSubmitting(false);
-        return toast.error("Preencha CRM, UF e especialidade.");
+        return toast.error("Preencha todos os campos obrigatórios.");
       }
       const { error: docErr } = await supabase.from("doctors").insert({
-        id: userId, crm, crm_uf, specialty,
+        id: userId, crm, crm_uf, specialty, cpf, city, state, country,
+        email: parsed.data.email,
       });
       if (docErr) { setSubmitting(false); return toast.error(docErr.message); }
     } else {
