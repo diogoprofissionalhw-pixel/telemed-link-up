@@ -649,7 +649,7 @@ function RequestCard({
   viewerType: "doctor" | "network";
   onAccept?: () => void;
   onDecline?: () => void;
-  onCancel?: (id: string) => void;
+  onCancel?: () => void;
   onChat?: () => void;
   onViewProfile?: () => void;
   onRate?: () => void;
@@ -744,9 +744,7 @@ function RequestCard({
         )}
         {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
           <Button
-            onClick={() => {
-              if (confirm("Tem certeza que deseja cancelar esta solicitação? O médico será notificado.")) onCancel(req.id);
-            }}
+            onClick={onCancel}
             variant="outline"
             size="sm"
             className="flex-1 text-destructive hover:text-destructive"
