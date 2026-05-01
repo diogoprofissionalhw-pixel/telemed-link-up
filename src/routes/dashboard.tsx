@@ -50,6 +50,7 @@ interface DoctorOption {
   state: string | null;
   avg_stars: number;
   rating_count: number;
+  accepted_count: number;
 }
 
 function statusBadge(status: ShiftRequest["status"]) {
