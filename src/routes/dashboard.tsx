@@ -457,18 +457,30 @@ function NewRequestDialog({
   const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [platformAvgHours, setPlatformAvgHours] = useState<number | null>(null);
+
+  // Filtros de busca
+  const [search, setSearch] = useState("");
+  const [filterSpecialty, setFilterSpecialty] = useState<string>("all");
+  const [filterUf, setFilterUf] = useState<string>("all");
 
   useEffect(() => {
     (async () => {
-      const [{ data: docs }, { data: ratings }] = await Promise.all([
+      const [{ data: docs }, { data: ratings }, { data: completedShifts }, { data: allShifts }] = await Promise.all([
         supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
+        supabase.from("shift_requests").select("doctor_id, status").in("status", ["accepted", "completed"]),
+        supabase.from("shift_requests").select("duration_hours").in("status", ["accepted", "completed"]),
       ]);
       const ratingMap = new Map<string, { sum: number; n: number }>();
       (ratings ?? []).forEach((r: any) => {
         const cur = ratingMap.get(r.doctor_id) ?? { sum: 0, n: 0 };
         cur.sum += r.stars; cur.n += 1;
         ratingMap.set(r.doctor_id, cur);
+      });
+      const acceptedMap = new Map<string, number>();
+      (completedShifts ?? []).forEach((s: any) => {
+        acceptedMap.set(s.doctor_id, (acceptedMap.get(s.doctor_id) ?? 0) + 1);
       });
       const list: DoctorOption[] = (docs ?? []).map((d: any) => {
         const ag = ratingMap.get(d.id);
@@ -483,11 +495,53 @@ function NewRequestDialog({
           full_name: d.profiles?.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
+          accepted_count: acceptedMap.get(d.id) ?? 0,
         };
       });
       setDoctors(list);
+      // Duração média da plataforma
+      const hoursArr = (allShifts ?? []).map((s: any) => Number(s.duration_hours)).filter((n) => !isNaN(n) && n > 0);
+      if (hoursArr.length > 0) {
+        setPlatformAvgHours(hoursArr.reduce((a, b) => a + b, 0) / hoursArr.length);
+      }
     })();
   }, []);
+
+  // Lista de especialidades e UFs disponíveis
+  const specialties = useMemo(
+    () => Array.from(new Set(doctors.map(d => d.specialty).filter(Boolean))).sort(),
+    [doctors],
+  );
+  const ufs = useMemo(
+    () => Array.from(new Set(doctors.map(d => d.state).filter((x): x is string => !!x))).sort(),
+    [doctors],
+  );
+
+  // Filtragem + ordenação inteligente:
+  // 5 estrelas no topo -> avaliação desc -> nº atendimentos desc -> nome
+  const filteredDoctors = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return doctors
+      .filter(d => {
+        if (filterSpecialty !== "all" && d.specialty !== filterSpecialty) return false;
+        if (filterUf !== "all" && d.state !== filterUf) return false;
+        if (!q) return true;
+        return (
+          d.full_name.toLowerCase().includes(q) ||
+          d.specialty.toLowerCase().includes(q) ||
+          (d.city ?? "").toLowerCase().includes(q) ||
+          (d.state ?? "").toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        const aTop = a.avg_stars >= 5 && a.rating_count > 0 ? 1 : 0;
+        const bTop = b.avg_stars >= 5 && b.rating_count > 0 ? 1 : 0;
+        if (aTop !== bTop) return bTop - aTop;
+        if (b.avg_stars !== a.avg_stars) return b.avg_stars - a.avg_stars;
+        if (b.accepted_count !== a.accepted_count) return b.accepted_count - a.accepted_count;
+        return a.full_name.localeCompare(b.full_name);
+      });
+  }, [doctors, search, filterSpecialty, filterUf]);
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
     setPeriod(p);
@@ -527,6 +581,7 @@ function NewRequestDialog({
   };
 
   const selected = doctors.find(d => d.id === doctorId);
+  const currentHours = calcHours(start, end);
 
   return (
     <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
@@ -534,21 +589,61 @@ function NewRequestDialog({
         <DialogTitle>Nova solicitação de plantão</DialogTitle>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
+        {/* Busca avançada */}
+        <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <Filter className="h-3.5 w-3.5" /> Buscar médico
+          </div>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Nome, especialidade, cidade..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
+              <SelectTrigger><SelectValue placeholder="Especialidade" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas especialidades</SelectItem>
+                {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={filterUf} onValueChange={setFilterUf}>
+              <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas UFs</SelectItem>
+                {ufs.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            Ordenado por: 5★ no topo → melhor avaliação → mais atendimentos
+          </p>
+        </div>
+
         <div>
-          <Label>Médico</Label>
+          <Label>Médico ({filteredDoctors.length} {filteredDoctors.length === 1 ? "encontrado" : "encontrados"})</Label>
           <Select value={doctorId} onValueChange={setDoctorId}>
             <SelectTrigger>
-              <SelectValue placeholder={doctors.length ? "Selecione o médico" : "Nenhum médico cadastrado"} />
+              <SelectValue placeholder={filteredDoctors.length ? "Selecione o médico" : "Nenhum médico encontrado"} />
             </SelectTrigger>
             <SelectContent>
-              {doctors.map(d => (
+              {filteredDoctors.map(d => (
                 <SelectItem key={d.id} value={d.id}>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
                       <AvatarFallback className="text-[10px]">{d.full_name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span>{d.full_name} — {d.specialty}{d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}</span>
+                    <span>
+                      {d.avg_stars >= 5 && d.rating_count > 0 && "⭐ "}
+                      {d.full_name} — {d.specialty}
+                      {d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}
+                      {d.accepted_count > 0 ? ` · ${d.accepted_count} plantões` : ""}
+                    </span>
                   </div>
                 </SelectItem>
               ))}
@@ -567,6 +662,7 @@ function NewRequestDialog({
                     <StarRating value={selected.avg_stars} readonly size={12} />
                     <span className="text-muted-foreground">
                       {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
+                      {selected.accepted_count > 0 ? ` · ${selected.accepted_count} plantões` : ""}
                       {selected.city ? ` • ${selected.city}/${selected.state ?? ""}` : ""}
                     </span>
                   </div>
@@ -615,9 +711,17 @@ function NewRequestDialog({
             <Input id="e" type="time" value={end} onChange={e => { setEnd(e.target.value); setPeriod("custom"); }} required />
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Duração: <strong>{calcHours(start, end)}h</strong> (atravessa o dia se necessário)
-        </p>
+        <div className="rounded-lg bg-accent/40 p-3 text-xs space-y-1">
+          <p>
+            Duração desta solicitação: <strong className="text-foreground">{currentHours}h</strong>
+          </p>
+          {platformAvgHours !== null && (
+            <p className="flex items-center gap-1.5 text-muted-foreground">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              Média da plataforma: <strong className="text-foreground">{platformAvgHours.toFixed(1)}h</strong> por plantão
+            </p>
+          )}
+        </div>
 
         <div>
           <Label htmlFor="v">Valor acordado (R$)</Label>
