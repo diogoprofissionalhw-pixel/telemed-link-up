@@ -250,6 +250,7 @@ export type Database = {
       shift_requests: {
         Row: {
           agreed_value: number | null
+          cancellation_reason: string | null
           created_at: string
           doctor_id: string
           duration_hours: number
@@ -267,6 +268,7 @@ export type Database = {
         }
         Insert: {
           agreed_value?: number | null
+          cancellation_reason?: string | null
           created_at?: string
           doctor_id: string
           duration_hours: number
@@ -284,6 +286,7 @@ export type Database = {
         }
         Update: {
           agreed_value?: number | null
+          cancellation_reason?: string | null
           created_at?: string
           doctor_id?: string
           duration_hours?: number
