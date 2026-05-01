@@ -159,8 +159,25 @@ function DoctorPanel({ userId }: { userId: string }) {
         { event: "*", schema: "public", table: "shift_requests", filter: `doctor_id=eq.${userId}` },
         () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    // Auto-refresh seguro a cada 60s (fallback caso realtime caia)
+    const interval = setInterval(load, 60_000);
+    return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [userId, load]);
+
+  // Toast de novas mensagens recebidas (quando o chat estiver fechado para esse pedido)
+  useEffect(() => {
+    const ch = supabase
+      .channel(`msg-doc-${userId}`)
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
+        (payload) => {
+          const msg = payload.new as { request_id: string; content: string };
+          if (chatReq?.id === msg.request_id) return;
+          toast.message("Nova mensagem", { description: msg.content.slice(0, 80) });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [userId, chatReq?.id]);
 
   const respond = async (id: string, status: "accepted" | "declined") => {
     const { error } = await supabase
