@@ -276,6 +276,9 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
   const [ratingReq, setRatingReq] = useState<ShiftRequest | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<ShiftRequest | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -298,17 +301,39 @@ function NetworkPanel({ userId }: { userId: string }) {
         { event: "*", schema: "public", table: "shift_requests", filter: `network_id=eq.${userId}` },
         () => load())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(load, 60_000);
+    return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [userId, load]);
 
-  const cancel = async (id: string) => {
+  // Toast de novas mensagens recebidas
+  useEffect(() => {
+    const ch = supabase
+      .channel(`msg-net-${userId}`)
+      .on("postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
+        (payload) => {
+          const msg = payload.new as { request_id: string; content: string };
+          if (chatReq?.id === msg.request_id) return;
+          toast.message("Nova mensagem", { description: msg.content.slice(0, 80) });
+        })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [userId, chatReq?.id]);
+
+  const confirmCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    const reason = cancelReason.trim();
     const { error } = await supabase
       .from("shift_requests")
-      .update({ status: "cancelled" })
-      .eq("id", id);
+      .update({ status: "cancelled", cancellation_reason: reason || null })
+      .eq("id", cancelTarget.id);
+    setCancelling(false);
     if (error) return toast.error(error.message);
     toast.success("Solicitação cancelada — médico será notificado");
-    setRequests((prev) => prev.filter((r) => r.id !== id));
+    setRequests((prev) => prev.filter((r) => r.id !== cancelTarget.id));
+    setCancelTarget(null);
+    setCancelReason("");
   };
 
   return (
@@ -338,7 +363,7 @@ function NetworkPanel({ userId }: { userId: string }) {
               key={r.id}
               req={r}
               viewerType="network"
-              onCancel={cancel}
+              onCancel={() => setCancelTarget(r)}
               onChat={() => setChatReq(r)}
               onViewProfile={() => setProfileDoctorId(r.doctor_id)}
               onRate={() => setRatingReq(r)}
@@ -373,6 +398,42 @@ function NetworkPanel({ userId }: { userId: string }) {
           networkId={userId}
         />
       )}
+
+      {/* Cancelamento com motivo opcional */}
+      <Dialog open={!!cancelTarget} onOpenChange={(v) => { if (!v) { setCancelTarget(null); setCancelReason(""); } }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancelar solicitação</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              O médico será notificado imediatamente e a solicitação sairá da sua lista de pedidos ativos.
+            </p>
+            <div>
+              <Label htmlFor="cancel-reason">Motivo (opcional)</Label>
+              <Textarea
+                id="cancel-reason"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                maxLength={300}
+                placeholder="Ex: Plantão remarcado, paciente desistiu..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setCancelTarget(null); setCancelReason(""); }}>
+              Voltar
+            </Button>
+            <Button
+              onClick={confirmCancel}
+              disabled={cancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancelling ? "Cancelando..." : "Confirmar cancelamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
