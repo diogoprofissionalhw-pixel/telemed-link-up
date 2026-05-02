@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,15 +26,13 @@ function ProfilePage() {
   if (loading || !user || !profile) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader />
         <div className="mx-auto max-w-3xl px-4 py-12 text-muted-foreground">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
-      <SiteHeader />
+    <AppShell userType={profile.account_type}>
       <main className="mx-auto max-w-3xl px-4 py-8">
         <div className="mb-6">
           <p className="text-sm text-muted-foreground">Meu perfil</p>
@@ -49,7 +47,7 @@ function ProfilePage() {
           <NetworkProfileForm userId={user.id} fullName={profile.full_name} onSaved={refreshProfile} />
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
 

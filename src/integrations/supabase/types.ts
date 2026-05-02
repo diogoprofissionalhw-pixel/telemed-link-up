@@ -325,6 +325,7 @@ export type Database = {
     }
     Functions: {
       auto_finalize_shifts: { Args: never; Returns: undefined }
+      send_shift_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
       account_type: "doctor" | "network"

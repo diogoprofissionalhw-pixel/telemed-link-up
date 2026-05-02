@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,15 +100,13 @@ function DashboardPage() {
   if (loading || !user || !profile) {
     return (
       <div className="min-h-screen bg-background">
-        <SiteHeader />
         <div className="mx-auto max-w-6xl px-4 py-12 text-muted-foreground">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
-      <SiteHeader />
+    <AppShell userType={profile.account_type}>
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-8 flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent">
@@ -128,7 +126,7 @@ function DashboardPage() {
           ? <DoctorPanel userId={user.id} />
           : <NetworkPanel userId={user.id} />}
       </main>
-    </div>
+    </AppShell>
   );
 }
 
