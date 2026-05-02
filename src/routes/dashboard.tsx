@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter, Inbox, CalendarCheck, Briefcase } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter, Inbox, CalendarCheck, Briefcase, Sparkles, ShieldCheck, ShieldQuestion, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -46,13 +46,20 @@ interface DoctorOption {
   specialty: string;
   crm: string;
   crm_uf: string;
+  crm_status: "verified" | "pending" | "invalid";
   full_name: string;
   avatar_url: string | null;
   city: string | null;
   state: string | null;
+  years_experience: number | null;
   avg_stars: number;
   rating_count: number;
   accepted_count: number;
+  total_count: number;
+  has_availability: boolean;
+  has_conflict: boolean;
+  match_score: number;
+  match_tier: "best" | "high" | "medium" | "low";
 }
 
 function statusBadge(status: ShiftRequest["status"]) {
@@ -488,11 +495,27 @@ function NetworkPanel({ userId }: { userId: string }) {
   );
 }
 
-/* ----------------- NEW REQUEST DIALOG ----------------- */
+/* ----------------- NEW REQUEST DIALOG (Match Inteligente) ----------------- */
 const PRESETS: Record<"morning" | "night", { start: string; end: string }> = {
   morning: { start: "07:00", end: "13:00" },
   night:   { start: "19:00", end: "07:00" },
 };
+
+// Mapa simplificado de fuso horário por UF brasileira
+const UF_TZ: Record<string, number> = {
+  AC: -5, AM: -4, RR: -4, RO: -4, MT: -4, MS: -4,
+  PA: -3, AP: -3, TO: -3, MA: -3, PI: -3, CE: -3, RN: -3, PB: -3, PE: -3, AL: -3, SE: -3, BA: -3,
+  DF: -3, GO: -3, MG: -3, ES: -3, RJ: -3, SP: -3, PR: -3, SC: -3, RS: -3,
+};
+
+function tierLabel(tier: DoctorOption["match_tier"]) {
+  switch (tier) {
+    case "best": return { emoji: "⭐", text: "Melhor match", cls: "bg-warning/20 text-warning-foreground", color: "oklch(0.45 0.15 80)" };
+    case "high": return { emoji: "🟢", text: "Alta compatibilidade", cls: "bg-success/15", color: "oklch(0.40 0.14 150)" };
+    case "medium": return { emoji: "🟡", text: "Média compatibilidade", cls: "bg-warning/15", color: "oklch(0.45 0.12 60)" };
+    default: return { emoji: "⚪", text: "Baixa", cls: "bg-muted", color: "var(--muted-foreground)" };
+  }
+}
 
 function NewRequestDialog({
   networkId, onCreated, onViewProfile,
@@ -506,21 +529,29 @@ function NewRequestDialog({
   const [value, setValue] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [platformAvgHours, setPlatformAvgHours] = useState<number | null>(null);
+  const [networkUf, setNetworkUf] = useState<string>("");
 
-  // Filtros de busca
-  const [search, setSearch] = useState("");
+  // Critérios de match
   const [filterSpecialty, setFilterSpecialty] = useState<string>("all");
-  const [filterUf, setFilterUf] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [minRating, setMinRating] = useState<string>("0");
+  const [minYears, setMinYears] = useState<string>("0");
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [{ data: docs }, { data: ratings }, { data: completedShifts }, { data: allShifts }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)"),
+      // Carrega rede para obter UF de referência (legislação/fuso)
+      const { data: net } = await supabase.from("networks").select("id").eq("id", networkId).maybeSingle();
+      // Não temos UF na rede; deixar usuário escolher mais tarde se quiser
+      void net;
+
+      const [{ data: docs }, { data: ratings }, { data: shifts }, { data: avails }] = await Promise.all([
+        supabase.from("doctors").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
-        supabase.from("shift_requests").select("doctor_id, status").in("status", ["accepted", "completed"]),
-        supabase.from("shift_requests").select("duration_hours").in("status", ["accepted", "completed"]),
+        supabase.from("shift_requests").select("doctor_id, status, shift_date, start_time, end_time").in("status", ["accepted", "completed", "pending"]),
+        supabase.from("doctor_availabilities").select("doctor_id, available_date, start_time, end_time"),
       ]);
+
       const ratingMap = new Map<string, { sum: number; n: number }>();
       (ratings ?? []).forEach((r: any) => {
         const cur = ratingMap.get(r.doctor_id) ?? { sum: 0, n: 0 };
@@ -528,9 +559,14 @@ function NewRequestDialog({
         ratingMap.set(r.doctor_id, cur);
       });
       const acceptedMap = new Map<string, number>();
-      (completedShifts ?? []).forEach((s: any) => {
-        acceptedMap.set(s.doctor_id, (acceptedMap.get(s.doctor_id) ?? 0) + 1);
+      const totalMap = new Map<string, number>();
+      (shifts ?? []).forEach((s: any) => {
+        totalMap.set(s.doctor_id, (totalMap.get(s.doctor_id) ?? 0) + 1);
+        if (s.status === "accepted" || s.status === "completed") {
+          acceptedMap.set(s.doctor_id, (acceptedMap.get(s.doctor_id) ?? 0) + 1);
+        }
       });
+
       const list: DoctorOption[] = (docs ?? []).map((d: any) => {
         const ag = ratingMap.get(d.id);
         return {
@@ -538,59 +574,108 @@ function NewRequestDialog({
           specialty: d.specialty,
           crm: d.crm,
           crm_uf: d.crm_uf,
+          crm_status: (d.crm_status ?? "pending") as "verified" | "pending" | "invalid",
           avatar_url: d.avatar_url ?? null,
           city: d.city ?? null,
           state: d.state ?? null,
+          years_experience: d.years_experience ?? null,
           full_name: d.profiles?.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
           accepted_count: acceptedMap.get(d.id) ?? 0,
+          total_count: totalMap.get(d.id) ?? 0,
+          has_availability: false,
+          has_conflict: false,
+          match_score: 0,
+          match_tier: "low",
         };
       });
-      setDoctors(list);
-      // Duração média da plataforma
-      const hoursArr = (allShifts ?? []).map((s: any) => Number(s.duration_hours)).filter((n) => !isNaN(n) && n > 0);
-      if (hoursArr.length > 0) {
-        setPlatformAvgHours(hoursArr.reduce((a, b) => a + b, 0) / hoursArr.length);
-      }
-    })();
-  }, []);
 
-  // Lista de especialidades e UFs disponíveis
+      // Salva referências para cálculo dinâmico
+      (window as any).__avails = avails ?? [];
+      (window as any).__shifts = shifts ?? [];
+      setDoctors(list);
+    })();
+  }, [networkId]);
+
   const specialties = useMemo(
     () => Array.from(new Set(doctors.map(d => d.specialty).filter(Boolean))).sort(),
     [doctors],
   );
-  const ufs = useMemo(
-    () => Array.from(new Set(doctors.map(d => d.state).filter((x): x is string => !!x))).sort(),
-    [doctors],
-  );
 
-  // Filtragem + ordenação inteligente:
-  // 5 estrelas no topo -> avaliação desc -> nº atendimentos desc -> nome
-  const filteredDoctors = useMemo(() => {
+  // Recalcula match sempre que mudam critérios de horário/data/especialidade
+  const ranked = useMemo(() => {
+    const avails = ((window as any).__avails ?? []) as Array<{ doctor_id: string; available_date: string; start_time: string; end_time: string }>;
+    const shifts = ((window as any).__shifts ?? []) as Array<{ doctor_id: string; status: string; shift_date: string; start_time: string; end_time: string }>;
     const q = search.trim().toLowerCase();
-    return doctors
+    const minR = Number(minRating);
+    const minY = Number(minYears);
+    const refTz = networkUf ? UF_TZ[networkUf] : null;
+
+    const list = doctors
+      // CRM inválido nunca aparece no match
+      .filter(d => d.crm_status !== "invalid")
       .filter(d => {
         if (filterSpecialty !== "all" && d.specialty !== filterSpecialty) return false;
-        if (filterUf !== "all" && d.state !== filterUf) return false;
+        if (minR > 0 && d.avg_stars < minR) return false;
+        if (minY > 0 && (d.years_experience ?? 0) < minY) return false;
         if (!q) return true;
         return (
           d.full_name.toLowerCase().includes(q) ||
-          d.specialty.toLowerCase().includes(q) ||
-          (d.city ?? "").toLowerCase().includes(q) ||
-          (d.state ?? "").toLowerCase().includes(q)
+          d.specialty.toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => {
-        const aTop = a.avg_stars >= 5 && a.rating_count > 0 ? 1 : 0;
-        const bTop = b.avg_stars >= 5 && b.rating_count > 0 ? 1 : 0;
-        if (aTop !== bTop) return bTop - aTop;
-        if (b.avg_stars !== a.avg_stars) return b.avg_stars - a.avg_stars;
-        if (b.accepted_count !== a.accepted_count) return b.accepted_count - a.accepted_count;
-        return a.full_name.localeCompare(b.full_name);
-      });
-  }, [doctors, search, filterSpecialty, filterUf]);
+      .map(d => {
+        // Disponibilidade declarada cobrindo o horário?
+        const hasAvail = !!date && !!start && !!end && avails.some(a =>
+          a.doctor_id === d.id &&
+          a.available_date === date &&
+          a.start_time <= start &&
+          a.end_time >= (end > start ? end : "23:59")
+        );
+        // Conflito com plantão já aceito/pendente?
+        const hasConflict = !!date && shifts.some(s =>
+          s.doctor_id === d.id &&
+          s.shift_date === date &&
+          (s.status === "accepted" || s.status === "pending") &&
+          !(s.end_time <= start || s.start_time >= end)
+        );
+
+        // Score
+        let score = 0;
+        // Especialidade compatível (peso muito alto: 35)
+        if (filterSpecialty !== "all" && d.specialty === filterSpecialty) score += 35;
+        else if (filterSpecialty === "all") score += 15; // neutro
+        // Disponibilidade no horário (peso muito alto: 30)
+        if (hasAvail) score += 30;
+        if (hasConflict) score -= 40;
+        // Fuso horário (peso alto: 12) - mesma faixa de UTC
+        if (refTz !== null && d.state && UF_TZ[d.state] === refTz) score += 12;
+        else if (refTz !== null && d.state && UF_TZ[d.state] !== undefined) score += 4;
+        // Experiência (peso médio: 8)
+        score += Math.min(8, (d.years_experience ?? 0) * 0.8);
+        // Avaliação (peso médio: 8)
+        if (d.rating_count > 0) score += (d.avg_stars / 5) * 8;
+        // Histórico aceitação (peso médio: 7)
+        const acceptRate = d.total_count > 0 ? d.accepted_count / d.total_count : 0;
+        score += acceptRate * 7;
+
+        // CRM verificado bonus
+        if (d.crm_status === "verified") score += 5;
+
+        let tier: DoctorOption["match_tier"];
+        if (score >= 75) tier = "best";
+        else if (score >= 55) tier = "high";
+        else if (score >= 35) tier = "medium";
+        else tier = "low";
+
+        return { ...d, has_availability: hasAvail, has_conflict: hasConflict, match_score: Math.max(0, Math.round(score)), match_tier: tier };
+      })
+      .filter(d => !onlyAvailable || d.has_availability)
+      .sort((a, b) => b.match_score - a.match_score);
+
+    return list;
+  }, [doctors, filterSpecialty, search, minRating, minYears, onlyAvailable, date, start, end, networkUf]);
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
     setPeriod(p);
@@ -602,7 +687,7 @@ function NewRequestDialog({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!doctorId) return toast.error("Selecione um médico");
+    if (!doctorId) return toast.error("Selecione um médico para convidar");
     if (!date || !start || !end) return toast.error("Preencha data e horários");
     const hours = calcHours(start, end);
     if (hours <= 0) return toast.error("Horário inválido");
@@ -625,150 +710,169 @@ function NewRequestDialog({
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
-    toast.success("Solicitação enviada!");
+    toast.success("Convite enviado ao médico!");
     onCreated();
   };
 
-  const selected = doctors.find(d => d.id === doctorId);
-  const currentHours = calcHours(start, end);
-
   return (
-    <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Nova solicitação de plantão</DialogTitle>
+        <DialogTitle className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-primary" /> Match inteligente — Telemedicina
+        </DialogTitle>
       </DialogHeader>
       <form onSubmit={submit} className="space-y-4">
-        {/* Busca avançada */}
-        <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-            <Filter className="h-3.5 w-3.5" /> Buscar médico
-          </div>
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Nome, especialidade, cidade..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+        {/* Critérios do plantão */}
+        <div className="grid gap-3 rounded-lg border bg-muted/30 p-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Label>Especialidade desejada</Label>
             <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
-              <SelectTrigger><SelectValue placeholder="Especialidade" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Selecione a especialidade" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas especialidades</SelectItem>
+                <SelectItem value="all">Qualquer especialidade</SelectItem>
                 {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={filterUf} onValueChange={setFilterUf}>
+          </div>
+          <div>
+            <Label htmlFor="d">Data do plantão</Label>
+            <Input id="d" type="date" value={date} onChange={e => setDate(e.target.value)} required />
+          </div>
+          <div>
+            <Label>UF de referência (fuso/legislação)</Label>
+            <Select value={networkUf} onValueChange={setNetworkUf}>
               <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas UFs</SelectItem>
-                {ufs.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                {Object.keys(UF_TZ).sort().map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Ordenado por: 5★ no topo → melhor avaliação → mais atendimentos
-          </p>
+          <div>
+            <Label>Turno</Label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {([
+                { v: "morning" as const, label: "Manhã", icon: Sun },
+                { v: "night"   as const, label: "Noite", icon: Moon },
+                { v: "custom"  as const, label: "Outro", icon: Clock },
+              ]).map((opt) => (
+                <button key={opt.v} type="button" onClick={() => onPeriodChange(opt.v)}
+                  className={`flex items-center justify-center gap-1 rounded-md border p-1.5 text-xs font-medium ${period === opt.v ? "border-primary bg-accent" : "border-border"}`}>
+                  <opt.icon className="h-3 w-3" /> {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="s">Início</Label>
+              <Input id="s" type="time" value={start} onChange={e => { setStart(e.target.value); setPeriod("custom"); }} required />
+            </div>
+            <div>
+              <Label htmlFor="e">Fim</Label>
+              <Input id="e" type="time" value={end} onChange={e => { setEnd(e.target.value); setPeriod("custom"); }} required />
+            </div>
+          </div>
         </div>
 
-        <div>
-          <Label>Médico ({filteredDoctors.length} {filteredDoctors.length === 1 ? "encontrado" : "encontrados"})</Label>
-          <Select value={doctorId} onValueChange={setDoctorId}>
-            <SelectTrigger>
-              <SelectValue placeholder={filteredDoctors.length ? "Selecione o médico" : "Nenhum médico encontrado"} />
-            </SelectTrigger>
+        {/* Filtros adicionais */}
+        <div className="grid gap-2 sm:grid-cols-4">
+          <div className="sm:col-span-2 relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Buscar por nome..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8" />
+          </div>
+          <Select value={minRating} onValueChange={setMinRating}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              {filteredDoctors.map(d => (
-                <SelectItem key={d.id} value={d.id}>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
-                      <AvatarFallback className="text-[10px]">{d.full_name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span>
-                      {d.avg_stars >= 5 && d.rating_count > 0 && "⭐ "}
-                      {d.full_name} — {d.specialty}
-                      {d.rating_count > 0 ? ` ★${d.avg_stars.toFixed(1)}` : ""}
-                      {d.accepted_count > 0 ? ` · ${d.accepted_count} plantões` : ""}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
+              <SelectItem value="0">Qualquer ★</SelectItem>
+              <SelectItem value="3">3★+</SelectItem>
+              <SelectItem value="4">4★+</SelectItem>
+              <SelectItem value="4.5">4.5★+</SelectItem>
             </SelectContent>
           </Select>
-          {selected && (
-            <div className="mt-2 flex items-center justify-between gap-3 rounded-lg bg-muted/40 px-3 py-2 text-xs">
-              <div className="flex items-center gap-2">
-                <Avatar className="h-9 w-9">
-                  {selected.avatar_url && <AvatarImage src={selected.avatar_url} alt={selected.full_name} />}
-                  <AvatarFallback>{selected.full_name.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium text-foreground">{selected.full_name}</p>
-                  <div className="flex items-center gap-1.5">
-                    <StarRating value={selected.avg_stars} readonly size={12} />
-                    <span className="text-muted-foreground">
-                      {selected.rating_count > 0 ? `${selected.avg_stars.toFixed(1)} (${selected.rating_count})` : "Sem avaliações"}
-                      {selected.accepted_count > 0 ? ` · ${selected.accepted_count} plantões` : ""}
-                      {selected.city ? ` • ${selected.city}/${selected.state ?? ""}` : ""}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <button type="button" onClick={() => onViewProfile(selected.id)} className="font-medium text-primary hover:underline whitespace-nowrap">
-                Ver currículo
-              </button>
-            </div>
-          )}
+          <Select value={minYears} onValueChange={setMinYears}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">Qualquer exp.</SelectItem>
+              <SelectItem value="2">2+ anos</SelectItem>
+              <SelectItem value="5">5+ anos</SelectItem>
+              <SelectItem value="10">10+ anos</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} className="rounded" />
+          Mostrar apenas médicos com disponibilidade declarada no horário
+        </label>
 
+        {/* Ranking */}
         <div>
-          <Label>Turno</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {([
-              { v: "morning" as const, label: "Manhã", icon: Sun },
-              { v: "night"   as const, label: "Noite", icon: Moon },
-              { v: "custom"  as const, label: "Outro", icon: Clock },
-            ]).map((opt) => (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => onPeriodChange(opt.v)}
-                className={`flex items-center justify-center gap-2 rounded-lg border p-2 text-sm font-medium transition-colors ${
-                  period === opt.v ? "border-primary bg-accent" : "border-border hover:bg-muted"
-                }`}
-              >
-                <opt.icon className="h-4 w-4" /> {opt.label}
-              </button>
-            ))}
+          <div className="mb-2 flex items-center justify-between">
+            <Label className="flex items-center gap-1.5"><TrendingUp className="h-4 w-4" /> Ranking ({ranked.length})</Label>
+            <p className="text-[10px] text-muted-foreground">Score: especialidade · disponibilidade · fuso · exp · ★ · histórico</p>
           </div>
-        </div>
-
-        <div>
-          <Label htmlFor="d">Data do plantão</Label>
-          <Input id="d" type="date" value={date} onChange={e => setDate(e.target.value)} required />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label htmlFor="s">Início</Label>
-            <Input id="s" type="time" value={start} onChange={e => { setStart(e.target.value); setPeriod("custom"); }} required />
-          </div>
-          <div>
-            <Label htmlFor="e">Fim</Label>
-            <Input id="e" type="time" value={end} onChange={e => { setEnd(e.target.value); setPeriod("custom"); }} required />
-          </div>
-        </div>
-        <div className="rounded-lg bg-accent/40 p-3 text-xs space-y-1">
-          <p>
-            Duração desta solicitação: <strong className="text-foreground">{currentHours}h</strong>
-          </p>
-          {platformAvgHours !== null && (
-            <p className="flex items-center gap-1.5 text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5 text-primary" />
-              Média da plataforma: <strong className="text-foreground">{platformAvgHours.toFixed(1)}h</strong> por plantão
+          {ranked.length === 0 ? (
+            <p className="rounded-md border bg-muted/30 px-3 py-6 text-center text-sm text-muted-foreground">
+              Nenhum médico atende aos critérios.
             </p>
+          ) : (
+            <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+              {ranked.map((d) => {
+                const tier = tierLabel(d.match_tier);
+                const isSelected = doctorId === d.id;
+                return (
+                  <button
+                    type="button"
+                    key={d.id}
+                    onClick={() => setDoctorId(d.id)}
+                    className={`w-full text-left rounded-lg border p-3 transition-colors ${isSelected ? "border-primary bg-accent/40" : "border-border hover:bg-muted/40"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                        <AvatarFallback>{d.full_name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium truncate">{d.full_name}</span>
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${tier.cls}`} style={{ color: tier.color }}>
+                            {tier.emoji} {tier.text}
+                          </span>
+                          {d.crm_status === "verified" ? (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-success" title="CRM verificado">
+                              <ShieldCheck className="h-3 w-3" /> CRM ok
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-warning" title="Em análise">
+                              <ShieldQuestion className="h-3 w-3" /> Em análise
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">
+                          {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                          {d.state ? ` · ${d.state}` : ""}
+                          {d.years_experience ? ` · ${d.years_experience}a exp` : ""}
+                        </div>
+                        <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                          <span>★ {d.rating_count > 0 ? d.avg_stars.toFixed(1) : "—"}</span>
+                          <span>· {d.accepted_count} plantões</span>
+                          {d.has_availability && <span className="text-success font-medium">· Disponível</span>}
+                          {d.has_conflict && <span className="text-destructive font-medium">· Conflito</span>}
+                          <span className="ml-auto font-semibold text-foreground">Score {d.match_score}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className="mt-2 flex justify-end">
+                        <button type="button" onClick={(ev) => { ev.stopPropagation(); onViewProfile(d.id); }}
+                          className="text-xs font-medium text-primary hover:underline">
+                          Ver currículo
+                        </button>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
 
@@ -778,24 +882,23 @@ function NewRequestDialog({
             <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input id="v" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" className="pl-8" />
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Opcional. Valor combinado entre rede e médico.</p>
         </div>
 
         <div>
-          <Label htmlFor="n">Observações (opcional)</Label>
-          <Textarea id="n" value={notes} onChange={e => setNotes(e.target.value)} maxLength={500} placeholder="Detalhes do plantão, área, especificidades..." />
+          <Label htmlFor="n">Observações</Label>
+          <Textarea id="n" value={notes} onChange={e => setNotes(e.target.value)} maxLength={500} placeholder="Detalhes do plantão de telemedicina..." />
         </div>
+
         <DialogFooter>
-          <Button type="submit" disabled={submitting} className="w-full sm:w-auto">
-            {submitting ? "Enviando..." : "Enviar solicitação"}
+          <Button type="submit" disabled={submitting || !doctorId} className="w-full sm:w-auto gap-2">
+            <Send className="h-4 w-4" />
+            {submitting ? "Enviando..." : "Convidar médico"}
           </Button>
         </DialogFooter>
       </form>
     </DialogContent>
   );
 }
-
-/* ----------------- REQUEST CARD ----------------- */
 function RequestCard({
   req, viewerType, onAccept, onDecline, onCancel, onChat, onViewProfile, onRate,
 }: {
