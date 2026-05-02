@@ -46,13 +46,20 @@ interface DoctorOption {
   specialty: string;
   crm: string;
   crm_uf: string;
+  crm_status: "verified" | "pending" | "invalid";
   full_name: string;
   avatar_url: string | null;
   city: string | null;
   state: string | null;
+  years_experience: number | null;
   avg_stars: number;
   rating_count: number;
   accepted_count: number;
+  total_count: number;
+  has_availability: boolean;
+  has_conflict: boolean;
+  match_score: number;
+  match_tier: "best" | "high" | "medium" | "low";
 }
 
 function statusBadge(status: ShiftRequest["status"]) {
