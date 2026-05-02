@@ -126,7 +126,7 @@ function DashboardPage() {
           ? <DoctorPanel userId={user.id} />
           : <NetworkPanel userId={user.id} />}
       </main>
-    </div>
+    </AppShell>
   );
 }
 
