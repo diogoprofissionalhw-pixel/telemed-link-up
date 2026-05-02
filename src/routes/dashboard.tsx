@@ -257,7 +257,7 @@ function DoctorPanel({ userId }: { userId: string }) {
         {loading ? (
           <p className="text-muted-foreground">Carregando...</p>
         ) : pending.length === 0 ? (
-          <EmptyState text="Nenhuma solicitação pendente no momento." />
+          <EmptyStateBox icon={Inbox} title="Nenhuma solicitação pendente no momento." />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {pending.map(r => (
@@ -405,7 +405,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       {loading ? (
         <p className="text-muted-foreground">Carregando...</p>
       ) : requests.length === 0 ? (
-        <EmptyState text="Você ainda não enviou solicitações. Crie a primeira!" />
+        <EmptyStateBox icon={Inbox} title="Você ainda não enviou solicitações" description="Crie a primeira clicando em Nova solicitação." />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {requests.map(r => (
@@ -907,14 +907,6 @@ function RequestCard({
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function EmptyState({ text }: { text: string }) {
-  return (
-    <div className="rounded-2xl border border-dashed bg-card/50 p-10 text-center text-sm text-muted-foreground">
-      {text}
     </div>
   );
 }
