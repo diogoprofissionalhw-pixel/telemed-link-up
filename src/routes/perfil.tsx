@@ -148,6 +148,34 @@ function CvUploader({
 }
 
 /* ----------------- DOCTOR PROFILE FORM ----------------- */
+const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+
+function validateCrmFormat(crm: string, uf: string): boolean {
+  return /^[0-9]{4,7}$/.test(crm.trim()) && /^[A-Z]{2}$/.test(uf.trim().toUpperCase());
+}
+
+function CrmStatusBadge({ status }: { status: "verified" | "pending" | "invalid" }) {
+  if (status === "verified") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium" style={{ color: "oklch(0.40 0.14 150)" }}>
+        <ShieldCheck className="h-3.5 w-3.5" /> CRM verificado
+      </span>
+    );
+  }
+  if (status === "invalid") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2.5 py-1 text-xs font-medium" style={{ color: "oklch(0.50 0.20 25)" }}>
+        <ShieldAlert className="h-3.5 w-3.5" /> CRM inválido
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-medium" style={{ color: "oklch(0.45 0.12 60)" }}>
+      <ShieldQuestion className="h-3.5 w-3.5" /> Em análise
+    </span>
+  );
+}
+
 function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; fullName: string; onSaved: () => void }) {
   const [name, setName] = useState(fullName);
   const [bio, setBio] = useState("");
@@ -162,6 +190,10 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [country, setCountry] = useState("Brasil");
+  const [crm, setCrm] = useState("");
+  const [crmUf, setCrmUf] = useState("");
+  const [crmStatus, setCrmStatus] = useState<"verified" | "pending" | "invalid">("pending");
+  const [specialty, setSpecialty] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -169,10 +201,14 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
     (async () => {
       const { data } = await supabase
         .from("doctors")
-        .select("bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country")
+        .select("specialty, crm, crm_uf, crm_status, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country")
         .eq("id", userId)
         .maybeSingle();
       if (data) {
+        setSpecialty(data.specialty ?? "");
+        setCrm(data.crm ?? "");
+        setCrmUf(data.crm_uf ?? "");
+        setCrmStatus(((data as any).crm_status ?? "pending") as "verified" | "pending" | "invalid");
         setBio(data.bio ?? "");
         setYears(data.years_experience?.toString() ?? "");
         setEducation(data.education ?? "");
@@ -190,15 +226,22 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
     })();
   }, [userId]);
 
+  const crmFormatOk = validateCrmFormat(crm, crmUf);
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Informe seu nome");
+    if (!specialty.trim()) return toast.error("Informe sua especialidade");
+    if (!crmFormatOk) return toast.error("CRM inválido — use 4 a 7 dígitos e UF com 2 letras");
     setSaving(true);
     const yearsNum = years.trim() ? parseInt(years, 10) : null;
 
     const [{ error: pErr }, { error: dErr }] = await Promise.all([
       supabase.from("profiles").update({ full_name: name.trim() }).eq("id", userId),
       supabase.from("doctors").update({
+        specialty: specialty.trim(),
+        crm: crm.trim(),
+        crm_uf: crmUf.trim().toUpperCase(),
         bio: bio.trim() || null,
         years_experience: yearsNum && !isNaN(yearsNum) ? yearsNum : null,
         education: education.trim() || null,
@@ -213,8 +256,12 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
         country: country.trim() || null,
       }).eq("id", userId),
     ]);
+    if (pErr || dErr) { setSaving(false); return toast.error((pErr ?? dErr)!.message); }
+
+    // Reler status atualizado pelo trigger
+    const { data: updated } = await supabase.from("doctors").select("crm_status").eq("id", userId).maybeSingle();
+    if (updated) setCrmStatus(((updated as any).crm_status ?? "pending") as "verified" | "pending" | "invalid");
     setSaving(false);
-    if (pErr || dErr) return toast.error((pErr ?? dErr)!.message);
     toast.success("Perfil atualizado!");
     onSaved();
   };
@@ -223,12 +270,52 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
 
   return (
     <form onSubmit={save} className="space-y-6 rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-      <AvatarUploader userId={userId} url={avatar} fallback={name} icon={Stethoscope} onChange={setAvatar} />
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <AvatarUploader userId={userId} url={avatar} fallback={name} icon={Stethoscope} onChange={setAvatar} />
+        <CrmStatusBadge status={crmStatus} />
+      </div>
 
       <div>
         <Label htmlFor="name">Nome completo</Label>
         <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="sm:col-span-1">
+          <Label htmlFor="spec">Especialidade *</Label>
+          <Input id="spec" value={specialty} maxLength={80} onChange={e => setSpecialty(e.target.value)} placeholder="Ex: Cardiologia" required />
+        </div>
+        <div>
+          <Label htmlFor="crm">CRM *</Label>
+          <Input
+            id="crm"
+            value={crm}
+            maxLength={7}
+            onChange={(e) => setCrm(e.target.value.replace(/\D/g, ""))}
+            placeholder="123456"
+            required
+            aria-invalid={crm.length > 0 && !/^[0-9]{4,7}$/.test(crm)}
+          />
+        </div>
+        <div>
+          <Label htmlFor="crmuf">UF do CRM *</Label>
+          <select
+            id="crmuf"
+            value={crmUf}
+            onChange={(e) => setCrmUf(e.target.value)}
+            required
+            className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">UF</option>
+            {UFS.map(u => <option key={u} value={u}>{u}</option>)}
+          </select>
+        </div>
+      </div>
+      {!crmFormatOk && (crm || crmUf) && (
+        <p className="text-xs text-destructive -mt-3">
+          Formato inválido. CRM deve conter 4 a 7 dígitos e UF deve ser uma sigla de 2 letras.
+        </p>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
@@ -283,6 +370,13 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
       </div>
 
       <CvUploader userId={userId} url={cv} onChange={setCv} />
+
+      {crmStatus === "invalid" && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+          Seu CRM está marcado como inválido. Enquanto isso, você não aparece nas buscas nem recebe convites.
+          Corrija os dados acima para reativar seu perfil.
+        </div>
+      )}
 
       <Button type="submit" disabled={saving} className="w-full sm:w-auto">
         {saving ? "Salvando..." : "Salvar perfil"}
