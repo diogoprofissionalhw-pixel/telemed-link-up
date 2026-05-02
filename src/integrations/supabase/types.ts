@@ -57,6 +57,7 @@ export type Database = {
           cpf: string | null
           created_at: string
           crm: string
+          crm_status: Database["public"]["Enums"]["crm_status"]
           crm_uf: string
           cv_pdf_url: string | null
           education: string | null
@@ -76,6 +77,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           crm: string
+          crm_status?: Database["public"]["Enums"]["crm_status"]
           crm_uf: string
           cv_pdf_url?: string | null
           education?: string | null
@@ -95,6 +97,7 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           crm?: string
+          crm_status?: Database["public"]["Enums"]["crm_status"]
           crm_uf?: string
           cv_pdf_url?: string | null
           education?: string | null
@@ -362,6 +365,7 @@ export type Database = {
     }
     Enums: {
       account_type: "doctor" | "network"
+      crm_status: "verified" | "pending" | "invalid"
       request_status:
         | "pending"
         | "accepted"
@@ -497,6 +501,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["doctor", "network"],
+      crm_status: ["verified", "pending", "invalid"],
       request_status: [
         "pending",
         "accepted",
