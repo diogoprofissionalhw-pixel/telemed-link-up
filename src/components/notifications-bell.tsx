@@ -29,13 +29,17 @@ export function NotificationsBell({ userId }: { userId: string }) {
 
   useEffect(() => {
     load();
-    const channel = supabase
-      .channel(`notif-${userId}`)
-      .on("postgres_changes",
+    const channel = supabase.channel(`notif-${userId}-${Math.random().toString(36).slice(2)}`);
+    channel
+      .on(
+        "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        () => load())
+        () => load(),
+      )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId, load]);
 
   const unread = items.filter((n) => !n.read_at).length;
