@@ -21,22 +21,22 @@ interface MenuItem {
 
 const DOCTOR_MENU: MenuItem[] = [
   { label: "Dashboard",     icon: Home,        to: "/dashboard" },
-  { label: "Solicitações",  icon: Inbox,       to: "/dashboard", hash: "solicitacoes" },
-  { label: "Consultas",     icon: Stethoscope, to: "/dashboard", hash: "consultas" },
-  { label: "Agenda",        icon: Calendar,    to: "/dashboard", hash: "agenda" },
-  { label: "Histórico",     icon: Clock,       to: "/dashboard", hash: "historico" },
-  { label: "Perfil",        icon: User,        to: "/profile" },
-  { label: "Configurações", icon: Settings,    to: "/profile",   hash: "config" },
+  { label: "Solicitações",  icon: Inbox,       to: "/solicitacoes" },
+  { label: "Consultas",     icon: Stethoscope, to: "/consultas" },
+  { label: "Agenda",        icon: Calendar,    to: "/agenda" },
+  { label: "Histórico",     icon: Clock,       to: "/historico" },
+  { label: "Perfil",        icon: User,        to: "/perfil" },
+  { label: "Configurações", icon: Settings,    to: "/configuracoes" },
 ];
 
 const NETWORK_MENU: MenuItem[] = [
   { label: "Dashboard",         icon: Home,       to: "/dashboard" },
-  { label: "Médicos",           icon: Users,      to: "/dashboard", hash: "medicos" },
-  { label: "Solicitações",      icon: Inbox,      to: "/dashboard", hash: "solicitacoes" },
-  { label: "Contratações",      icon: Briefcase,  to: "/dashboard", hash: "contratacoes" },
-  { label: "Relatórios",        icon: BarChart3,  to: "/dashboard", hash: "relatorios" },
-  { label: "Perfil da empresa", icon: Building2,  to: "/profile" },
-  { label: "Configurações",     icon: Settings,   to: "/profile",   hash: "config" },
+  { label: "Médicos",           icon: Users,      to: "/medicos" },
+  { label: "Solicitações",      icon: Inbox,      to: "/solicitacoes" },
+  { label: "Contratações",      icon: Briefcase,  to: "/contratacoes" },
+  { label: "Relatórios",        icon: BarChart3,  to: "/relatorios" },
+  { label: "Perfil da empresa", icon: Building2,  to: "/perfil-empresa" },
+  { label: "Configurações",     icon: Settings,   to: "/configuracoes" },
 ];
 
 interface SidebarItemProps {
