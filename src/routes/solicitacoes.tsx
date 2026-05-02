@@ -267,7 +267,7 @@ function SolicitacoesPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!cancelTarget} onOpenChange={(v) => !v && (setCancelTarget(null), setCancelReason(""))}>
+      <AlertDialog open={!!cancelTarget} onOpenChange={(v) => { if (!v) { setCancelTarget(null); setCancelReason(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar solicitação</AlertDialogTitle>
