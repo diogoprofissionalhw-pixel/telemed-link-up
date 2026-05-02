@@ -70,7 +70,7 @@ export function SidebarDoctorMenu({ activeKey, onNavigate }: { activeKey: string
   return (
     <nav className="flex flex-col gap-1">
       {DOCTOR_MENU.map((item) => (
-        <SidebarItem key={item.label} item={item} active={activeKey === `${item.to}#${item.hash ?? ""}`} onNavigate={onNavigate} />
+        <SidebarItem key={item.label} item={item} active={activeKey === item.to} onNavigate={onNavigate} />
       ))}
     </nav>
   );
@@ -80,7 +80,7 @@ export function SidebarNetworkMenu({ activeKey, onNavigate }: { activeKey: strin
   return (
     <nav className="flex flex-col gap-1">
       {NETWORK_MENU.map((item) => (
-        <SidebarItem key={item.label} item={item} active={activeKey === `${item.to}#${item.hash ?? ""}`} onNavigate={onNavigate} />
+        <SidebarItem key={item.label} item={item} active={activeKey === item.to} onNavigate={onNavigate} />
       ))}
     </nav>
   );
@@ -89,8 +89,8 @@ export function SidebarNetworkMenu({ activeKey, onNavigate }: { activeKey: strin
 export function AppSidebar({ userType }: { userType: UserType }) {
   const { user, profile, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { pathname, hash } = useRouterState({ select: (s) => s.location });
-  const activeKey = `${pathname}#${hash ?? ""}`;
+  const { pathname } = useRouterState({ select: (s) => s.location });
+  const activeKey = pathname;
 
   const close = () => setMobileOpen(false);
 
