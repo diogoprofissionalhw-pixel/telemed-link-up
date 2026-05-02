@@ -21,22 +21,22 @@ interface MenuItem {
 
 const DOCTOR_MENU: MenuItem[] = [
   { label: "Dashboard",     icon: Home,        to: "/dashboard" },
-  { label: "Solicitações",  icon: Inbox,       to: "/dashboard", hash: "solicitacoes" },
-  { label: "Consultas",     icon: Stethoscope, to: "/dashboard", hash: "consultas" },
-  { label: "Agenda",        icon: Calendar,    to: "/dashboard", hash: "agenda" },
-  { label: "Histórico",     icon: Clock,       to: "/dashboard", hash: "historico" },
-  { label: "Perfil",        icon: User,        to: "/profile" },
-  { label: "Configurações", icon: Settings,    to: "/profile",   hash: "config" },
+  { label: "Solicitações",  icon: Inbox,       to: "/solicitacoes" },
+  { label: "Consultas",     icon: Stethoscope, to: "/consultas" },
+  { label: "Agenda",        icon: Calendar,    to: "/agenda" },
+  { label: "Histórico",     icon: Clock,       to: "/historico" },
+  { label: "Perfil",        icon: User,        to: "/perfil" },
+  { label: "Configurações", icon: Settings,    to: "/configuracoes" },
 ];
 
 const NETWORK_MENU: MenuItem[] = [
   { label: "Dashboard",         icon: Home,       to: "/dashboard" },
-  { label: "Médicos",           icon: Users,      to: "/dashboard", hash: "medicos" },
-  { label: "Solicitações",      icon: Inbox,      to: "/dashboard", hash: "solicitacoes" },
-  { label: "Contratações",      icon: Briefcase,  to: "/dashboard", hash: "contratacoes" },
-  { label: "Relatórios",        icon: BarChart3,  to: "/dashboard", hash: "relatorios" },
-  { label: "Perfil da empresa", icon: Building2,  to: "/profile" },
-  { label: "Configurações",     icon: Settings,   to: "/profile",   hash: "config" },
+  { label: "Médicos",           icon: Users,      to: "/medicos" },
+  { label: "Solicitações",      icon: Inbox,      to: "/solicitacoes" },
+  { label: "Contratações",      icon: Briefcase,  to: "/contratacoes" },
+  { label: "Relatórios",        icon: BarChart3,  to: "/relatorios" },
+  { label: "Perfil da empresa", icon: Building2,  to: "/perfil-empresa" },
+  { label: "Configurações",     icon: Settings,   to: "/configuracoes" },
 ];
 
 interface SidebarItemProps {
@@ -70,7 +70,7 @@ export function SidebarDoctorMenu({ activeKey, onNavigate }: { activeKey: string
   return (
     <nav className="flex flex-col gap-1">
       {DOCTOR_MENU.map((item) => (
-        <SidebarItem key={item.label} item={item} active={activeKey === `${item.to}#${item.hash ?? ""}`} onNavigate={onNavigate} />
+        <SidebarItem key={item.label} item={item} active={activeKey === item.to} onNavigate={onNavigate} />
       ))}
     </nav>
   );
@@ -80,7 +80,7 @@ export function SidebarNetworkMenu({ activeKey, onNavigate }: { activeKey: strin
   return (
     <nav className="flex flex-col gap-1">
       {NETWORK_MENU.map((item) => (
-        <SidebarItem key={item.label} item={item} active={activeKey === `${item.to}#${item.hash ?? ""}`} onNavigate={onNavigate} />
+        <SidebarItem key={item.label} item={item} active={activeKey === item.to} onNavigate={onNavigate} />
       ))}
     </nav>
   );
@@ -89,8 +89,8 @@ export function SidebarNetworkMenu({ activeKey, onNavigate }: { activeKey: strin
 export function AppSidebar({ userType }: { userType: UserType }) {
   const { user, profile, signOut } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { pathname, hash } = useRouterState({ select: (s) => s.location });
-  const activeKey = `${pathname}#${hash ?? ""}`;
+  const { pathname } = useRouterState({ select: (s) => s.location });
+  const activeKey = pathname;
 
   const close = () => setMobileOpen(false);
 
