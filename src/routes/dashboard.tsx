@@ -92,43 +92,92 @@ function calcHours(start: string, end: string): number {
 }
 
 function DashboardPage() {
-  const { user, profile, loading } = useAuth();
-  const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const isDoctor = profile?.account_type === "doctor";
+
+  return (
+    <DashboardLayout
+      title={profile ? `Olá, ${profile.full_name.split(" ")[0]}` : "Dashboard"}
+      subtitle={isDoctor ? "Resumo do seu painel médico." : "Resumo da sua rede."}
+      breadcrumbs={[{ label: "Dashboard" }]}
+    >
+      {user && profile && (
+        <>
+          <DashboardStats userId={user.id} userType={profile.account_type} />
+          <div className="mt-8">
+            {profile.account_type === "doctor"
+              ? <DoctorPanel userId={user.id} />
+              : <NetworkPanel userId={user.id} />}
+          </div>
+        </>
+      )}
+    </DashboardLayout>
+  );
+}
+
+/* ----------------- DASHBOARD STATS ----------------- */
+function DashboardStats({ userId, userType }: { userId: string; userType: "doctor" | "network" }) {
+  const [stats, setStats] = useState({ total: 0, monthCompleted: 0, todayUpcoming: 0, avgRating: 0, ratingCount: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
-  }, [user, loading, navigate]);
+    (async () => {
+      setLoading(true);
+      const filter = userType === "doctor" ? "doctor_id" : "network_id";
+      const today = new Date().toISOString().slice(0, 10);
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
 
-  if (loading || !user || !profile) {
+      const [{ count: total }, { count: monthCompleted }, { count: todayUpcoming }] = await Promise.all([
+        supabase.from("shift_requests").select("*", { count: "exact", head: true }).eq(filter, userId),
+        supabase.from("shift_requests").select("*", { count: "exact", head: true }).eq(filter, userId).eq("status", "completed").gte("shift_date", monthStart),
+        supabase.from("shift_requests").select("*", { count: "exact", head: true }).eq(filter, userId).eq("status", "accepted").eq("shift_date", today),
+      ]);
+
+      let avgRating = 0;
+      let ratingCount = 0;
+      if (userType === "doctor") {
+        const { data: r } = await supabase.from("ratings").select("stars").eq("doctor_id", userId);
+        if (r && r.length > 0) {
+          ratingCount = r.length;
+          avgRating = r.reduce((a, b) => a + b.stars, 0) / r.length;
+        }
+      }
+
+      setStats({
+        total: total ?? 0,
+        monthCompleted: monthCompleted ?? 0,
+        todayUpcoming: todayUpcoming ?? 0,
+        avgRating,
+        ratingCount,
+      });
+      setLoading(false);
+    })();
+  }, [userId, userType]);
+
+  if (userType === "doctor") {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 text-muted-foreground">Carregando...</div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatsCard label="Solicitações" value={stats.total} icon={Inbox} loading={loading} hint="Total recebido" />
+        <StatsCard label="Realizadas no mês" value={stats.monthCompleted} icon={CalendarCheck} loading={loading} />
+        <StatsCard label="Hoje" value={stats.todayUpcoming} icon={Calendar} loading={loading} hint="Plantões agendados" />
+        <StatsCard
+          label="Avaliação"
+          value={stats.ratingCount > 0 ? `${stats.avgRating.toFixed(1)} ★` : "—"}
+          icon={Star}
+          loading={loading}
+          hint={stats.ratingCount > 0 ? `${stats.ratingCount} ${stats.ratingCount === 1 ? "avaliação" : "avaliações"}` : "Sem avaliações"}
+        />
       </div>
     );
   }
 
   return (
-    <AppShell userType={profile.account_type}>
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent">
-            {profile.account_type === "doctor"
-              ? <Stethoscope className="h-6 w-6 text-primary" />
-              : <Building2 className="h-6 w-6 text-primary" />}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">
-              {profile.account_type === "doctor" ? "Painel do médico" : "Painel da rede"}
-            </p>
-            <h1 className="text-2xl font-bold">Olá, {profile.full_name}</h1>
-          </div>
-        </div>
-
-        {profile.account_type === "doctor"
-          ? <DoctorPanel userId={user.id} />
-          : <NetworkPanel userId={user.id} />}
-      </main>
-    </AppShell>
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatsCard label="Solicitações" value={stats.total} icon={Inbox} loading={loading} hint="Total enviado" />
+      <StatsCard label="Realizadas no mês" value={stats.monthCompleted} icon={CalendarCheck} loading={loading} />
+      <StatsCard label="Hoje" value={stats.todayUpcoming} icon={Calendar} loading={loading} hint="Plantões agendados" />
+      <StatsCard label="Contratações ativas" value={stats.todayUpcoming + stats.monthCompleted} icon={Briefcase} loading={loading} hint="Aceitas + concluídas" />
+    </div>
   );
 }
 
