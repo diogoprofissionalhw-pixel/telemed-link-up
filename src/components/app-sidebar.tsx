@@ -96,9 +96,9 @@ export function AppSidebar({ userType }: { userType: UserType }) {
 
   const SidebarContent = (
     <>
-      <div className="flex items-center justify-between border-b px-5 py-4">
-        <Link to="/" onClick={close} className="flex items-center" aria-label="Connect-Med">
-          <img src={logo} alt="Connect-Med" className="h-9 w-auto" />
+      <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
+        <Link to="/" onClick={close} className="flex min-w-0 flex-1 items-center" aria-label="Connect-Med">
+          <img src={logo} alt="Connect-Med" className="h-14 w-auto max-w-full object-contain" />
         </Link>
         <button
           className="rounded-md p-1 text-muted-foreground hover:bg-muted md:hidden"
