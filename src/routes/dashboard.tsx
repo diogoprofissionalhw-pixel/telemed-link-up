@@ -1,10 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter, Inbox, CalendarCheck, Briefcase, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { AppShell } from "@/components/app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,9 @@ import { ChatDialog } from "@/components/chat-dialog";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
 import { RatingDialog } from "@/components/rating-dialog";
 import { StarRating } from "@/components/star-rating";
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
