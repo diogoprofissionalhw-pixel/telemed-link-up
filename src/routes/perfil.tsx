@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink } from "lucide-react";
+import { Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
