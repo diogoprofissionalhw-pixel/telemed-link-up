@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { BarChart3, TrendingUp, CalendarCheck, DollarSign } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
@@ -114,17 +114,31 @@ function RelatoriosPage() {
       ) : (
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <div className="rounded-lg border bg-card p-5">
-            <h3 className="mb-4 font-semibold">Plantões concluídos por mês</h3>
+            <h3 className="mb-4 font-semibold">Tendência de plantões concluídos por mês</h3>
             {monthlyData.length === 0 ? (
               <p className="py-12 text-center text-sm text-muted-foreground">Sem plantões concluídos ainda.</p>
             ) : (
               <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={monthlyData}>
+                <LineChart data={monthlyData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <defs>
+                    <marker id="arrow-end" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--primary)" />
+                    </marker>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis dataKey="month" tickLine={false} axisLine={false} />
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{ fill: "var(--muted)" }} />
-                  <Bar dataKey="count" fill="var(--primary)" radius={[6, 6, 0, 0]} />
-                </BarChart>
+                  <Tooltip cursor={{ stroke: "var(--primary)", strokeWidth: 1 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, fill: "var(--primary)" }}
+                    activeDot={{ r: 6 }}
+                    markerEnd="url(#arrow-end)"
+                  />
+                </LineChart>
               </ResponsiveContainer>
             )}
           </div>
