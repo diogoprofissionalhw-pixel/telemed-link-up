@@ -138,7 +138,7 @@ export function AppSidebar({ userType }: { userType: UserType }) {
           <Menu className="h-5 w-5" />
         </button>
         <Link to="/" className="flex items-center" aria-label="Connect-Med">
-          <img src={logo} alt="Connect-Med" className="h-8 w-auto" />
+          <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
         <div>{user && <NotificationsBell userId={user.id} />}</div>
       </div>
