@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock } from "lucide-react";
+import { Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock, Mail, MapPin, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
@@ -47,14 +47,14 @@ function LandingPage() {
           </div>
 
           {/* Mock card visual */}
-          <div className="relative">
+          <div className="relative group">
             <div
-              className="rounded-3xl border bg-card p-6 shadow-xl"
+              className="rounded-3xl border bg-card p-6 shadow-xl transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
               style={{ boxShadow: "var(--shadow-elegant)" }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent transition-transform group-hover:scale-110">
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
                   <div>
@@ -62,7 +62,8 @@ function LandingPage() {
                     <p className="text-xs text-muted-foreground">Solicitou um plantão</p>
                   </div>
                 </div>
-                <span className="rounded-full bg-warning/15 px-3 py-1 text-xs font-medium text-warning-foreground" style={{ color: "oklch(0.45 0.12 60)" }}>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-3 py-1 text-xs font-medium" style={{ color: "oklch(0.45 0.12 60)" }}>
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
                   Pendente
                 </span>
               </div>
@@ -85,11 +86,11 @@ function LandingPage() {
                 </div>
               </div>
               <div className="mt-5 flex gap-2">
-                <Button className="flex-1 bg-success text-success-foreground hover:bg-success/90">Aceitar</Button>
-                <Button variant="outline" className="flex-1">Recusar</Button>
+                <Button className="flex-1 bg-success text-success-foreground transition-transform hover:scale-[1.02] hover:bg-success/90">Aceitar</Button>
+                <Button variant="outline" className="flex-1 transition-transform hover:scale-[1.02]">Recusar</Button>
               </div>
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden rounded-2xl border bg-card p-4 shadow-lg sm:block">
+            <div className="absolute -bottom-6 -left-6 hidden rounded-2xl border bg-card p-4 shadow-lg sm:block animate-in fade-in slide-in-from-bottom-2 duration-700">
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <span className="font-medium">Aceito por Dr. Silva</span>
@@ -135,8 +136,46 @@ function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} Connect-Med · Plataforma de plantões de telemedicina
+      <footer className="border-t bg-card/40">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <img src={logo} alt="Connect-Med" className="h-10 w-auto" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Plataforma para conectar médicos e redes de telemedicina com agilidade e segurança.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Plataforma</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li><Link to="/auth" search={{ mode: "signup" }} className="hover:text-foreground">Cadastre-se</Link></li>
+              <li><Link to="/auth" search={{ mode: "signin" }} className="hover:text-foreground">Entrar</Link></li>
+              <li><Link to="/dashboard" className="hover:text-foreground">Painel</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Legal</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li><a href="#" className="hover:text-foreground">Termos de Uso</a></li>
+              <li><a href="#" className="hover:text-foreground">Política de Privacidade</a></li>
+              <li><a href="#" className="hover:text-foreground">LGPD</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold">Contato</h3>
+            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> contato@connect-med.com.br</li>
+              <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> São Paulo, SP — Brasil</li>
+            </ul>
+            <div className="mt-4 flex gap-3">
+              <a href="#" aria-label="LinkedIn" className="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><Linkedin className="h-4 w-4" /></a>
+              <a href="#" aria-label="Instagram" className="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><Instagram className="h-4 w-4" /></a>
+              <a href="#" aria-label="Facebook" className="rounded-md border p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"><Facebook className="h-4 w-4" /></a>
+            </div>
+          </div>
+        </div>
+        <div className="border-t py-5 text-center text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Connect-Med · Todos os direitos reservados
+        </div>
       </footer>
     </div>
   );

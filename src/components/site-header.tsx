@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, UserCircle2 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import { useEffect, useState } from "react";
@@ -11,6 +11,8 @@ import { NotificationsBell } from "@/components/notifications-bell";
 export function SiteHeader() {
   const { user, profile, signOut } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const location = useLocation();
+  const onAuthPage = location.pathname.startsWith("/auth");
 
   useEffect(() => {
     if (!user || !profile) { setAvatarUrl(null); return; }
@@ -47,7 +49,7 @@ export function SiteHeader() {
                 <span className="hidden sm:inline">Sair</span>
               </Button>
             </>
-          ) : (
+          ) : onAuthPage ? null : (
             <>
               <Link to="/auth" search={{ mode: "signin" }}><Button variant="ghost" size="sm">Entrar</Button></Link>
               <Link to="/auth" search={{ mode: "signup" }}>
