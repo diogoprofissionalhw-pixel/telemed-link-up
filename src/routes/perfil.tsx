@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { DoctorPortfolio } from "@/components/doctor-portfolio";
 
 export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
@@ -381,6 +382,12 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
       <Button type="submit" disabled={saving} className="w-full sm:w-auto">
         {saving ? "Salvando..." : "Salvar perfil"}
       </Button>
+
+      <div className="border-t pt-6">
+        <h2 className="mb-4 text-lg font-semibold">Portfólio profissional</h2>
+        <p className="mb-4 text-sm text-muted-foreground">Certificações, cursos, publicações e histórico de plantões na plataforma.</p>
+        <DoctorPortfolio doctorId={userId} editable />
+      </div>
     </form>
   );
 }
