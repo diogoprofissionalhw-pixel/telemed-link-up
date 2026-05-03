@@ -49,7 +49,7 @@ export function SiteHeader() {
                 <span className="hidden sm:inline">Sair</span>
               </Button>
             </>
-          ) : (
+          ) : onAuthPage ? null : (
             <>
               <Link to="/auth" search={{ mode: "signin" }}><Button variant="ghost" size="sm">Entrar</Button></Link>
               <Link to="/auth" search={{ mode: "signup" }}>
