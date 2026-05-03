@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock } from "lucide-react";
+import { Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock, Mail, MapPin, Linkedin, Instagram, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
