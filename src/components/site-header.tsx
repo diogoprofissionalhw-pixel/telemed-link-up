@@ -11,6 +11,8 @@ import { NotificationsBell } from "@/components/notifications-bell";
 export function SiteHeader() {
   const { user, profile, signOut } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const location = useLocation();
+  const onAuthPage = location.pathname.startsWith("/auth");
 
   useEffect(() => {
     if (!user || !profile) { setAvatarUrl(null); return; }
