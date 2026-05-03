@@ -399,6 +399,8 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
+      <NetworkAnalytics networkId={userId} />
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Suas solicitações</h2>
         <Dialog open={open} onOpenChange={setOpen}>
