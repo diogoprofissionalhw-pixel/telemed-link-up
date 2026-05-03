@@ -47,14 +47,14 @@ function LandingPage() {
           </div>
 
           {/* Mock card visual */}
-          <div className="relative">
+          <div className="relative group">
             <div
-              className="rounded-3xl border bg-card p-6 shadow-xl"
+              className="rounded-3xl border bg-card p-6 shadow-xl transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
               style={{ boxShadow: "var(--shadow-elegant)" }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent transition-transform group-hover:scale-110">
                     <Building2 className="h-5 w-5 text-primary" />
                   </div>
                   <div>
@@ -62,7 +62,8 @@ function LandingPage() {
                     <p className="text-xs text-muted-foreground">Solicitou um plantão</p>
                   </div>
                 </div>
-                <span className="rounded-full bg-warning/15 px-3 py-1 text-xs font-medium text-warning-foreground" style={{ color: "oklch(0.45 0.12 60)" }}>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-3 py-1 text-xs font-medium" style={{ color: "oklch(0.45 0.12 60)" }}>
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />
                   Pendente
                 </span>
               </div>
@@ -85,11 +86,11 @@ function LandingPage() {
                 </div>
               </div>
               <div className="mt-5 flex gap-2">
-                <Button className="flex-1 bg-success text-success-foreground hover:bg-success/90">Aceitar</Button>
-                <Button variant="outline" className="flex-1">Recusar</Button>
+                <Button className="flex-1 bg-success text-success-foreground transition-transform hover:scale-[1.02] hover:bg-success/90">Aceitar</Button>
+                <Button variant="outline" className="flex-1 transition-transform hover:scale-[1.02]">Recusar</Button>
               </div>
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden rounded-2xl border bg-card p-4 shadow-lg sm:block">
+            <div className="absolute -bottom-6 -left-6 hidden rounded-2xl border bg-card p-4 shadow-lg sm:block animate-in fade-in slide-in-from-bottom-2 duration-700">
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="h-5 w-5 text-success" />
                 <span className="font-medium">Aceito por Dr. Silva</span>
