@@ -19,6 +19,8 @@ import { StarRating } from "@/components/star-rating";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
+import { ReputationSummary } from "@/components/reputation-summary";
+import { NetworkAnalytics } from "@/components/network-analytics";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -258,6 +260,8 @@ function DoctorPanel({ userId }: { userId: string }) {
           </Button>
         </Link>
       </div>
+
+      <ReputationSummary doctorId={userId} />
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">Solicitações pendentes ({pending.length})</h2>
