@@ -47,6 +47,96 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_certifications: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          issued_year: number | null
+          issuer: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          issued_year?: number | null
+          issuer?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          issued_year?: number | null
+          issuer?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      doctor_courses: {
+        Row: {
+          completed_year: number | null
+          created_at: string
+          doctor_id: string
+          hours: number | null
+          id: string
+          institution: string | null
+          title: string
+        }
+        Insert: {
+          completed_year?: number | null
+          created_at?: string
+          doctor_id: string
+          hours?: number | null
+          id?: string
+          institution?: string | null
+          title: string
+        }
+        Update: {
+          completed_year?: number | null
+          created_at?: string
+          doctor_id?: string
+          hours?: number | null
+          id?: string
+          institution?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      doctor_publications: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          journal: string | null
+          title: string
+          url: string | null
+          year: number | null
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          journal?: string | null
+          title: string
+          url?: string | null
+          year?: number | null
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          journal?: string | null
+          title?: string
+          url?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
       doctors: {
         Row: {
           avatar_url: string | null
@@ -156,6 +246,42 @@ export type Database = {
           },
         ]
       }
+      network_doctor_tags: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          is_blocked: boolean
+          is_favorite: boolean
+          network_id: string
+          notes: string | null
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          is_blocked?: boolean
+          is_favorite?: boolean
+          network_id: string
+          notes?: string | null
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          is_blocked?: boolean
+          is_favorite?: boolean
+          network_id?: string
+          notes?: string | null
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       networks: {
         Row: {
           avatar_url: string | null
@@ -247,29 +373,38 @@ export type Database = {
       }
       ratings: {
         Row: {
+          care_quality: number | null
           comment: string | null
+          communication: number | null
           created_at: string
           doctor_id: string
           id: string
           network_id: string
+          punctuality: number | null
           request_id: string
           stars: number
         }
         Insert: {
+          care_quality?: number | null
           comment?: string | null
+          communication?: number | null
           created_at?: string
           doctor_id: string
           id?: string
           network_id: string
+          punctuality?: number | null
           request_id: string
           stars: number
         }
         Update: {
+          care_quality?: number | null
           comment?: string | null
+          communication?: number | null
           created_at?: string
           doctor_id?: string
           id?: string
           network_id?: string
+          punctuality?: number | null
           request_id?: string
           stars?: number
         }

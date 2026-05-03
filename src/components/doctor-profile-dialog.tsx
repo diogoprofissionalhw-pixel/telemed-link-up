@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/star-rating";
+import { DoctorPortfolio } from "@/components/doctor-portfolio";
 
 interface DoctorFull {
   id: string;
@@ -153,6 +154,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={BadgeCheck} label="Certificações">{doctor.certifications || "—"}</CvRow>
               <CvRow icon={Languages} label="Idiomas">{doctor.languages || "—"}</CvRow>
               <CvRow icon={FileText} label="Bio">{doctor.bio || "—"}</CvRow>
+            </div>
+
+            <div>
+              <h4 className="mb-2 text-sm font-semibold">Portfólio</h4>
+              <DoctorPortfolio doctorId={doctor.id} editable={false} />
             </div>
 
             <div>

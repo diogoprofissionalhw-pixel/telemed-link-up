@@ -19,6 +19,8 @@ import { StarRating } from "@/components/star-rating";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
+import { ReputationSummary } from "@/components/reputation-summary";
+import { NetworkAnalytics } from "@/components/network-analytics";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -259,6 +261,8 @@ function DoctorPanel({ userId }: { userId: string }) {
         </Link>
       </div>
 
+      <ReputationSummary doctorId={userId} />
+
       <section>
         <h2 className="mb-3 text-lg font-semibold">Solicitações pendentes ({pending.length})</h2>
         {loading ? (
@@ -395,6 +399,8 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6">
+      <NetworkAnalytics networkId={userId} />
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Suas solicitações</h2>
         <Dialog open={open} onOpenChange={setOpen}>
