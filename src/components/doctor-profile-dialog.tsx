@@ -157,6 +157,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={FileText} label="Bio">{doctor.bio || "—"}</CvRow>
             </div>
 
+            <NetworkDoctorTagPanel doctorId={doctor.id} />
+
             <div>
               <h4 className="mb-2 text-sm font-semibold">Portfólio</h4>
               <DoctorPortfolio doctorId={doctor.id} editable={false} />
