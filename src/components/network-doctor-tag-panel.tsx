@@ -16,7 +16,8 @@ interface Row {
 }
 
 export function NetworkDoctorTagPanel({ doctorId }: { doctorId: string }) {
-  const { user, userType } = useAuth();
+  const { user, profile } = useAuth();
+  const userType = profile?.account_type;
   const [row, setRow] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [newTag, setNewTag] = useState("");
