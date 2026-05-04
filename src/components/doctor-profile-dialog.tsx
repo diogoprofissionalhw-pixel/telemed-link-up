@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
+import { NetworkDoctorTagPanel } from "@/components/network-doctor-tag-panel";
 
 interface DoctorFull {
   id: string;
@@ -155,6 +156,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={Languages} label="Idiomas">{doctor.languages || "—"}</CvRow>
               <CvRow icon={FileText} label="Bio">{doctor.bio || "—"}</CvRow>
             </div>
+
+            <NetworkDoctorTagPanel doctorId={doctor.id} />
 
             <div>
               <h4 className="mb-2 text-sm font-semibold">Portfólio</h4>
