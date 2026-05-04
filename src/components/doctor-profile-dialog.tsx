@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
+import { NetworkDoctorTagPanel } from "@/components/network-doctor-tag-panel";
 
 interface DoctorFull {
   id: string;
