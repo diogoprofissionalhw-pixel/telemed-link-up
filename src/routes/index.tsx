@@ -287,7 +287,7 @@ function FinalCTA() {
             </Button>
           </Link>
           <Link to="/auth" search={{ mode: "signup" }}>
-            <Button size="lg" variant="outline" className="gap-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
+            <Button size="lg" variant="outline" className="gap-2 border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary">
               Cadastrar como Médico <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
