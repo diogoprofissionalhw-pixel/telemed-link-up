@@ -1,256 +1,214 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import { Users, Search, MapPin, Star, Eye, ShieldCheck, ShieldAlert, ShieldQuestion, Briefcase } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
+import { useMemo, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Search, Star, MapPin, Clock, Filter, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { EmptyState } from "@/components/dashboard/empty-state";
-import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { SiteHeader } from "@/components/site-header";
 
 export const Route = createFileRoute("/medicos")({
-  component: MedicosPage,
+  head: () => ({
+    meta: [
+      { title: "Conheça Nossos Médicos — Connect-Med" },
+      { name: "description", content: "Explore a rede Connect-Med de médicos qualificados. Filtre por especialidade, localização e taxa horária." },
+      { property: "og:title", content: "Conheça Nossos Médicos — Connect-Med" },
+      { property: "og:description", content: "Explore profissionais qualificados em telemedicina." },
+    ],
+  }),
+  component: DoctorsPage,
 });
 
-interface Doctor {
-  id: string;
-  specialty: string;
-  crm: string;
-  crm_uf: string;
-  crm_status: "verified" | "pending" | "invalid";
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-  full_name: string;
-  years_experience: number | null;
-  avg_stars: number;
-  rating_count: number;
-  next_availability: string | null;
-}
+const DOCTORS = [
+  { id: 1, name: "Dr. Carlos Silva", specialty: "Médico Clínico Geral", location: "São Paulo, SP", rating: 4.9, reviews: 127, responseTime: "Responde em minutos", hourlyRate: 150, specialties: ["Clínica Geral", "Telemedicina", "Diagnóstico Clínico"], avatar: "👨‍⚕️" },
+  { id: 2, name: "Dra. Marina Costa", specialty: "Cardiologista", location: "Rio de Janeiro, RJ", rating: 4.8, reviews: 95, responseTime: "Responde em 2 horas", hourlyRate: 200, specialties: ["Cardiologia", "Telemedicina", "Prevenção"], avatar: "👩‍⚕️" },
+  { id: 3, name: "Dr. Rafael Mendes", specialty: "Pediatra", location: "Belo Horizonte, MG", rating: 4.7, reviews: 64, responseTime: "Responde em 1 hora", hourlyRate: 180, specialties: ["Pediatria", "Telemedicina", "Neonatologia"], avatar: "👨‍⚕️" },
+  { id: 4, name: "Dra. Juliana Alves", specialty: "Psiquiatra", location: "São Paulo, SP", rating: 5.0, reviews: 152, responseTime: "Responde em minutos", hourlyRate: 250, specialties: ["Psiquiatria", "Telemedicina", "Saúde Mental"], avatar: "👩‍⚕️" },
+  { id: 5, name: "Dr. Pedro Rocha", specialty: "Médico de Família", location: "Curitiba, PR", rating: 4.6, reviews: 41, responseTime: "Responde em 3 horas", hourlyRate: 130, specialties: ["Medicina de Família", "Clínica Geral"], avatar: "👨‍⚕️" },
+  { id: 6, name: "Dra. Beatriz Lima", specialty: "Endocrinologista", location: "Porto Alegre, RS", rating: 4.9, reviews: 88, responseTime: "Responde em 1 hora", hourlyRate: 220, specialties: ["Endocrinologia", "Telemedicina"], avatar: "👩‍⚕️" },
+];
 
-const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+const ALL_SPECIALTIES = ["Clínica Geral", "Cardiologia", "Pediatria", "Psiquiatria", "Medicina de Família", "Endocrinologia", "Telemedicina"];
+const ALL_LOCATIONS = ["São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", "Curitiba, PR", "Porto Alegre, RS"];
 
-type SortKey = "match" | "rating" | "experience" | "availability";
+function DoctorsPage() {
+  const [query, setQuery] = useState("");
+  const [specs, setSpecs] = useState<string[]>([]);
+  const [locs, setLocs] = useState<string[]>([]);
+  const [minRate, setMinRate] = useState(0);
+  const [maxRate, setMaxRate] = useState(500);
+  const [open, setOpen] = useState(false);
 
-function MedicosPage() {
-  const { user } = useAuth();
-  const [docs, setDocs] = useState<Doctor[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [specialty, setSpecialty] = useState("all");
-  const [uf, setUf] = useState("all");
-  const [minRating, setMinRating] = useState("0");
-  const [minYears, setMinYears] = useState("0");
-  const [statusFilter, setStatusFilter] = useState<"active" | "all">("active");
-  const [sortKey, setSortKey] = useState<SortKey>("match");
-  const [profileId, setProfileId] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const today = new Date().toISOString().slice(0, 10);
-      const [{ data: doctors }, { data: profs }, { data: ratings }, { data: avails }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, crm_status, city, state, avatar_url, years_experience"),
-        supabase.from("profiles").select("id, full_name").eq("account_type", "doctor"),
-        supabase.from("ratings").select("doctor_id, stars"),
-        supabase.from("doctor_availabilities").select("doctor_id, available_date").gte("available_date", today),
-      ]);
-      const profMap = new Map((profs ?? []).map(p => [p.id, p.full_name]));
-      const ratingMap = new Map<string, { sum: number; count: number }>();
-      for (const r of ratings ?? []) {
-        const cur = ratingMap.get(r.doctor_id) ?? { sum: 0, count: 0 };
-        cur.sum += r.stars; cur.count += 1;
-        ratingMap.set(r.doctor_id, cur);
-      }
-      const nextAvailMap = new Map<string, string>();
-      for (const a of avails ?? []) {
-        const cur = nextAvailMap.get(a.doctor_id);
-        if (!cur || a.available_date < cur) nextAvailMap.set(a.doctor_id, a.available_date);
-      }
-      const merged: Doctor[] = (doctors ?? []).map((d: any) => {
-        const r = ratingMap.get(d.id);
-        return {
-          id: d.id,
-          specialty: d.specialty,
-          crm: d.crm,
-          crm_uf: d.crm_uf,
-          crm_status: (d.crm_status ?? "pending") as Doctor["crm_status"],
-          city: d.city,
-          state: d.state,
-          avatar_url: d.avatar_url,
-          years_experience: d.years_experience ?? null,
-          full_name: profMap.get(d.id) ?? "Médico",
-          avg_stars: r ? r.sum / r.count : 0,
-          rating_count: r?.count ?? 0,
-          next_availability: nextAvailMap.get(d.id) ?? null,
-        };
-      });
-      setDocs(merged);
-      setLoading(false);
-    })().catch(e => toast.error(e.message));
-  }, []);
-
-  const specialties = useMemo(() => Array.from(new Set(docs.map(d => d.specialty))).sort(), [docs]);
+  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const min = Number(minRating);
-    const minY = Number(minYears);
-    const list = docs.filter(d => {
-      // Médicos com CRM inválido ficam ocultos
-      if (d.crm_status === "invalid") return false;
-      if (statusFilter === "active" && !d.next_availability) {
-        // Mantém ativos: aqueles com disponibilidade futura. Se quiser todos, escolha "Todos".
-      }
-      if (specialty !== "all" && d.specialty !== specialty) return false;
-      if (uf !== "all" && d.crm_uf !== uf) return false;
-      if (min > 0 && d.avg_stars < min) return false;
-      if (minY > 0 && (d.years_experience ?? 0) < minY) return false;
-      if (!q) return true;
-      return (d.full_name + " " + d.specialty + " " + d.crm).toLowerCase().includes(q);
+    const q = query.trim().toLowerCase();
+    return DOCTORS.filter((d) => {
+      if (q && !(d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q) || d.specialties.some(s => s.toLowerCase().includes(q)))) return false;
+      if (specs.length > 0 && !d.specialties.some(s => specs.includes(s))) return false;
+      if (locs.length > 0 && !locs.includes(d.location)) return false;
+      if (d.hourlyRate < minRate || d.hourlyRate > maxRate) return false;
+      return true;
     });
+  }, [query, specs, locs, minRate, maxRate]);
 
-    list.sort((a, b) => {
-      if (sortKey === "rating") return b.avg_stars - a.avg_stars;
-      if (sortKey === "experience") return (b.years_experience ?? 0) - (a.years_experience ?? 0);
-      if (sortKey === "availability") {
-        const av = a.next_availability ?? "9999";
-        const bv = b.next_availability ?? "9999";
-        return av.localeCompare(bv);
-      }
-      // match: combina avaliação, exp, disponibilidade, CRM verificado
-      const score = (d: Doctor) =>
-        (d.avg_stars * 8) +
-        Math.min(15, (d.years_experience ?? 0)) +
-        (d.next_availability ? 20 : 0) +
-        (d.crm_status === "verified" ? 5 : 0);
-      return score(b) - score(a);
-    });
+  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(500); };
 
-    return list;
-  }, [docs, search, specialty, uf, minRating, minYears, statusFilter, sortKey]);
+  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, clear };
 
   return (
-    <DashboardLayout
-      title="Médicos"
-      subtitle="Telemedicina — encontre profissionais por especialidade, fuso e disponibilidade."
-      breadcrumbs={[{ label: "Médicos" }]}
-      requireUserType="network"
-    >
-      <div className="mb-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-        <div className="relative lg:col-span-2">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar nome, especialidade ou CRM..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-        </div>
-        <Select value={specialty} onValueChange={setSpecialty}>
-          <SelectTrigger><SelectValue placeholder="Especialidade" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas as especialidades</SelectItem>
-            {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-          </SelectContent>
-        </Select>
-        <Select value={uf} onValueChange={setUf}>
-          <SelectTrigger><SelectValue placeholder="UF (legislação/fuso)" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas UF</SelectItem>
-            {UFS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <section className="bg-background">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-20">
+          <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> Voltar para a página inicial
+          </Link>
+          <div className="text-center">
+            <h1 className="text-3xl font-bold sm:text-4xl">
+              Conheça Nossos <span className="text-primary">Médicos</span>
+            </h1>
+            <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
+          </div>
 
-      <div className="mb-4 grid gap-3 md:grid-cols-4">
-        <Select value={minRating} onValueChange={setMinRating}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0">Qualquer avaliação</SelectItem>
-            <SelectItem value="3">3★ ou mais</SelectItem>
-            <SelectItem value="4">4★ ou mais</SelectItem>
-            <SelectItem value="4.5">4.5★ ou mais</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={minYears} onValueChange={setMinYears}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="0">Qualquer experiência</SelectItem>
-            <SelectItem value="2">2+ anos</SelectItem>
-            <SelectItem value="5">5+ anos</SelectItem>
-            <SelectItem value="10">10+ anos</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as "active" | "all")}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Apenas ativos</SelectItem>
-            <SelectItem value="all">Todos</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="match">Melhor match</SelectItem>
-            <SelectItem value="rating">Avaliação</SelectItem>
-            <SelectItem value="experience">Experiência</SelectItem>
-            <SelectItem value="availability">Disponibilidade mais próxima</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
+            <aside className="hidden lg:block">
+              <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                <FilterPanel {...panelProps} />
+              </div>
+            </aside>
 
-      {loading ? (
-        <p className="text-muted-foreground">Carregando...</p>
-      ) : filtered.length === 0 ? (
-        <EmptyState icon={Users} title="Nenhum médico encontrado" description="Ajuste os filtros para ampliar sua busca." />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(d => (
-            <div key={d.id} className="rounded-lg border bg-card p-4 transition-shadow hover:shadow-md">
-              <div className="flex items-start gap-3">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={d.avatar_url ?? undefined} />
-                  <AvatarFallback>{d.full_name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate font-semibold flex items-center gap-1.5">
-                    {d.full_name}
-                    {d.crm_status === "verified" && <ShieldCheck className="h-3.5 w-3.5 text-success" aria-label="CRM verificado" />}
-                    {d.crm_status === "pending" && <ShieldQuestion className="h-3.5 w-3.5 text-warning" aria-label="CRM em análise" />}
-                  </h3>
-                  <p className="truncate text-sm text-muted-foreground">{d.specialty}</p>
-                  <p className="text-xs text-muted-foreground">CRM {d.crm}/{d.crm_uf}{d.years_experience ? ` · ${d.years_experience}a` : ""}</p>
-                </div>
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</p>
+                <Sheet open={open} onOpenChange={setOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="gap-2 lg:hidden">
+                      <Filter className="h-4 w-4" /> Filtros
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
+                    <SheetTitle className="sr-only">Filtros</SheetTitle>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                      <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+                    </div>
+                    <FilterPanel {...panelProps} />
+                    <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
+                  </SheetContent>
+                </Sheet>
               </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{d.state ?? "—"}</span>
-                <span className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-current text-warning" />
-                  {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
-                </span>
-              </div>
-              {d.next_availability && (
-                <div className="mt-2 flex items-center gap-1 text-xs text-success">
-                  <Briefcase className="h-3 w-3" /> Disponível a partir de {new Date(d.next_availability + "T00:00:00").toLocaleDateString("pt-BR")}
-                </div>
-              )}
-              <div className="mt-3 flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1 gap-1.5" onClick={() => setProfileId(d.id)}>
-                  <Eye className="h-3.5 w-3.5" />Ver perfil
-                </Button>
+
+              <div className="space-y-4">
+                {filtered.length === 0 ? (
+                  <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
+                    Nenhum médico encontrado com esses filtros.
+                  </div>
+                ) : (
+                  filtered.map((d) => <DoctorCard key={d.id} d={d} />)
+                )}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function FilterPanel({
+  query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, clear,
+}: {
+  query: string; setQuery: (v: string) => void;
+  specs: string[]; toggleSpec: (s: string) => void;
+  locs: string[]; toggleLoc: (l: string) => void;
+  minRate: number; setMinRate: (n: number) => void;
+  maxRate: number; setMaxRate: (n: number) => void;
+  clear: () => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="mb-2 block text-sm font-medium">Busca</label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou especialidade..." className="pl-9" />
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-sm font-medium">Especialidades</p>
+        <div className="space-y-2 max-h-48 overflow-auto pr-1">
+          {ALL_SPECIALTIES.map((s) => (
+            <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
+              <span>{s}</span>
+            </label>
           ))}
         </div>
-      )}
+      </div>
+      <div>
+        <p className="mb-2 text-sm font-medium">Localização</p>
+        <div className="space-y-2 max-h-40 overflow-auto pr-1">
+          {ALL_LOCATIONS.map((l) => (
+            <label key={l} className="flex cursor-pointer items-center gap-2 text-sm">
+              <Checkbox checked={locs.includes(l)} onCheckedChange={() => toggleLoc(l)} />
+              <span>{l}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p className="mb-2 text-sm font-medium">Taxa horária (R$)</p>
+        <div className="space-y-3">
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground"><span>Mínimo</span><span>R$ {minRate}</span></div>
+            <input type="range" min={0} max={500} step={10} value={minRate} onChange={(e) => setMinRate(Number(e.target.value))} className="w-full accent-primary" />
+          </div>
+          <div>
+            <div className="flex justify-between text-xs text-muted-foreground"><span>Máximo</span><span>R$ {maxRate}</span></div>
+            <input type="range" min={0} max={500} step={10} value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))} className="w-full accent-primary" />
+          </div>
+        </div>
+      </div>
+      <button type="button" onClick={clear} className="text-sm font-medium text-primary hover:underline">
+        Limpar filtros
+      </button>
+    </div>
+  );
+}
 
-      {profileId && user && (
-        <DoctorProfileDialog
-          open={!!profileId}
-          onOpenChange={(v) => !v && setProfileId(null)}
-          doctorId={profileId}
-        />
-      )}
-    </DashboardLayout>
+function DoctorCard({ d }: { d: typeof DOCTORS[number] }) {
+  return (
+    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ boxShadow: "var(--shadow-card)" }}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-accent text-3xl">{d.avatar}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="min-w-0">
+              <h3 className="font-semibold">{d.name}</h3>
+              <p className="text-sm text-muted-foreground">{d.specialty}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-bold text-primary">R$ {d.hourlyRate}<span className="text-xs font-normal text-muted-foreground">/hora</span></p>
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-warning text-warning" /> <span className="font-medium text-foreground">{d.rating}</span> ({d.reviews})</span>
+            <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {d.location}</span>
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {d.responseTime}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {d.specialties.map((s) => <Badge key={s} variant="secondary" className="bg-accent text-accent-foreground">{s}</Badge>)}
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Link to="/auth" search={{ mode: "signup" }}>
+              <Button size="sm">Ver perfil</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
