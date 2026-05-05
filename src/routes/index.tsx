@@ -1,14 +1,9 @@
-import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Search, Star, Users, Filter, X,
+  Mail, MapPin, Linkedin, Instagram, Facebook, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 
