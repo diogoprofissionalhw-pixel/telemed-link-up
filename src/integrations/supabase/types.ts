@@ -107,6 +107,39 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_experiences: {
+        Row: {
+          created_at: string
+          description: string | null
+          doctor_id: string
+          end_date: string | null
+          id: string
+          institution: string
+          role: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          doctor_id: string
+          end_date?: string | null
+          id?: string
+          institution: string
+          role: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          doctor_id?: string
+          end_date?: string | null
+          id?: string
+          institution?: string
+          role?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
       doctor_publications: {
         Row: {
           created_at: string
@@ -137,65 +170,131 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_weekly_availability: {
+        Row: {
+          doctor_id: string
+          end_time: string
+          id: string
+          start_time: string
+          timezone: string
+          updated_at: string
+          weekdays: number[]
+        }
+        Insert: {
+          doctor_id: string
+          end_time?: string
+          id?: string
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Update: {
+          doctor_id?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Relationships: []
+      }
       doctors: {
         Row: {
           avatar_url: string | null
+          bank_account: string | null
+          bank_agency: string | null
+          bank_name: string | null
           bio: string | null
           certifications: string | null
           city: string | null
+          consultation_fee: number | null
           country: string | null
           cpf: string | null
           created_at: string
           crm: string
+          crm_document_url: string | null
           crm_status: Database["public"]["Enums"]["crm_status"]
           crm_uf: string
           cv_pdf_url: string | null
+          diploma_url: string | null
           education: string | null
           email: string | null
           id: string
           languages: string | null
+          payment_method: string | null
+          phone: string | null
+          pix_key: string | null
+          specialties: string[]
           specialty: string
           state: string | null
+          timezone: string
+          whatsapp: string | null
           years_experience: number | null
         }
         Insert: {
           avatar_url?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           bio?: string | null
           certifications?: string | null
           city?: string | null
+          consultation_fee?: number | null
           country?: string | null
           cpf?: string | null
           created_at?: string
           crm: string
+          crm_document_url?: string | null
           crm_status?: Database["public"]["Enums"]["crm_status"]
           crm_uf: string
           cv_pdf_url?: string | null
+          diploma_url?: string | null
           education?: string | null
           email?: string | null
           id: string
           languages?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          specialties?: string[]
           specialty: string
           state?: string | null
+          timezone?: string
+          whatsapp?: string | null
           years_experience?: number | null
         }
         Update: {
           avatar_url?: string | null
+          bank_account?: string | null
+          bank_agency?: string | null
+          bank_name?: string | null
           bio?: string | null
           certifications?: string | null
           city?: string | null
+          consultation_fee?: number | null
           country?: string | null
           cpf?: string | null
           created_at?: string
           crm?: string
+          crm_document_url?: string | null
           crm_status?: Database["public"]["Enums"]["crm_status"]
           crm_uf?: string
           cv_pdf_url?: string | null
+          diploma_url?: string | null
           education?: string | null
           email?: string | null
           id?: string
           languages?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          pix_key?: string | null
+          specialties?: string[]
           specialty?: string
           state?: string | null
+          timezone?: string
+          whatsapp?: string | null
           years_experience?: number | null
         }
         Relationships: [
