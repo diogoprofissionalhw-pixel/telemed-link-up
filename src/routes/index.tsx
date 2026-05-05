@@ -327,7 +327,7 @@ function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Contato</h3>
           <ul className="mt-3 space-y-2 text-sm text-background/70">
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> contato@connect-med.com.br</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> connectmed10@gmail.com</li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> São Paulo, SP — Brasil</li>
           </ul>
           <div className="mt-4 flex gap-3">
