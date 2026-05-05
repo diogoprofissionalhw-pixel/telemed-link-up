@@ -345,86 +345,25 @@ function DoctorCard({ d }: { d: typeof DOCTORS[number] }) {
 }
 
 function ExploreDoctors() {
-  const [query, setQuery] = useState("");
-  const [specs, setSpecs] = useState<string[]>([]);
-  const [locs, setLocs] = useState<string[]>([]);
-  const [minRate, setMinRate] = useState(0);
-  const [maxRate, setMaxRate] = useState(500);
-  const [open, setOpen] = useState(false);
-
-  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return DOCTORS.filter((d) => {
-      if (q && !(d.name.toLowerCase().includes(q) || d.specialty.toLowerCase().includes(q) || d.specialties.some(s => s.toLowerCase().includes(q)))) return false;
-      if (specs.length > 0 && !d.specialties.some(s => specs.includes(s))) return false;
-      if (locs.length > 0 && !locs.includes(d.location)) return false;
-      if (d.hourlyRate < minRate || d.hourlyRate > maxRate) return false;
-      return true;
-    });
-  }, [query, specs, locs, minRate, maxRate]);
-
-  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(500); };
-
-  const panelProps = {
-    query, setQuery,
-    specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)),
-    locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)),
-    minRate, setMinRate, maxRate, setMaxRate, clear,
-  };
-
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="text-center">
+        <div className="rounded-3xl border bg-card p-10 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-accent text-primary">
+            <Users className="h-7 w-7" />
+          </div>
           <h2 className="text-3xl font-bold sm:text-4xl">
             Conheça Nossos <span className="text-primary">Médicos</span>
           </h2>
-          <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
-        </div>
-
-        <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
-          {/* Sidebar (desktop) */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
-              <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
-              <FilterPanel {...panelProps} />
-            </div>
-          </aside>
-
-          {/* Main */}
-          <div>
-            <div className="mb-4 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</p>
-              {/* Mobile filters */}
-              <Sheet open={open} onOpenChange={setOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 lg:hidden">
-                    <Filter className="h-4 w-4" /> Filtros
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
-                  <SheetTitle className="sr-only">Filtros</SheetTitle>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
-                    <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
-                  </div>
-                  <FilterPanel {...panelProps} />
-                  <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
-                </SheetContent>
-              </Sheet>
-            </div>
-
-            <div className="space-y-4">
-              {filtered.length === 0 ? (
-                <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
-                  Nenhum médico encontrado com esses filtros.
-                </div>
-              ) : (
-                filtered.map((d) => <DoctorCard key={d.id} d={d} />)
-              )}
-            </div>
+          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            Explore nossa rede de profissionais qualificados. Filtre por especialidade, localização e taxa horária.
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link to="/medicos">
+              <Button size="lg" className="gap-2">
+                Explorar médicos <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
