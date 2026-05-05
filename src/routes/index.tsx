@@ -282,7 +282,7 @@ function FinalCTA() {
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link to="/auth" search={{ mode: "signup" }}>
-            <Button size="lg" variant="secondary" className="gap-2 bg-card text-foreground hover:bg-card/90">
+            <Button size="lg" variant="outline" className="gap-2 border-2 border-primary-foreground bg-transparent text-primary-foreground hover:bg-primary-foreground hover:text-primary">
               Cadastrar Rede de Telemedicina <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
