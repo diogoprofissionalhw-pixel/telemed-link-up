@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink,
   ShieldCheck, ShieldAlert, ShieldQuestion, CheckCircle2, AlertCircle,
-  DollarSign, Clock, Award, User, Phone,
+  DollarSign, Clock, Award, User, Phone, Briefcase,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
