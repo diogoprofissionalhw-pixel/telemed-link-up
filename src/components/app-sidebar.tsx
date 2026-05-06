@@ -127,7 +127,10 @@ export function AppSidebar({ userType }: { userType: UserType }) {
     </>
   );
 
-  const hideSidebar = userType === "doctor";
+  // Sidebar lateral foi removido para ambos os tipos de usuário (médico e rede).
+  // Mantemos apenas a barra superior com perfil, notificações, configurações e sair.
+  void userType;
+  const hideSidebar = true;
 
   return (
     <>
@@ -228,7 +231,8 @@ function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
 
 export function AppShell({ userType, children }: { userType: UserType; children: React.ReactNode }) {
   const { user, signOut } = useAuth();
-  const hideSidebar = userType === "doctor";
+  void userType;
+  const hideSidebar = true;
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <AppSidebar userType={userType} />
