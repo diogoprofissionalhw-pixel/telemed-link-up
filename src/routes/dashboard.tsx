@@ -631,10 +631,13 @@ function NewRequestDialog({
         if (filterSpecialty !== "all" && d.specialty !== filterSpecialty) return false;
         if (minR > 0 && d.avg_stars < minR) return false;
         if (minY > 0 && (d.years_experience ?? 0) < minY) return false;
+        if (filterUf !== "all" && d.state !== filterUf && d.crm_uf !== filterUf) return false;
+        if (onlyVerified && d.crm_status !== "verified") return false;
         if (!q) return true;
         return (
           d.full_name.toLowerCase().includes(q) ||
-          d.specialty.toLowerCase().includes(q)
+          d.specialty.toLowerCase().includes(q) ||
+          (d.city ?? "").toLowerCase().includes(q)
         );
       })
       .map(d => {
