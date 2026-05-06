@@ -690,7 +690,7 @@ function NewRequestDialog({
       .sort((a, b) => b.match_score - a.match_score);
 
     return list;
-  }, [doctors, filterSpecialty, search, minRating, minYears, onlyAvailable, date, start, end, networkUf]);
+  }, [doctors, filterSpecialty, search, minRating, minYears, onlyAvailable, date, start, end, networkUf, filterUf, onlyVerified]);
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
     setPeriod(p);
