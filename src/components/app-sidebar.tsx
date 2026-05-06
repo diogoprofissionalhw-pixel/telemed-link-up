@@ -1,12 +1,14 @@
-import { useState, type ComponentType } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Inbox, Stethoscope, Calendar, Clock, User, Settings,
-  Users, Briefcase, BarChart3, Building2, Menu, X, LogOut,
+  Home, Inbox, User, Settings,
+  Users, Briefcase, BarChart3, Building2, Menu, X, LogOut, UserCircle2,
 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { NotificationsBell } from "@/components/notifications-bell";
 import { cn } from "@/lib/utils";
 
