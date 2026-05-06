@@ -501,6 +501,21 @@ const UF_TZ: Record<string, number> = {
   DF: -3, GO: -3, MG: -3, ES: -3, RJ: -3, SP: -3, PR: -3, SC: -3, RS: -3,
 };
 
+// Lista completa de especialidades médicas reconhecidas (CFM)
+const ALL_SPECIALTIES = [
+  "Acupuntura","Alergia e Imunologia","Anestesiologia","Angiologia","Cardiologia",
+  "Cirurgia Cardiovascular","Cirurgia da Mão","Cirurgia de Cabeça e Pescoço","Cirurgia do Aparelho Digestivo",
+  "Cirurgia Geral","Cirurgia Pediátrica","Cirurgia Plástica","Cirurgia Torácica","Cirurgia Vascular",
+  "Clínica Médica","Coloproctologia","Dermatologia","Endocrinologia","Endoscopia",
+  "Gastroenterologia","Genética Médica","Geriatria","Ginecologia e Obstetrícia","Hematologia",
+  "Homeopatia","Infectologia","Mastologia","Medicina de Família e Comunidade","Medicina do Trabalho",
+  "Medicina do Tráfego","Medicina de Emergência","Medicina Esportiva","Medicina Física e Reabilitação",
+  "Medicina Intensiva","Medicina Legal","Medicina Nuclear","Medicina Preventiva","Nefrologia",
+  "Neurocirurgia","Neurologia","Nutrologia","Oftalmologia","Oncologia Clínica","Ortopedia e Traumatologia",
+  "Otorrinolaringologia","Patologia","Patologia Clínica","Pediatria","Pneumologia","Psiquiatria",
+  "Radiologia e Diagnóstico por Imagem","Radioterapia","Reumatologia","Telemedicina","Urologia",
+];
+
 function tierLabel(tier: DoctorOption["match_tier"]) {
   switch (tier) {
     case "best": return { emoji: "⭐", text: "Melhor match", cls: "bg-warning/20 text-warning-foreground", color: "oklch(0.45 0.15 80)" };
@@ -530,6 +545,9 @@ function NewRequestDialog({
   const [minRating, setMinRating] = useState<string>("0");
   const [minYears, setMinYears] = useState<string>("0");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [filterUf, setFilterUf] = useState<string>("all");
+  const [onlyVerified, setOnlyVerified] = useState(false);
+  const [maxValue, setMaxValue] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -591,10 +609,11 @@ function NewRequestDialog({
     })();
   }, [networkId]);
 
-  const specialties = useMemo(
-    () => Array.from(new Set(doctors.map(d => d.specialty).filter(Boolean))).sort(),
-    [doctors],
-  );
+  // União das especialidades cadastradas + lista oficial completa
+  const specialties = useMemo(() => {
+    const set = new Set<string>([...ALL_SPECIALTIES, ...doctors.map(d => d.specialty).filter(Boolean)]);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [doctors]);
 
   // Recalcula match sempre que mudam critérios de horário/data/especialidade
   const ranked = useMemo(() => {
