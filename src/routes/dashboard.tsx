@@ -814,10 +814,35 @@ function NewRequestDialog({
             </SelectContent>
           </Select>
         </div>
-        <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} className="rounded" />
-          Mostrar apenas médicos com disponibilidade declarada no horário
-        </label>
+
+        {/* Mais filtros: localização, CRM verificado, orçamento */}
+        <div className="grid gap-2 sm:grid-cols-4">
+          <Select value={filterUf} onValueChange={setFilterUf}>
+            <SelectTrigger><SelectValue placeholder="UF do médico" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Qualquer UF</SelectItem>
+              {Object.keys(UF_TZ).sort().map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="relative">
+            <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              inputMode="decimal"
+              placeholder="Orçamento máx (R$)"
+              value={maxValue}
+              onChange={e => setMaxValue(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <label className="flex items-center gap-2 rounded-md border px-3 text-xs">
+            <input type="checkbox" checked={onlyVerified} onChange={e => setOnlyVerified(e.target.checked)} className="rounded" />
+            Apenas CRM verificado
+          </label>
+          <label className="flex items-center gap-2 rounded-md border px-3 text-xs">
+            <input type="checkbox" checked={onlyAvailable} onChange={e => setOnlyAvailable(e.target.checked)} className="rounded" />
+            Apenas disponíveis
+          </label>
+        </div>
 
         {/* Ranking */}
         <div>
