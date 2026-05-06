@@ -920,7 +920,7 @@ function NewRequestDialog({
           <Label htmlFor="v">Valor acordado (R$)</Label>
           <div className="relative">
             <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input id="v" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder="0,00" className="pl-8" />
+            <Input id="v" inputMode="decimal" value={value} onChange={e => setValue(e.target.value)} placeholder={maxValue ? `Sugerido: até ${maxValue}` : "0,00"} className="pl-8" />
           </div>
         </div>
 
