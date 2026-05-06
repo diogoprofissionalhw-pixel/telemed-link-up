@@ -211,17 +211,33 @@ function HeaderProfile() {
 
 /* Layout wrapper: aplica margin-left para o conteúdo no desktop e mostra
    bell de notificações no topo desktop. */
+function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
+  return (
+    <>
+      <Link to="/configuracoes" aria-label="Configurações">
+        <Button variant="ghost" size="icon">
+          <Settings className="h-5 w-5" />
+        </Button>
+      </Link>
+      <Button variant="ghost" size="icon" onClick={onSignOut} aria-label="Sair">
+        <LogOut className="h-5 w-5" />
+      </Button>
+    </>
+  );
+}
+
 export function AppShell({ userType, children }: { userType: UserType; children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const hideSidebar = userType === "doctor";
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <AppSidebar userType={userType} />
       <div className={hideSidebar ? "" : "md:ml-60"}>
         {/* Desktop top bar with profile + bell */}
-        <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-2 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
+        <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-1 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
         <div>{children}</div>
       </div>
