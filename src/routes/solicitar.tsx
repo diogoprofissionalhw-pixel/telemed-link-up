@@ -318,6 +318,44 @@ function SolicitarPage() {
   );
 }
 
+function SpecialtyFilter({ specs, toggleSpec }: { specs: string[]; toggleSpec: (s: string) => void }) {
+  const [q, setQ] = useState("");
+  const list = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return ALL_SPECIALTIES;
+    return ALL_SPECIALTIES.filter(s => s.toLowerCase().includes(t));
+  }, [q]);
+  return (
+    <div>
+      <p className="mb-2 font-medium">Especialidades</p>
+      <div className="relative mb-2">
+        <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar especialidade..." className="h-8 pl-8 text-xs" />
+      </div>
+      {specs.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1">
+          {specs.map(s => (
+            <button key={s} type="button" onClick={() => toggleSpec(s)}
+              className="flex items-center gap-1 rounded-full border border-primary bg-accent px-2 py-0.5 text-[10px]">
+              {s} <X className="h-2.5 w-2.5" />
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="space-y-2 max-h-56 overflow-auto pr-1">
+        {list.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Nenhuma especialidade encontrada.</p>
+        ) : list.map(s => (
+          <label key={s} className="flex cursor-pointer items-center gap-2 text-xs">
+            <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
+            <span>{s}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function FilterPanel({
   search, setSearch, specs, toggleSpec, ufs, toggleUf,
   minRating, setMinRating, minYears, setMinYears, maxFee, setMaxFee,
@@ -342,17 +380,7 @@ function FilterPanel({
         </div>
       </div>
 
-      <div>
-        <p className="mb-2 font-medium">Especialidades</p>
-        <div className="space-y-2 max-h-56 overflow-auto pr-1">
-          {ALL_SPECIALTIES.map(s => (
-            <label key={s} className="flex cursor-pointer items-center gap-2 text-xs">
-              <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
-              <span>{s}</span>
-            </label>
-          ))}
-        </div>
-      </div>
+      <SpecialtyFilter specs={specs} toggleSpec={toggleSpec} />
 
       <div>
         <p className="mb-2 font-medium">UF (Estado)</p>
