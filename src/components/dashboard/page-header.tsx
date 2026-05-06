@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { ChevronRight, Home } from "lucide-react";
+import { ArrowLeft, ChevronRight, Home } from "lucide-react";
 import { type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
 
 export interface BreadcrumbItem {
   label: string;
@@ -15,8 +16,16 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeaderProps) {
+  const showBack = !!breadcrumbs && breadcrumbs.length > 0;
   return (
     <div className="mb-6 space-y-3">
+      {showBack && (
+        <Link to="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-2 -ml-2">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao dashboard
+          </Button>
+        </Link>
+      )}
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/dashboard" className="flex items-center gap-1 hover:text-foreground">
