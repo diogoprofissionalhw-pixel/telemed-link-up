@@ -330,10 +330,7 @@ function SignUpWizard() {
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3">
-        <Button type="button" variant="ghost" onClick={prev} disabled={step === 0 || submitting}>
-          <ArrowLeft className="h-4 w-4" /> Voltar
-        </Button>
+      <div className="flex items-center justify-end gap-3">
         {step < totalSteps - 1 ? (
           <Button type="button" onClick={next} className="gap-1">
             Continuar <ArrowRight className="h-4 w-4" />
