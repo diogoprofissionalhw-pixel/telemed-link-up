@@ -127,33 +127,42 @@ export function AppSidebar({ userType }: { userType: UserType }) {
     </>
   );
 
+  const hideSidebar = userType === "doctor";
+
   return (
     <>
       {/* Mobile top bar */}
       <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="rounded-md p-2 hover:bg-muted"
-          aria-label="Abrir menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        {hideSidebar ? <div className="w-9" /> : (
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="rounded-md p-2 hover:bg-muted"
+            aria-label="Abrir menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        )}
         <Link to="/" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
-        <div>{user && <NotificationsBell userId={user.id} />}</div>
+        <div className="flex items-center gap-2">
+          <HeaderProfile />
+          {user && <NotificationsBell userId={user.id} />}
+        </div>
       </div>
 
       {/* Desktop fixed sidebar */}
-      <aside
-        className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r bg-card shadow-[2px_0_10px_-4px_rgba(0,0,0,0.08)] md:flex"
-        style={{ background: "#F8FAFC" }}
-      >
-        {SidebarContent}
-      </aside>
+      {!hideSidebar && (
+        <aside
+          className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r bg-card shadow-[2px_0_10px_-4px_rgba(0,0,0,0.08)] md:flex"
+          style={{ background: "#F8FAFC" }}
+        >
+          {SidebarContent}
+        </aside>
+      )}
 
       {/* Mobile drawer */}
-      {mobileOpen && (
+      {!hideSidebar && mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
             className="absolute inset-0 bg-foreground/40 animate-fade-in"
@@ -171,16 +180,46 @@ export function AppSidebar({ userType }: { userType: UserType }) {
   );
 }
 
+function HeaderProfile() {
+  const { user, profile } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !profile) { setAvatarUrl(null); return; }
+    const table = profile.account_type === "doctor" ? "doctors" : "networks";
+    supabase.from(table).select("avatar_url").eq("id", user.id).maybeSingle().then(({ data }) => {
+      setAvatarUrl((data as { avatar_url?: string | null } | null)?.avatar_url ?? null);
+    });
+  }, [user, profile]);
+
+  if (!user || !profile) return null;
+  const to = profile.account_type === "doctor" ? "/perfil" : "/perfil-empresa";
+
+  return (
+    <Link to={to} className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent" aria-label="Meu perfil">
+      <Avatar className="h-8 w-8">
+        {avatarUrl && <AvatarImage src={avatarUrl} alt={profile.full_name} />}
+        <AvatarFallback className="bg-accent text-xs">
+          {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : <UserCircle2 className="h-4 w-4" />}
+        </AvatarFallback>
+      </Avatar>
+      <span className="hidden sm:inline text-sm font-medium max-w-[140px] truncate">{profile.full_name}</span>
+    </Link>
+  );
+}
+
 /* Layout wrapper: aplica margin-left para o conteúdo no desktop e mostra
    bell de notificações no topo desktop. */
 export function AppShell({ userType, children }: { userType: UserType; children: React.ReactNode }) {
   const { user } = useAuth();
+  const hideSidebar = userType === "doctor";
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <AppSidebar userType={userType} />
-      <div className="md:ml-60">
-        {/* Desktop top bar with bell */}
-        <div className="sticky top-0 z-20 hidden h-14 items-center justify-end border-b bg-background/80 px-6 backdrop-blur-md md:flex">
+      <div className={hideSidebar ? "" : "md:ml-60"}>
+        {/* Desktop top bar with profile + bell */}
+        <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-2 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
+          <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
         </div>
         <div>{children}</div>
