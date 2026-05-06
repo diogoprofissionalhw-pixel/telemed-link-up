@@ -145,9 +145,10 @@ export function AppSidebar({ userType }: { userType: UserType }) {
         <Link to="/" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
       </div>
 
