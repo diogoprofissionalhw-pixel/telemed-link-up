@@ -342,17 +342,7 @@ function FilterPanel({
         </div>
       </div>
 
-      <div>
-        <p className="mb-2 font-medium">Especialidades</p>
-        <div className="space-y-2 max-h-56 overflow-auto pr-1">
-          {ALL_SPECIALTIES.map(s => (
-            <label key={s} className="flex cursor-pointer items-center gap-2 text-xs">
-              <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
-              <span>{s}</span>
-            </label>
-          ))}
-        </div>
-      </div>
+      <SpecialtyFilter specs={specs} toggleSpec={toggleSpec} />
 
       <div>
         <p className="mb-2 font-medium">UF (Estado)</p>
