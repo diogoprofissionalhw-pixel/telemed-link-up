@@ -281,18 +281,6 @@ function DoctorPanel({ userId }: { userId: string }) {
         )}
       </section>
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold">Histórico</h2>
-        {others.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Sem registros ainda.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {others.map(r => (
-              <RequestCard key={r.id} req={r} viewerType="doctor" onChat={() => setChatReq(r)} />
-            ))}
-          </div>
-        )}
-      </section>
 
       {chatReq && (
         <ChatDialog
