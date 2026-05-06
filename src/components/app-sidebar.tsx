@@ -111,10 +111,15 @@ export function AppSidebar({ userType }: { userType: UserType }) {
           : <SidebarNetworkMenu activeKey={activeKey} onNavigate={close} />}
       </div>
 
-      <div className="border-t p-3">
-        <div className="mb-2 truncate px-2 text-xs text-muted-foreground">
+      <div className="border-t p-3 space-y-2">
+        <div className="truncate px-2 text-xs text-muted-foreground">
           {profile?.full_name}
         </div>
+        <Link to="/configuracoes" onClick={close}>
+          <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+            <Settings className="h-4 w-4" /> Configurações
+          </Button>
+        </Link>
         <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => signOut()}>
           <LogOut className="h-4 w-4" /> Sair
         </Button>
