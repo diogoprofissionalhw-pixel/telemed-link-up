@@ -112,9 +112,9 @@ function DashboardPage() {
     >
       {user && profile && (
         <>
-          <DashboardStats userId={user.id} userType={profile.account_type} />
-          <div className="mt-8">
-            {profile.account_type === "doctor"
+          {isDoctor && <DashboardStats userId={user.id} userType={profile.account_type} />}
+          <div className={isDoctor ? "mt-8" : ""}>
+            {isDoctor
               ? <DoctorPanel userId={user.id} />
               : <NetworkPanel userId={user.id} />}
           </div>
