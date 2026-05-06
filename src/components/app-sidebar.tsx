@@ -22,13 +22,8 @@ interface MenuItem {
 }
 
 const DOCTOR_MENU: MenuItem[] = [
-  { label: "Dashboard",     icon: Home,        to: "/dashboard" },
-  { label: "Solicitações",  icon: Inbox,       to: "/solicitacoes" },
-  { label: "Consultas",     icon: Stethoscope, to: "/consultas" },
-  { label: "Agenda",        icon: Calendar,    to: "/agenda" },
-  { label: "Histórico",     icon: Clock,       to: "/historico" },
-  { label: "Perfil",        icon: User,        to: "/perfil" },
-  { label: "Configurações", icon: Settings,    to: "/configuracoes" },
+  { label: "Dashboard", icon: Home, to: "/dashboard" },
+  { label: "Perfil",    icon: User, to: "/perfil" },
 ];
 
 const NETWORK_MENU: MenuItem[] = [
@@ -38,7 +33,6 @@ const NETWORK_MENU: MenuItem[] = [
   { label: "Contratações",      icon: Briefcase,  to: "/contratacoes" },
   { label: "Relatórios",        icon: BarChart3,  to: "/relatorios" },
   { label: "Perfil da empresa", icon: Building2,  to: "/perfil-empresa" },
-  { label: "Configurações",     icon: Settings,   to: "/configuracoes" },
 ];
 
 interface SidebarItemProps {
