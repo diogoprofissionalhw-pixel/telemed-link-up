@@ -249,7 +249,6 @@ function DoctorPanel({ userId }: { userId: string }) {
   };
 
   const pending = requests.filter(r => r.status === "pending");
-  const others = requests.filter(r => r.status !== "pending");
 
   return (
     <div className="space-y-8">
