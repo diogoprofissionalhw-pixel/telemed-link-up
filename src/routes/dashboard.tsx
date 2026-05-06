@@ -390,16 +390,9 @@ function NetworkPanel({ userId }: { userId: string }) {
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Suas solicitações</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" /> Nova solicitação</Button>
-          </DialogTrigger>
-          <NewRequestDialog
-            networkId={userId}
-            onCreated={() => { setOpen(false); load(); }}
-            onViewProfile={(id) => setProfileDoctorId(id)}
-          />
-        </Dialog>
+        <Link to="/solicitar">
+          <Button className="gap-2"><Plus className="h-4 w-4" /> Nova solicitação</Button>
+        </Link>
       </div>
 
       {loading ? (

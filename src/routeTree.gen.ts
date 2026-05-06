@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as SolicitacoesRouteImport } from './routes/solicitacoes'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -24,6 +25,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SolicitarRoute = SolicitarRouteImport.update({
+  id: '/solicitar',
+  path: '/solicitar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitacoesRoute = SolicitacoesRouteImport.update({
   id: '/solicitacoes',
   path: '/solicitacoes',
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitacoes': typeof SolicitacoesRoute
+  '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitacoes': typeof SolicitacoesRoute
+  '/solicitar': typeof SolicitarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
   '/solicitacoes': typeof SolicitacoesRoute
+  '/solicitar': typeof SolicitarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/relatorios'
     | '/solicitacoes'
+    | '/solicitar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/relatorios'
     | '/solicitacoes'
+    | '/solicitar'
   id:
     | '__root__'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/relatorios'
     | '/solicitacoes'
+    | '/solicitar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -210,10 +222,18 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   RelatoriosRoute: typeof RelatoriosRoute
   SolicitacoesRoute: typeof SolicitacoesRoute
+  SolicitarRoute: typeof SolicitarRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/solicitar': {
+      id: '/solicitar'
+      path: '/solicitar'
+      fullPath: '/solicitar'
+      preLoaderRoute: typeof SolicitarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitacoes': {
       id: '/solicitacoes'
       path: '/solicitacoes'
@@ -330,6 +350,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   RelatoriosRoute: RelatoriosRoute,
   SolicitacoesRoute: SolicitacoesRoute,
+  SolicitarRoute: SolicitarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
