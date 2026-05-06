@@ -46,6 +46,9 @@ function AuthPage() {
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <SiteHeader />
       <div className="mx-auto flex max-w-md flex-col px-4 py-12">
+        <Link to="/" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> Voltar ao início
+        </Link>
         <div className="rounded-2xl border bg-card p-6 sm:p-8" style={{ boxShadow: "var(--shadow-card)" }}>
           <h1 className="text-2xl font-bold">Acessar Connect-Med</h1>
           <p className="mt-1 text-sm text-muted-foreground">Entre ou crie sua conta para continuar.</p>
