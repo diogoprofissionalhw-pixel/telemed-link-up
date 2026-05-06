@@ -1,10 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink,
   ShieldCheck, ShieldAlert, ShieldQuestion, CheckCircle2, AlertCircle,
-  DollarSign, Clock, Award, User, Phone, Briefcase,
+  DollarSign, Clock, Award, User, Phone, Briefcase, ArrowLeft,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -36,6 +36,13 @@ function PerfilPage() {
         ? "Preencha suas informações para ser encontrado pelas redes de telemedicina."
         : "Mantenha suas informações atualizadas."}
       breadcrumbs={[{ label: "Perfil" }]}
+      actions={
+        <Link to="/dashboard">
+          <Button variant="outline" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao dashboard
+          </Button>
+        </Link>
+      }
     >
       {user && profile && (
         isDoctor ? (
