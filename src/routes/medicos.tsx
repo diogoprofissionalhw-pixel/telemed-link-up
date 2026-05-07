@@ -163,9 +163,6 @@ function DoctorsPage() {
 interface PanelProps {
   query: string; setQuery: (v: string) => void;
   clear: () => void;
-
-  allSpecialties: string[];
-  allLocations: string[];
 }
 
 function FilterPanel({ query, setQuery, clear }: PanelProps) {
