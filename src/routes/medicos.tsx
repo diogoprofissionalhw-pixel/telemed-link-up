@@ -204,10 +204,15 @@ interface PanelProps {
 
 function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations }: PanelProps) {
   const [specQ, setSpecQ] = useState("");
+  const [locQ, setLocQ] = useState("");
   const filteredSpecs = useMemo(() => {
     const t = specQ.trim().toLowerCase();
     return t ? allSpecialties.filter(s => s.toLowerCase().includes(t)) : allSpecialties;
   }, [specQ, allSpecialties]);
+  const filteredLocs = useMemo(() => {
+    const t = locQ.trim().toLowerCase();
+    return t ? allLocations.filter(l => l.toLowerCase().includes(t)) : allLocations;
+  }, [locQ, allLocations]);
 
   return (
     <div className="space-y-6">
