@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Search, Star, MapPin, Filter, X, ArrowLeft, Stethoscope, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
@@ -44,10 +44,6 @@ function DoctorsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [specs, setSpecs] = useState<string[]>([]);
-  const [locs, setLocs] = useState<string[]>([]);
-  const [minRate, setMinRate] = useState(0);
-  const [maxRate, setMaxRate] = useState(1000);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -89,42 +85,15 @@ function DoctorsPage() {
     })();
   }, []);
 
-  const allSpecialties = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => {
-      if (d.specialty) set.add(d.specialty);
-      d.specialties.forEach((s) => set.add(s));
-    });
-    return Array.from(set).sort();
-  }, [doctors]);
-
-  const allLocations = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => {
-      const loc = [d.city, d.state].filter(Boolean).join(", ");
-      if (loc) set.add(loc);
-    });
-    return Array.from(set).sort();
-  }, [doctors]);
-
-  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return doctors.filter((d) => {
-      const loc = [d.city, d.state].filter(Boolean).join(", ");
-      if (q && !(d.full_name.toLowerCase().includes(q) || d.specialty?.toLowerCase().includes(q) || d.specialties.some(s => s.toLowerCase().includes(q)))) return false;
-      if (specs.length > 0 && !(specs.includes(d.specialty) || d.specialties.some(s => specs.includes(s)))) return false;
-      if (locs.length > 0 && !locs.includes(loc)) return false;
-      const fee = d.consultation_fee ?? 0;
-      if (fee < minRate || fee > maxRate) return false;
-      return true;
-    });
-  }, [doctors, query, specs, locs, minRate, maxRate]);
+    if (!q) return doctors;
+    return doctors.filter((d) => d.full_name.toLowerCase().includes(q));
+  }, [doctors, query]);
 
-  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); };
+  const clear = () => setQuery("");
 
-  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations };
+  const panelProps = { query, setQuery, clear };
 
   return (
     <div className="min-h-screen bg-background">
@@ -144,7 +113,7 @@ function DoctorsPage() {
           <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
             <aside className="hidden lg:block">
               <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
-                <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Buscar</h3>
                 <FilterPanel {...panelProps} />
               </div>
             </aside>
@@ -157,17 +126,17 @@ function DoctorsPage() {
                 <Sheet open={open} onOpenChange={setOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" size="sm" className="gap-2 lg:hidden">
-                      <Filter className="h-4 w-4" /> Filtros
+                      <Filter className="h-4 w-4" /> Buscar
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
-                    <SheetTitle className="sr-only">Filtros</SheetTitle>
+                    <SheetTitle className="sr-only">Buscar</SheetTitle>
                     <div className="mb-4 flex items-center justify-between">
-                      <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                      <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Buscar</h3>
                       <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
                     </div>
                     <FilterPanel {...panelProps} />
-                    <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
+                    <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar</Button>
                   </SheetContent>
                 </Sheet>
               </div>
@@ -177,7 +146,7 @@ function DoctorsPage() {
                   <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
                 ) : filtered.length === 0 ? (
                   <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
-                    {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado com esses filtros."}
+                    {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado."}
                   </div>
                 ) : (
                   filtered.map((d) => <DoctorCard key={d.id} d={d} />)
@@ -193,73 +162,21 @@ function DoctorsPage() {
 
 interface PanelProps {
   query: string; setQuery: (v: string) => void;
-  specs: string[]; toggleSpec: (s: string) => void;
-  locs: string[]; toggleLoc: (l: string) => void;
-  minRate: number; setMinRate: (n: number) => void;
-  maxRate: number; setMaxRate: (n: number) => void;
   clear: () => void;
-  allSpecialties: string[];
-  allLocations: string[];
 }
 
-function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations }: PanelProps) {
-  const [specQ, setSpecQ] = useState("");
-  const filteredSpecs = useMemo(() => {
-    const t = specQ.trim().toLowerCase();
-    return t ? allSpecialties.filter(s => s.toLowerCase().includes(t)) : allSpecialties;
-  }, [specQ, allSpecialties]);
-
+function FilterPanel({ query, setQuery, clear }: PanelProps) {
   return (
     <div className="space-y-6">
       <div>
-        <label className="mb-2 block text-sm font-medium">Busca</label>
+        <label className="mb-2 block text-sm font-medium">Busca por nome</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou especialidade..." className="pl-9" />
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Especialidades</p>
-        <Input value={specQ} onChange={(e) => setSpecQ(e.target.value)} placeholder="Buscar especialidade..." className="mb-2 h-8 text-xs" />
-        <div className="space-y-2 max-h-48 overflow-auto pr-1">
-          {filteredSpecs.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhuma especialidade.</p>
-          ) : filteredSpecs.map((s) => (
-            <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
-              <span>{s}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Localização</p>
-        <div className="space-y-2 max-h-40 overflow-auto pr-1">
-          {allLocations.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhuma localização.</p>
-          ) : allLocations.map((l) => (
-            <label key={l} className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox checked={locs.includes(l)} onCheckedChange={() => toggleLoc(l)} />
-              <span>{l}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Valor consulta (R$)</p>
-        <div className="space-y-3">
-          <div>
-            <div className="flex justify-between text-xs text-muted-foreground"><span>Mínimo</span><span>R$ {minRate}</span></div>
-            <input type="range" min={0} max={1000} step={10} value={minRate} onChange={(e) => setMinRate(Number(e.target.value))} className="w-full accent-primary" />
-          </div>
-          <div>
-            <div className="flex justify-between text-xs text-muted-foreground"><span>Máximo</span><span>R$ {maxRate}</span></div>
-            <input type="range" min={0} max={1000} step={10} value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))} className="w-full accent-primary" />
-          </div>
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome do médico..." className="pl-9" />
         </div>
       </div>
       <button type="button" onClick={clear} className="text-sm font-medium text-primary hover:underline">
-        Limpar filtros
+        Limpar busca
       </button>
     </div>
   );
