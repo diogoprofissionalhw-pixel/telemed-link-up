@@ -215,7 +215,7 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
         <label className="mb-2 block text-sm font-medium">Busca</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou especialidade..." className="pl-9" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome" className="pl-9" />
         </div>
       </div>
       <div>
