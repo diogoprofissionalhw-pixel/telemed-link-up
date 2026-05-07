@@ -38,8 +38,8 @@ function LandingPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <Hero />
-      <HowItWorksNetworks />
       <HowItWorksDoctors />
+      <HowItWorksNetworks />
       <Benefits />
       <ExploreDoctors />
       <FinalCTA />
