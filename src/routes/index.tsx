@@ -313,7 +313,7 @@ function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-background/70">
             <li><Link to="/auth" search={{ mode: "signup" }} className="hover:text-background">Para Redes</Link></li>
             <li><Link to="/auth" search={{ mode: "signup" }} className="hover:text-background">Para Médicos</Link></li>
-            <li><Link to="/dashboard" className="hover:text-background">Painel</Link></li>
+            
           </ul>
         </div>
         <div>
