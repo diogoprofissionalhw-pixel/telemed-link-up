@@ -58,7 +58,7 @@ function Hero() {
       <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <img src={logo} alt="Connect-Med" className="mb-6 h-24 w-auto sm:h-32 lg:h-40 drop-shadow-sm" />
+            <img src={logo} alt="Connect-Med" width="160" height="160" fetchPriority="high" decoding="async" className="mb-6 h-24 w-auto sm:h-32 lg:h-40 drop-shadow-sm" />
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-success" /> Plataforma de telemedicina
             </div>
@@ -305,7 +305,7 @@ function Footer() {
     <footer className="bg-foreground text-background">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <img src={logo} alt="Connect-Med" className="h-10 w-auto brightness-0 invert" />
+          <img src={logo} alt="Connect-Med" width="40" height="40" loading="lazy" decoding="async" className="h-10 w-auto brightness-0 invert" />
           <p className="mt-3 text-sm text-background/70">
             Plataforma para conectar médicos e redes de telemedicina com agilidade e segurança.
           </p>
