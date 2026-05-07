@@ -202,64 +202,18 @@ interface PanelProps {
   allLocations: string[];
 }
 
-function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations }: PanelProps) {
-  const [specQ, setSpecQ] = useState("");
-  const filteredSpecs = useMemo(() => {
-    const t = specQ.trim().toLowerCase();
-    return t ? allSpecialties.filter(s => s.toLowerCase().includes(t)) : allSpecialties;
-  }, [specQ, allSpecialties]);
-
+function FilterPanel({ query, setQuery, clear }: PanelProps) {
   return (
     <div className="space-y-6">
       <div>
-        <label className="mb-2 block text-sm font-medium">Busca</label>
+        <label className="mb-2 block text-sm font-medium">Busca por nome</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou especialidade..." className="pl-9" />
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Especialidades</p>
-        <Input value={specQ} onChange={(e) => setSpecQ(e.target.value)} placeholder="Buscar especialidade..." className="mb-2 h-8 text-xs" />
-        <div className="space-y-2 max-h-48 overflow-auto pr-1">
-          {filteredSpecs.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhuma especialidade.</p>
-          ) : filteredSpecs.map((s) => (
-            <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox checked={specs.includes(s)} onCheckedChange={() => toggleSpec(s)} />
-              <span>{s}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Localização</p>
-        <div className="space-y-2 max-h-40 overflow-auto pr-1">
-          {allLocations.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nenhuma localização.</p>
-          ) : allLocations.map((l) => (
-            <label key={l} className="flex cursor-pointer items-center gap-2 text-sm">
-              <Checkbox checked={locs.includes(l)} onCheckedChange={() => toggleLoc(l)} />
-              <span>{l}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className="mb-2 text-sm font-medium">Valor consulta (R$)</p>
-        <div className="space-y-3">
-          <div>
-            <div className="flex justify-between text-xs text-muted-foreground"><span>Mínimo</span><span>R$ {minRate}</span></div>
-            <input type="range" min={0} max={1000} step={10} value={minRate} onChange={(e) => setMinRate(Number(e.target.value))} className="w-full accent-primary" />
-          </div>
-          <div>
-            <div className="flex justify-between text-xs text-muted-foreground"><span>Máximo</span><span>R$ {maxRate}</span></div>
-            <input type="range" min={0} max={1000} step={10} value={maxRate} onChange={(e) => setMaxRate(Number(e.target.value))} className="w-full accent-primary" />
-          </div>
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome do médico..." className="pl-9" />
         </div>
       </div>
       <button type="button" onClick={clear} className="text-sm font-medium text-primary hover:underline">
-        Limpar filtros
+        Limpar busca
       </button>
     </div>
   );
