@@ -239,10 +239,11 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
       </div>
       <div>
         <p className="mb-2 text-sm font-medium">Localização</p>
+        <Input value={locQ} onChange={(e) => setLocQ(e.target.value)} placeholder="Buscar localização..." className="mb-2 h-8 text-xs" />
         <div className="space-y-2 max-h-40 overflow-auto pr-1">
-          {allLocations.length === 0 ? (
+          {filteredLocs.length === 0 ? (
             <p className="text-xs text-muted-foreground">Nenhuma localização.</p>
-          ) : allLocations.map((l) => (
+          ) : filteredLocs.map((l) => (
             <label key={l} className="flex cursor-pointer items-center gap-2 text-sm">
               <Checkbox checked={locs.includes(l)} onCheckedChange={() => toggleLoc(l)} />
               <span>{l}</span>
