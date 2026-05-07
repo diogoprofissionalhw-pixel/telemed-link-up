@@ -305,7 +305,7 @@ function Footer() {
     <footer className="bg-foreground text-background">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <img src={logo} alt="Connect-Med" className="h-10 w-auto brightness-0 invert" />
+          <img src={logo} alt="Connect-Med" width="40" height="40" loading="lazy" decoding="async" className="h-10 w-auto brightness-0 invert" />
           <p className="mt-3 text-sm text-background/70">
             Plataforma para conectar médicos e redes de telemedicina com agilidade e segurança.
           </p>
