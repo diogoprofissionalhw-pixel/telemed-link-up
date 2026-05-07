@@ -38,8 +38,8 @@ function LandingPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <Hero />
-      <HowItWorksNetworks />
       <HowItWorksDoctors />
+      <HowItWorksNetworks />
       <Benefits />
       <ExploreDoctors />
       <FinalCTA />
@@ -150,26 +150,6 @@ function StepCard({ n, title, desc }: { n: number; title: string; desc: string }
   );
 }
 
-function HowItWorksNetworks() {
-  return (
-    <section className="bg-card">
-      <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold sm:text-4xl">
-            Como funciona para <span className="text-primary">Redes de Telemedicina</span>
-          </h2>
-          <p className="mt-3 text-muted-foreground">Três passos simples para gerenciar seus plantões.</p>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          <StepCard n={1} title="Solicite" desc="Crie e publique plantões com facilidade, definindo especialidade, data e horário. Seu plantão fica visível para médicos qualificados." />
-          <StepCard n={2} title="Conecte" desc="Receba propostas de médicos qualificados e verifique perfis. Escolha o melhor profissional para seu plantão." />
-          <StepCard n={3} title="Agende" desc="Confirme o plantão e gerencie sua equipe médica com eficiência. Tudo organizado em um único lugar." />
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HowItWorksDoctors() {
   return (
     <section style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--background))" }}>
@@ -178,12 +158,34 @@ function HowItWorksDoctors() {
           <h2 className="text-3xl font-bold sm:text-4xl">
             Como funciona para <span className="text-primary">Médicos</span>
           </h2>
-          <p className="mt-3 text-muted-foreground">Encontre plantões que se encaixam na sua agenda.</p>
+          <p className="mt-3 text-muted-foreground">Crie seu perfil e seja encontrado pelas melhores redes de telemedicina.</p>
         </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          <StepCard n={1} title="Encontre" desc="Navegue por plantões disponíveis que se alinham à sua especialidade e disponibilidade. Filtros inteligentes facilitam a busca." />
-          <StepCard n={2} title="Responda" desc="Responda rapidamente às solicitações de plantão com um clique. Aceite ou recuse conforme sua disponibilidade." />
-          <StepCard n={3} title="Trabalhe" desc="Realize seus plantões de telemedicina e receba pagamentos de forma segura. Sem complicações, sem atrasos." />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <StepCard n={1} title="Cadastre-se" desc="Crie sua conta gratuita em poucos minutos informando seus dados básicos e CRM." />
+          <StepCard n={2} title="Monte seu perfil" desc="Adicione especialidades, experiência, formação, certificações, valor da consulta e disponibilidade. Seu perfil fica visível para todas as redes da plataforma." />
+          <StepCard n={3} title="Receba solicitações" desc="As redes encontram seu perfil pelos filtros e enviam solicitações de plantão. Você aceita ou recusa com um clique." />
+          <StepCard n={4} title="Trabalhe e receba" desc="Realize seus plantões, converse pelo chat integrado e receba avaliações que reforçam sua reputação." />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HowItWorksNetworks() {
+  return (
+    <section className="bg-card">
+      <div className="mx-auto max-w-6xl px-4 py-20">
+        <div className="text-center">
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Como funciona para <span className="text-primary">Redes de Telemedicina</span>
+          </h2>
+          <p className="mt-3 text-muted-foreground">Encontre o médico certo, filtre, contate e agende — tudo em um só lugar.</p>
+        </div>
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <StepCard n={1} title="Cadastre sua rede" desc="Crie a conta da sua rede de telemedicina com CNPJ e dados de contato." />
+          <StepCard n={2} title="Explore médicos" desc="Navegue pela rede de profissionais com filtros de especialidade, localização, valor da consulta e avaliações. Veja o perfil completo de cada médico." />
+          <StepCard n={3} title="Solicite o plantão" desc="Envie a solicitação direto para o médico escolhido informando data, horário, duração e valor combinado." />
+          <StepCard n={4} title="Acompanhe e avalie" desc="Converse pelo chat, receba lembretes automáticos do plantão e avalie o profissional após a finalização." />
         </div>
       </div>
     </section>
