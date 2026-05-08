@@ -17,8 +17,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeaderProps) {
   return (
-    <div className="mb-6 space-y-3">
-
+    <div className="mb-8 space-y-3 border-b pb-6">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Link to="/dashboard" className="flex items-center gap-1 hover:text-foreground">
@@ -38,12 +37,12 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions }: PageHeader
           ))}
         </nav>
       )}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold tracking-tight md:text-[28px] md:leading-tight">{title}</h1>
+          {subtitle && <p className="mt-1.5 text-sm text-muted-foreground">{subtitle}</p>}
         </div>
-        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
     </div>
   );
