@@ -964,10 +964,10 @@ function RequestCard({
   const PIcon = periodIcon(req.shift_period);
 
   return (
-    <div className="rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+    <div className="flex flex-col rounded-xl border bg-card p-5 transition-shadow hover:shadow-md" style={{ boxShadow: "var(--shadow-card)" }}>
       <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 border">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar className="h-11 w-11 border">
             {avatarUrl && <AvatarImage src={avatarUrl} alt={counterpartName} />}
             <AvatarFallback className="bg-accent">
               {viewerType === "doctor"
@@ -975,15 +975,15 @@ function RequestCard({
                 : <Stethoscope className="h-5 w-5 text-primary" />}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <p className="font-semibold leading-tight">{counterpartName}</p>
-            <p className="text-xs text-muted-foreground">{counterpartSubtitle}</p>
+          <div className="min-w-0">
+            <p className="truncate font-semibold leading-tight">{counterpartName}</p>
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">{counterpartSubtitle}</p>
           </div>
         </div>
         {statusBadge(req.status)}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-muted/50 p-3 text-sm">
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2.5 rounded-lg border bg-muted/40 p-3.5 text-sm">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="font-medium capitalize">{formatDate(req.shift_date)}</span>
@@ -994,64 +994,66 @@ function RequestCard({
         </div>
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{req.start_time.slice(0,5)} → {req.end_time.slice(0,5)}</span>
+          <span className="font-medium tabular-nums">{req.start_time.slice(0,5)} → {req.end_time.slice(0,5)}</span>
         </div>
         <div className="flex items-center gap-2">
           <DollarSign className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">
+          <span className="font-medium tabular-nums">
             {req.agreed_value != null
               ? req.agreed_value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : "A combinar"}
           </span>
         </div>
-        <div className="col-span-2 text-xs text-muted-foreground">
-          Duração: <strong className="text-foreground">{req.duration_hours}h</strong>
+        <div className="col-span-2 border-t pt-2 text-xs text-muted-foreground">
+          Duração: <strong className="text-foreground tabular-nums">{req.duration_hours}h</strong>
         </div>
       </div>
 
       {req.notes && (
-        <p className="mt-3 rounded-lg bg-accent/50 px-3 py-2 text-sm text-accent-foreground">
+        <p className="mt-3 rounded-lg bg-accent/50 px-3 py-2 text-sm leading-relaxed text-accent-foreground">
           {req.notes}
         </p>
       )}
 
-      {viewerType === "doctor" && req.status === "pending" && onAccept && onDecline && (
-        <div className="mt-4 flex gap-2">
-          <Button onClick={onAccept} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
-            Aceitar
-          </Button>
-          <Button onClick={onDecline} variant="outline" className="flex-1">
-            Recusar
-          </Button>
-        </div>
-      )}
+      <div className="mt-auto pt-4">
+        {viewerType === "doctor" && req.status === "pending" && onAccept && onDecline && (
+          <div className="mb-2 flex gap-2">
+            <Button onClick={onAccept} className="flex-1 bg-success text-success-foreground hover:bg-success/90">
+              Aceitar
+            </Button>
+            <Button onClick={onDecline} variant="outline" className="flex-1">
+              Recusar
+            </Button>
+          </div>
+        )}
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        {onChat && (
-          <Button onClick={onChat} variant="outline" size="sm" className="gap-1.5 flex-1">
-            <MessageSquare className="h-4 w-4" /> Mensagens
-          </Button>
-        )}
-        {viewerType === "network" && onViewProfile && (
-          <Button onClick={onViewProfile} variant="outline" size="sm" className="gap-1.5 flex-1">
-            <UserIcon className="h-4 w-4" /> Currículo
-          </Button>
-        )}
-        {viewerType === "network" && req.status === "accepted" && onRate && (
-          <Button onClick={onRate} variant="outline" size="sm" className="gap-1.5 flex-1">
-            <Star className="h-4 w-4" /> Avaliar
-          </Button>
-        )}
-        {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
-          <Button
-            onClick={onCancel}
-            variant="outline"
-            size="sm"
-            className="flex-1 text-destructive hover:text-destructive"
-          >
-            Cancelar
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {onChat && (
+            <Button onClick={onChat} variant="outline" size="sm" className="flex-1 gap-1.5">
+              <MessageSquare className="h-4 w-4" /> Mensagens
+            </Button>
+          )}
+          {viewerType === "network" && onViewProfile && (
+            <Button onClick={onViewProfile} variant="outline" size="sm" className="flex-1 gap-1.5">
+              <UserIcon className="h-4 w-4" /> Currículo
+            </Button>
+          )}
+          {viewerType === "network" && req.status === "accepted" && onRate && (
+            <Button onClick={onRate} variant="outline" size="sm" className="flex-1 gap-1.5">
+              <Star className="h-4 w-4" /> Avaliar
+            </Button>
+          )}
+          {viewerType === "network" && (req.status === "pending" || req.status === "accepted") && onCancel && (
+            <Button
+              onClick={onCancel}
+              variant="outline"
+              size="sm"
+              className="flex-1 text-destructive hover:text-destructive"
+            >
+              Cancelar
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
