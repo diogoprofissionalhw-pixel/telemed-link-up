@@ -392,13 +392,16 @@ function NetworkPanel({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       <NetworkAnalytics networkId={userId} />
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Suas solicitações</h2>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Atividade</p>
+          <h2 className="mt-1 text-lg font-semibold tracking-tight">Suas solicitações</h2>
+        </div>
         <Link to="/solicitar">
-          <Button className="gap-2"><Plus className="h-4 w-4" /> Nova solicitação</Button>
+          <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Nova solicitação</Button>
         </Link>
       </div>
 
