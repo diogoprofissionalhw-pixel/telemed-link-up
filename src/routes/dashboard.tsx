@@ -258,21 +258,21 @@ function DoctorPanel({ userId }: { userId: string }) {
   const pending = requests.filter(r => r.status === "pending");
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-end">
-        <Link to="/profile">
-          <Button variant="outline" className="gap-2">
-            <UserCog className="h-4 w-4" /> Editar meu perfil
-          </Button>
-        </Link>
-      </div>
-
+    <div className="space-y-10">
       <ReputationSummary doctorId={userId} />
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Solicitações pendentes ({pending.length})</h2>
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Pendentes</p>
+            <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações aguardando resposta</h2>
+          </div>
+          {!loading && pending.length > 0 && (
+            <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-primary">{pending.length}</span>
+          )}
+        </div>
         {loading ? (
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-sm text-muted-foreground">Carregando...</p>
         ) : pending.length === 0 ? (
           <EmptyStateBox icon={Inbox} title="Nenhuma solicitação pendente no momento." />
         ) : (
