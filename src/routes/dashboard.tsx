@@ -109,16 +109,23 @@ function DashboardPage() {
       title={profile ? `Olá, ${profile.full_name.split(" ")[0]}` : "Dashboard"}
       subtitle={isDoctor ? "Resumo do seu painel médico." : "Resumo da sua rede."}
       breadcrumbs={[{ label: "Dashboard" }]}
+      actions={
+        isDoctor ? (
+          <Link to="/profile">
+            <Button variant="outline" size="sm" className="gap-2">
+              <UserCog className="h-4 w-4" /> Editar perfil
+            </Button>
+          </Link>
+        ) : undefined
+      }
     >
       {user && profile && (
-        <>
+        <div className="space-y-10">
           {isDoctor && <DashboardStats userId={user.id} userType={profile.account_type} />}
-          <div className={isDoctor ? "mt-8" : ""}>
-            {isDoctor
-              ? <DoctorPanel userId={user.id} />
-              : <NetworkPanel userId={user.id} />}
-          </div>
-        </>
+          {isDoctor
+            ? <DoctorPanel userId={user.id} />
+            : <NetworkPanel userId={user.id} />}
+        </div>
       )}
     </DashboardLayout>
   );
