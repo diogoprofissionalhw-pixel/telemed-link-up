@@ -321,6 +321,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -547,7 +548,10 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
 
         <SectionCard title="Especialidades" icon={Stethoscope}>
           <p className="text-sm text-muted-foreground">Selecione suas especialidades de atuação (até 10).</p>
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="relative flex flex-wrap gap-2 overflow-hidden transition-[max-height] duration-300"
+            style={{ maxHeight: showAllSpecs ? "1200px" : "212px" }}
+          >
             {SPECIALTY_OPTIONS.map((s) => {
               const active = specialties.includes(s);
               return (
@@ -560,8 +564,16 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
                 </button>
               );
             })}
+            {!showAllSpecs && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-card to-transparent" />
+            )}
           </div>
-          <div className="text-xs text-muted-foreground">{specialties.length} selecionada(s)</div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground">{specialties.length} selecionada(s)</span>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAllSpecs(v => !v)}>
+              {showAllSpecs ? "Ver menos" : "Ver mais"}
+            </Button>
+          </div>
         </SectionCard>
 
         <SectionCard title="Experiência Profissional" icon={Briefcase}>
