@@ -393,7 +393,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Informe seu nome");
-    if (!specialty.trim()) return toast.error("Informe sua especialidade principal");
+    if (specialties.length === 0) return toast.error("Selecione pelo menos uma especialidade");
     if (!crmFormatOk) return toast.error("CRM inválido — use 4 a 7 dígitos e UF de 2 letras");
     if (email && !isValidEmail(email)) return toast.error("E-mail inválido");
     if (phone && !isValidPhone(phone)) return toast.error("Telefone inválido");
