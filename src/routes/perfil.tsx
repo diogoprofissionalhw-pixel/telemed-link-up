@@ -472,15 +472,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
             <Label htmlFor="name">Nome completo *</Label>
             <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Ex: Dr. Carlos Silva" required />
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="sm:col-span-1">
-              <Label htmlFor="spec">Especialidade principal *</Label>
-              <select id="spec" value={specialty} onChange={(e) => setSpecialty(e.target.value)} required
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">Selecione</option>
-                {SPECIALTY_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="crm">CRM *</Label>
               <Input id="crm" value={crm} maxLength={7} onChange={(e) => setCrm(e.target.value.replace(/\D/g, ""))} placeholder="123456" required />
