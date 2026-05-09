@@ -178,9 +178,59 @@ function PdfUploader({
 const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
 const SPECIALTY_OPTIONS = [
-  "Clínica Geral", "Telemedicina", "Pediatria", "Cardiologia", "Psiquiatria",
-  "Ginecologia", "Dermatologia", "Endocrinologia", "Neurologia", "Ortopedia",
-  "Medicina de Família", "Geriatria",
+  "Alergia e Imunologia",
+  "Anestesiologia",
+  "Angiologia",
+  "Cardiologia",
+  "Cirurgia Bariátrica",
+  "Cirurgia Cardiovascular",
+  "Cirurgia da Mão",
+  "Cirurgia de Cabeça e Pescoço",
+  "Cirurgia do Aparelho Digestivo",
+  "Cirurgia Geral",
+  "Cirurgia Oncológica",
+  "Cirurgia Pediátrica",
+  "Cirurgia Plástica",
+  "Cirurgia Torácica",
+  "Cirurgia Vascular",
+  "Clínica Médica (Medicina Interna)",
+  "Coloproctologia",
+  "Dermatologia",
+  "Endocrinologia e Metabologia",
+  "Endoscopia Digestiva",
+  "Gastroenterologia",
+  "Geriatria",
+  "Ginecologia e Obstetrícia",
+  "Hematologia e Hemoterapia",
+  "Homeopatia",
+  "Infectologia",
+  "Mastologia",
+  "Medicina de Família e Comunidade",
+  "Medicina do Trabalho",
+  "Medicina do Tráfego",
+  "Medicina Esportiva",
+  "Medicina Física e Reabilitação",
+  "Medicina Intensiva",
+  "Medicina Legal e Perícia Médica",
+  "Medicina Nuclear",
+  "Nefrologia",
+  "Neurocirurgia",
+  "Neurologia",
+  "Nutrologia",
+  "Oftalmologia",
+  "Oncologia Clínica",
+  "Ortopedia e Traumatologia",
+  "Otorrinolaringologia",
+  "Patologia",
+  "Patologia Clínica/Medicina Laboratorial",
+  "Pediatria",
+  "Pneumologia",
+  "Psiquiatria",
+  "Radiologia e Diagnóstico por Imagem",
+  "Radioterapia",
+  "Reumatologia",
+  "Tocoginecologia",
+  "Urologia",
 ];
 
 const WEEKDAYS = [
@@ -319,20 +369,19 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const checklist = useMemo(() => ([
     { label: "Foto de perfil", ok: !!avatar },
     { label: "Nome completo", ok: name.trim().length >= 2 },
-    { label: "Especialidade principal", ok: !!specialty.trim() },
     { label: "Pelo menos 1 especialidade", ok: specialties.length >= 1 },
     { label: "E-mail válido", ok: isValidEmail(email) },
     { label: "Telefone válido", ok: isValidPhone(phone) },
     { label: "CRM válido", ok: crmFormatOk },
     { label: "Descrição (mín. 50)", ok: bio.trim().length >= 50 },
     { label: "Taxa de consulta", ok: !!fee && parseFloat(fee) > 0 },
-  ]), [avatar, name, specialty, specialties, email, phone, crmFormatOk, bio, fee]);
+  ]), [avatar, name, specialties, email, phone, crmFormatOk, bio, fee]);
   const completion = Math.round((checklist.filter(c => c.ok).length / checklist.length) * 100);
 
   const toggleSpecialty = (s: string) => {
     setSpecialties((cur) => {
       if (cur.includes(s)) return cur.filter(x => x !== s);
-      if (cur.length >= 6) { toast.error("Máximo 6 especialidades"); return cur; }
+      if (cur.length >= 10) { toast.error("Máximo 10 especialidades"); return cur; }
       return [...cur, s];
     });
   };
@@ -344,7 +393,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return toast.error("Informe seu nome");
-    if (!specialty.trim()) return toast.error("Informe sua especialidade principal");
+    if (specialties.length === 0) return toast.error("Selecione pelo menos uma especialidade");
     if (!crmFormatOk) return toast.error("CRM inválido — use 4 a 7 dígitos e UF de 2 letras");
     if (email && !isValidEmail(email)) return toast.error("E-mail inválido");
     if (phone && !isValidPhone(phone)) return toast.error("Telefone inválido");
@@ -360,7 +409,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
     if (pErr) { setSaving(false); return toast.error(pErr.message); }
 
     const { error: dErr } = await supabase.from("doctors").update({
-      specialty: specialty.trim(),
+      specialty: specialties[0] ?? null,
       specialties,
       crm: crm.trim(),
       crm_uf: crmUf.trim().toUpperCase(),
@@ -422,15 +471,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
             <Label htmlFor="name">Nome completo *</Label>
             <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Ex: Dr. Carlos Silva" required />
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="sm:col-span-1">
-              <Label htmlFor="spec">Especialidade principal *</Label>
-              <select id="spec" value={specialty} onChange={(e) => setSpecialty(e.target.value)} required
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">Selecione</option>
-                {SPECIALTY_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="crm">CRM *</Label>
               <Input id="crm" value={crm} maxLength={7} onChange={(e) => setCrm(e.target.value.replace(/\D/g, ""))} placeholder="123456" required />
@@ -505,7 +546,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
         </SectionCard>
 
         <SectionCard title="Especialidades" icon={Stethoscope}>
-          <p className="text-sm text-muted-foreground">Selecione 1 a 6 especialidades de atuação.</p>
+          <p className="text-sm text-muted-foreground">Selecione suas especialidades de atuação (até 10).</p>
           <div className="flex flex-wrap gap-2">
             {SPECIALTY_OPTIONS.map((s) => {
               const active = specialties.includes(s);
