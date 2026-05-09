@@ -409,7 +409,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
     if (pErr) { setSaving(false); return toast.error(pErr.message); }
 
     const { error: dErr } = await supabase.from("doctors").update({
-      specialty: specialty.trim(),
+      specialty: specialties[0] ?? null,
       specialties,
       crm: crm.trim(),
       crm_uf: crmUf.trim().toUpperCase(),
