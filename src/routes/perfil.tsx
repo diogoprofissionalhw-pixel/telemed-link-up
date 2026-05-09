@@ -369,20 +369,19 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
   const checklist = useMemo(() => ([
     { label: "Foto de perfil", ok: !!avatar },
     { label: "Nome completo", ok: name.trim().length >= 2 },
-    { label: "Especialidade principal", ok: !!specialty.trim() },
     { label: "Pelo menos 1 especialidade", ok: specialties.length >= 1 },
     { label: "E-mail válido", ok: isValidEmail(email) },
     { label: "Telefone válido", ok: isValidPhone(phone) },
     { label: "CRM válido", ok: crmFormatOk },
     { label: "Descrição (mín. 50)", ok: bio.trim().length >= 50 },
     { label: "Taxa de consulta", ok: !!fee && parseFloat(fee) > 0 },
-  ]), [avatar, name, specialty, specialties, email, phone, crmFormatOk, bio, fee]);
+  ]), [avatar, name, specialties, email, phone, crmFormatOk, bio, fee]);
   const completion = Math.round((checklist.filter(c => c.ok).length / checklist.length) * 100);
 
   const toggleSpecialty = (s: string) => {
     setSpecialties((cur) => {
       if (cur.includes(s)) return cur.filter(x => x !== s);
-      if (cur.length >= 6) { toast.error("Máximo 6 especialidades"); return cur; }
+      if (cur.length >= 10) { toast.error("Máximo 10 especialidades"); return cur; }
       return [...cur, s];
     });
   };
