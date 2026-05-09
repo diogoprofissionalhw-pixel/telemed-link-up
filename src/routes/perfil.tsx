@@ -546,7 +546,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
         </SectionCard>
 
         <SectionCard title="Especialidades" icon={Stethoscope}>
-          <p className="text-sm text-muted-foreground">Selecione 1 a 6 especialidades de atuação.</p>
+          <p className="text-sm text-muted-foreground">Selecione suas especialidades de atuação (até 10).</p>
           <div className="flex flex-wrap gap-2">
             {SPECIALTY_OPTIONS.map((s) => {
               const active = specialties.includes(s);
