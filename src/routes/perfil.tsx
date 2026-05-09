@@ -321,6 +321,7 @@ function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; full
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   useEffect(() => {
     (async () => {
