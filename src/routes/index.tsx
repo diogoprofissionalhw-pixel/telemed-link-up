@@ -218,25 +218,21 @@ function Benefits() {
         <div className="mt-12 grid gap-6 lg:grid-cols-2">
           <div className="rounded-2xl p-8" style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--background))", boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center gap-3">
-              <Building2 className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-semibold">Para Redes</h3>
-            </div>
-            <ul className="mt-6 space-y-4">
-              <BenefitItem title="Acesso a Talentos" desc="Ampla rede de médicos especializados e verificados." />
-              <BenefitItem title="Otimização de Tempo" desc="Redução do tempo de preenchimento de vagas." />
-              <BenefitItem title="Controle Total" desc="Gerenciamento simplificado de plantões e equipes." />
-            </ul>
-          </div>
-          <div className="rounded-2xl p-8" style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--background))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center gap-3">
               <Stethoscope className="h-6 w-6 text-primary" />
               <h3 className="text-xl font-semibold">Para Médicos</h3>
             </div>
-            <ul className="mt-6 space-y-4">
-              <BenefitItem title="Renda Extra" desc="Oportunidades de plantões complementares bem remunerados." />
-              <BenefitItem title="Autonomia" desc="Escolha quando e onde trabalhar, com total flexibilidade." />
-              <BenefitItem title="Suporte Dedicado" desc="Plataforma intuitiva com suporte sempre disponível." />
-            </ul>
+            <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+              A plataforma oferece novas oportunidades de atendimento, flexibilidade profissional e acesso facilitado a empresas e pacientes, com suporte tecnológico confiável e estrutura digital completa.
+            </p>
+          </div>
+          <div className="rounded-2xl p-8" style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--background))", boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center gap-3">
+              <Building2 className="h-6 w-6 text-primary" />
+              <h3 className="text-xl font-semibold">Para Empresas</h3>
+            </div>
+            <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+              A Connect-Med simplifica o acesso a profissionais qualificados, reduz custos operacionais e agiliza atendimentos médicos ocupacionais e clínicos, promovendo mais cuidado, produtividade e bem-estar aos colaboradores.
+            </p>
           </div>
         </div>
       </div>
