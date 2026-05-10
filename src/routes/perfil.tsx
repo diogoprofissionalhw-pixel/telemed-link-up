@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits, UF_LIST } from "@/lib/validators";
+import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
