@@ -1,10 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  Building2, Camera, FileText, Stethoscope, Upload, Trash2, ExternalLink,
-  ShieldCheck, ShieldAlert, ShieldQuestion, CheckCircle2, AlertCircle,
-  DollarSign, Clock, Award, User, Phone, Briefcase, ArrowLeft,
+  ArrowLeft, Camera, Trash2, Plus, Linkedin, Check, Upload,
+  Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -14,53 +13,928 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
-import { DoctorPortfolio } from "@/components/doctor-portfolio";
-import { DoctorExperiences } from "@/components/doctor-experiences";
+
+import { Progress } from "@/components/ui/progress";
 import {
-  isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits,
-} from "@/lib/validators";
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import { isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits, UF_LIST } from "@/lib/validators";
 
 export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
 });
 
+/* ================== CONSTANTS ================== */
+
+const SPECIALTIES = [
+  "Alergia e Imunologia","Anestesiologia","Angiologia","Cardiologia",
+  "Cirurgia Bariátrica","Cirurgia Cardiovascular","Cirurgia da Mão",
+  "Cirurgia de Cabeça e Pescoço","Cirurgia do Aparelho Digestivo",
+  "Cirurgia Geral","Cirurgia Oncológica","Cirurgia Pediátrica",
+  "Cirurgia Plástica","Cirurgia Torácica","Cirurgia Vascular",
+  "Clínica Médica","Coloproctologia","Dermatologia",
+  "Endocrinologia e Metabologia","Endoscopia Digestiva","Gastroenterologia",
+  "Geriatria","Ginecologia e Obstetrícia","Hematologia e Hemoterapia",
+  "Homeopatia","Infectologia","Mastologia","Medicina de Família e Comunidade",
+  "Medicina do Trabalho","Medicina do Tráfego","Medicina Esportiva",
+  "Medicina Física e Reabilitação","Medicina Intensiva","Medicina Legal e Perícia",
+  "Medicina Nuclear","Nefrologia","Neurocirurgia","Neurologia","Nutrologia",
+  "Oftalmologia","Oncologia Clínica","Ortopedia e Traumatologia",
+  "Otorrinolaringologia","Patologia","Patologia Clínica","Pediatria",
+  "Pneumologia","Psiquiatria","Radiologia e Diagnóstico por Imagem",
+  "Radioterapia","Reumatologia","Tocoginecologia","Urologia",
+];
+
+const WEEKDAYS = [
+  { v: 1, label: "Seg" },{ v: 2, label: "Ter" },{ v: 3, label: "Qua" },
+  { v: 4, label: "Qui" },{ v: 5, label: "Sex" },{ v: 6, label: "Sáb" },{ v: 0, label: "Dom" },
+];
+
+const TIMEZONES = [
+  { v: "America/Sao_Paulo", label: "Brasília (UTC−3)" },
+  { v: "America/Manaus", label: "Manaus (UTC−4)" },
+  { v: "America/Rio_Branco", label: "Rio Branco (UTC−5)" },
+];
+
+const BANKS = ["Itaú","Bradesco","Santander","Caixa","Banco do Brasil","Nubank","Inter","Outro"];
+
+/* ================== MOCK LINKEDIN DATA ================== */
+
+const MOCK_LINKEDIN = {
+  name: "Diogo Massaro",
+  email: "diogo.massaro@email.com",
+  picture: "https://api.dicebear.com/7.x/avataaars/svg?seed=Diogo",
+  location: "João Pessoa, PB, Brasil",
+  state: "PB",
+  city: "João Pessoa",
+  headline: "Médico Clínico Geral | Especialista em Telemedicina",
+  yearsExperience: 12,
+  education: "USP — Medicina (2010-2015)\nResidência em Clínica Médica — UNIFESP (2016-2018)\nEspecialização em Telemedicina — AMIB (2022)",
+  languages: "Português, Inglês, Espanhol",
+  experiences: [
+    { role: "Médico Clínico", institution: "Hospital do Trauma", start_date: "2018-01-01", end_date: "", description: "Atendimento clínico em pronto-socorro e enfermaria." },
+    { role: "Médico Plantonista", institution: "Hospital São Lucas", start_date: "2015-06-01", end_date: "2017-12-01", description: "Plantões clínicos em UTI." },
+  ],
+  certifications: [
+    { title: "Certificação em Telemedicina", issuer: "AMIB", issued_year: 2023 },
+    { title: "ACLS — Advanced Cardiac Life Support", issuer: "AHA", issued_year: 2022 },
+  ],
+  courses: [
+    { title: "Curso de Telemedicina Avançada", institution: "AMIB", hours: 80, completed_year: 2023 },
+  ],
+  publications: [
+    { title: "Diagnóstico clínico em telemedicina: revisão", journal: "Revista Brasileira de Medicina", year: 2023, url: "" },
+  ],
+};
+
+type Experience = { id?: string; role: string; institution: string; start_date: string; end_date: string; description: string };
+type Certification = { id?: string; title: string; issuer: string; issued_year: number | "" };
+type Course = { id?: string; title: string; institution: string; hours: number | ""; completed_year: number | "" };
+type Publication = { id?: string; title: string; journal: string; year: number | ""; url: string };
+
+/* ================== PAGE ================== */
+
 function PerfilPage() {
   const { user, profile, refreshProfile } = useAuth();
-  const isDoctor = profile?.account_type === "doctor";
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    if (profile && profile.account_type !== "doctor") {
+      navigate({ to: "/perfil-empresa" });
+    }
+  }, [profile, navigate]);
+
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-emerald-50/30">
+        <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+      </div>
+    );
+  }
+  if (profile.account_type !== "doctor") return null;
+
+  return <DoctorRegistration userId={user.id} fullName={profile.full_name} email={user.email ?? ""} onSaved={refreshProfile} />;
+}
+
+/* ================== HEADER ================== */
+
+function PageHeader() {
   return (
-    <DashboardLayout
-      title={isDoctor ? "Criar Meu Perfil Profissional" : "Perfil da rede"}
-      subtitle={isDoctor
-        ? "Preencha suas informações para ser encontrado pelas redes de telemedicina."
-        : "Mantenha suas informações atualizadas."}
-      breadcrumbs={[{ label: "Perfil" }]}
-      actions={
-        <Link to="/dashboard">
-          <Button variant="outline" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" /> Voltar ao dashboard
-          </Button>
+    <header className="border-b bg-white sticky top-0 z-30">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <Link to="/dashboard" className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">CM</div>
+          <span className="font-bold text-gray-900 text-lg" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
+            Connect-Med
+          </span>
         </Link>
-      }
-    >
-      {user && profile && (
-        isDoctor ? (
-          <DoctorProfileForm userId={user.id} fullName={profile.full_name} onSaved={refreshProfile} />
-        ) : (
-          <NetworkProfileForm userId={user.id} fullName={profile.full_name} onSaved={refreshProfile} />
-        )
-      )}
-    </DashboardLayout>
+        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
+          <ArrowLeft className="h-4 w-4" /> Voltar
+        </Link>
+      </div>
+    </header>
   );
 }
 
-/* ============== AVATAR UPLOADER ============== */
-function AvatarUploader({
-  userId, url, fallback, icon: Icon, onChange,
-}: {
-  userId: string; url: string | null; fallback: string;
-  icon: React.ComponentType<{ className?: string }>; onChange: (url: string | null) => void;
+/* ================== MAIN FORM ================== */
+
+function DoctorRegistration({
+  userId, fullName, email, onSaved,
+}: { userId: string; fullName: string; email: string; onSaved: () => void }) {
+  // Section state
+  const [linkedinConnected, setLinkedinConnected] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+
+  // Basic
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [name, setName] = useState(fullName);
+  const [emailVal, setEmailVal] = useState(email);
+  const [location, setLocation] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [headline, setHeadline] = useState("");
+
+  // Medical
+  const [crm, setCrm] = useState("");
+  const [crmUf, setCrmUf] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [primarySpecialty, setPrimarySpecialty] = useState("");
+  const [bio, setBio] = useState("");
+  const [yearsExp, setYearsExp] = useState<number | "">("");
+  const [extraSpecs, setExtraSpecs] = useState<string[]>([]);
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
+
+  // Contact
+  const [phone, setPhone] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+
+  // Education / languages
+  const [education, setEducation] = useState("");
+  const [languages, setLanguages] = useState("");
+
+  // Dynamic lists
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [publications, setPublications] = useState<Publication[]>([]);
+
+  // Availability
+  const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("18:00");
+  const [timezone, setTimezone] = useState("America/Sao_Paulo");
+
+  // Payment
+  const [fee, setFee] = useState<number | "">("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("");
+  const [bankName, setBankName] = useState("");
+  const [bankAccountType, setBankAccountType] = useState("");
+  const [bankAgency, setBankAgency] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankAccountDigit, setBankAccountDigit] = useState("");
+  const [pixKeyType, setPixKeyType] = useState("");
+  const [pixKey, setPixKey] = useState("");
+
+  // Documents
+  const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
+  const [crmDocUrl, setCrmDocUrl] = useState<string | null>(null);
+  const [rgUrl, setRgUrl] = useState<string | null>(null);
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
+
+  /* ---------- Load existing data ---------- */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [{ data: doc }, { data: exps }, { data: certs }, { data: crs }, { data: pubs }, { data: avail }] = await Promise.all([
+        supabase.from("doctors").select("*").eq("id", userId).maybeSingle(),
+        supabase.from("doctor_experiences").select("*").eq("doctor_id", userId).order("start_date", { ascending: false }),
+        supabase.from("doctor_certifications").select("*").eq("doctor_id", userId),
+        supabase.from("doctor_courses").select("*").eq("doctor_id", userId),
+        supabase.from("doctor_publications").select("*").eq("doctor_id", userId),
+        supabase.from("doctor_weekly_availability").select("*").eq("doctor_id", userId).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      if (doc) {
+        setAvatarUrl(doc.avatar_url);
+        setEmailVal(doc.email ?? email);
+        setHeadline((doc as any).headline ?? "");
+        setCity(doc.city ?? "");
+        setState(doc.state ?? "");
+        setLocation([doc.city, doc.state, doc.country].filter(Boolean).join(", "));
+        setCrm(doc.crm ?? "");
+        setCrmUf(doc.crm_uf ?? "");
+        setCpf(doc.cpf ? maskCPF(doc.cpf) : "");
+        setPrimarySpecialty(doc.specialty ?? "");
+        setBio(doc.bio ?? "");
+        setYearsExp(doc.years_experience ?? "");
+        setExtraSpecs(doc.specialties ?? []);
+        setPhone(doc.phone ? maskPhone(doc.phone) : "");
+        setWhatsapp(doc.whatsapp ? maskPhone(doc.whatsapp) : "");
+        setEducation(doc.education ?? "");
+        setLanguages(doc.languages ?? "");
+        setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
+        setPaymentMethod(doc.payment_method ?? "");
+        setBankName(doc.bank_name ?? "");
+        setBankAccountType((doc as any).bank_account_type ?? "");
+        setBankAgency(doc.bank_agency ?? "");
+        setBankAccount(doc.bank_account ?? "");
+        setBankAccountDigit((doc as any).bank_account_digit ?? "");
+        setPixKeyType((doc as any).pix_key_type ?? "");
+        setPixKey(doc.pix_key ?? "");
+        setDiplomaUrl(doc.diploma_url);
+        setCrmDocUrl(doc.crm_document_url);
+        setRgUrl((doc as any).rg_document_url ?? null);
+        setCvUrl(doc.cv_pdf_url);
+        setTimezone(doc.timezone ?? "America/Sao_Paulo");
+        if (doc.crm) setShowForm(true);
+      }
+      if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
+      if (certs?.length) setCertifications(certs.map(c => ({ id: c.id, title: c.title, issuer: c.issuer ?? "", issued_year: c.issued_year ?? "" })));
+      if (crs?.length) setCourses(crs.map(c => ({ id: c.id, title: c.title, institution: c.institution ?? "", hours: c.hours ?? "", completed_year: c.completed_year ?? "" })));
+      if (pubs?.length) setPublications(pubs.map(p => ({ id: p.id, title: p.title, journal: p.journal ?? "", year: p.year ?? "", url: p.url ?? "" })));
+      if (avail) {
+        setWeekdays(avail.weekdays ?? [1, 2, 3, 4, 5]);
+        setStartTime((avail.start_time ?? "08:00").slice(0, 5));
+        setEndTime((avail.end_time ?? "18:00").slice(0, 5));
+        setTimezone(avail.timezone ?? "America/Sao_Paulo");
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [userId, email]);
+
+  /* ---------- Mock LinkedIn auto-fill ---------- */
+  const connectLinkedIn = () => {
+    toast.loading("Conectando com LinkedIn…", { id: "li" });
+    setTimeout(() => {
+      const m = MOCK_LINKEDIN;
+      setAvatarUrl(m.picture);
+      setName(m.name);
+      setEmailVal(prev => prev || m.email);
+      setLocation(m.location);
+      setCity(m.city);
+      setState(m.state);
+      setHeadline(m.headline);
+      setYearsExp(m.yearsExperience);
+      setEducation(m.education);
+      setLanguages(m.languages);
+      setExperiences(m.experiences.map(e => ({ ...e })));
+      setCertifications(m.certifications.map(c => ({ ...c })));
+      setCourses(m.courses.map(c => ({ ...c })));
+      setPublications(m.publications.map(p => ({ ...p })));
+      setCrmUf(m.state);
+      setLinkedinConnected(true);
+      setShowForm(true);
+      toast.success("Dados do LinkedIn importados! Preencha os campos médicos para finalizar.", { id: "li", duration: 5000 });
+    }, 1100);
+  };
+
+  /* ---------- Validation / progress ---------- */
+  const checklist = useMemo(() => [
+    { ok: !!avatarUrl, label: "Foto de perfil" },
+    { ok: name.trim().length >= 2, label: "Nome completo" },
+    { ok: isValidEmail(emailVal), label: "Email válido" },
+    { ok: /^\d{4,7}$/.test(onlyDigits(crm)), label: "CRM válido" },
+    { ok: UF_LIST.includes(crmUf as any), label: "UF do CRM" },
+    { ok: isValidCPF(cpf), label: "CPF válido" },
+    { ok: !!primarySpecialty, label: "Especialidade principal" },
+    { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)" },
+    { ok: isValidPhone(phone), label: "Telefone válido" },
+    { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta" },
+    { ok: !!paymentMethod, label: "Método de pagamento" },
+    { ok: weekdays.length >= 1, label: "Dias da semana" },
+    { ok: !!diplomaUrl, label: "Diploma enviado" },
+    { ok: !!crmDocUrl, label: "Documento do CRM" },
+    { ok: !!rgUrl, label: "Documento de identidade" },
+  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, paymentMethod, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
+
+  const completedCount = checklist.filter(c => c.ok).length;
+  const progressPct = Math.round((completedCount / checklist.length) * 100);
+
+  /* ---------- Auto-save (draft to localStorage) ---------- */
+  const draftKey = `cm-doctor-draft-${userId}`;
+  useEffect(() => {
+    if (loading) return;
+    const t = setInterval(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          name, emailVal, location, city, state, headline, crm, crmUf, cpf,
+          primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp,
+          education, languages, weekdays, startTime, endTime, timezone,
+          fee, paymentMethod, bankName, bankAccountType, bankAgency, bankAccount,
+          bankAccountDigit, pixKeyType, pixKey,
+        }));
+        setAutoSavedAt(new Date());
+      } catch {}
+    }, 30000);
+    return () => clearInterval(t);
+  }, [loading, draftKey, name, emailVal, location, city, state, headline, crm, crmUf, cpf,
+      primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp, education, languages,
+      weekdays, startTime, endTime, timezone, fee, paymentMethod, bankName, bankAccountType,
+      bankAgency, bankAccount, bankAccountDigit, pixKeyType, pixKey]);
+
+  /* ---------- Toggle helpers ---------- */
+  const toggleSpec = (s: string) => {
+    setExtraSpecs(prev => prev.includes(s)
+      ? prev.filter(x => x !== s)
+      : prev.length >= 10 ? (toast.warning("Máximo 10 especialidades"), prev) : [...prev, s]);
+  };
+  const toggleWeekday = (v: number) => {
+    setWeekdays(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v].sort());
+  };
+
+  /* ---------- Save ---------- */
+  const handleSave = async () => {
+    const errs: string[] = [];
+    if (!name.trim()) errs.push("Nome");
+    if (!isValidEmail(emailVal)) errs.push("Email");
+    if (!/^\d{4,7}$/.test(onlyDigits(crm))) errs.push("CRM");
+    if (!UF_LIST.includes(crmUf as any)) errs.push("UF do CRM");
+    if (!isValidCPF(cpf)) errs.push("CPF");
+    if (!primarySpecialty) errs.push("Especialidade");
+    if (bio.trim().length < 50) errs.push("Descrição");
+    if (!isValidPhone(phone)) errs.push("Telefone");
+    if (typeof fee !== "number" || fee < 50) errs.push("Taxa");
+    if (!paymentMethod) errs.push("Pagamento");
+    if (weekdays.length < 1) errs.push("Disponibilidade");
+    if (!diplomaUrl) errs.push("Diploma");
+    if (!crmDocUrl) errs.push("Documento do CRM");
+    if (!rgUrl) errs.push("Documento de identidade");
+    if (errs.length) return toast.error(`Campos pendentes: ${errs.join(", ")}`);
+
+    setSaving(true);
+    try {
+      // Upsert profile name
+      await supabase.from("profiles").update({ full_name: name.trim() }).eq("id", userId);
+
+      // Upsert doctor
+      const doctorPayload: any = {
+        id: userId,
+        avatar_url: avatarUrl,
+        email: emailVal,
+        headline: headline || null,
+        city: city || location.split(",")[0]?.trim() || null,
+        state: state || null,
+        country: "Brasil",
+        crm: onlyDigits(crm),
+        crm_uf: crmUf.toUpperCase(),
+        cpf: onlyDigits(cpf),
+        specialty: primarySpecialty,
+        specialties: extraSpecs,
+        bio: bio.trim(),
+        years_experience: yearsExp || null,
+        phone: onlyDigits(phone),
+        whatsapp: whatsapp ? onlyDigits(whatsapp) : null,
+        education: education || null,
+        languages: languages || null,
+        consultation_fee: fee,
+        payment_method: paymentMethod,
+        bank_name: bankName || null,
+        bank_account_type: bankAccountType || null,
+        bank_agency: bankAgency || null,
+        bank_account: bankAccount || null,
+        bank_account_digit: bankAccountDigit || null,
+        pix_key_type: pixKeyType || null,
+        pix_key: pixKey || null,
+        diploma_url: diplomaUrl,
+        crm_document_url: crmDocUrl,
+        rg_document_url: rgUrl,
+        cv_pdf_url: cvUrl,
+        timezone,
+      };
+      const { error: docErr } = await supabase.from("doctors").upsert(doctorPayload);
+      if (docErr) throw docErr;
+
+      // Replace dynamic lists (delete + insert is simplest here)
+      await supabase.from("doctor_experiences").delete().eq("doctor_id", userId);
+      if (experiences.length) {
+        const rows = experiences
+          .filter(e => e.role && e.institution && e.start_date)
+          .map(e => ({
+            doctor_id: userId, role: e.role, institution: e.institution,
+            start_date: e.start_date, end_date: e.end_date || null, description: e.description || null,
+          }));
+        if (rows.length) await supabase.from("doctor_experiences").insert(rows);
+      }
+      await supabase.from("doctor_certifications").delete().eq("doctor_id", userId);
+      if (certifications.length) {
+        const rows = certifications
+          .filter(c => c.title)
+          .map(c => ({
+            doctor_id: userId, title: c.title, issuer: c.issuer || null,
+            issued_year: typeof c.issued_year === "number" ? c.issued_year : null,
+          }));
+        if (rows.length) await supabase.from("doctor_certifications").insert(rows);
+      }
+      await supabase.from("doctor_courses").delete().eq("doctor_id", userId);
+      if (courses.length) {
+        const rows = courses
+          .filter(c => c.title)
+          .map(c => ({
+            doctor_id: userId, title: c.title, institution: c.institution || null,
+            hours: typeof c.hours === "number" ? c.hours : null,
+            completed_year: typeof c.completed_year === "number" ? c.completed_year : null,
+          }));
+        if (rows.length) await supabase.from("doctor_courses").insert(rows);
+      }
+      await supabase.from("doctor_publications").delete().eq("doctor_id", userId);
+      if (publications.length) {
+        const rows = publications
+          .filter(p => p.title)
+          .map(p => ({
+            doctor_id: userId, title: p.title, journal: p.journal || null,
+            year: typeof p.year === "number" ? p.year : null, url: p.url || null,
+          }));
+        if (rows.length) await supabase.from("doctor_publications").insert(rows);
+      }
+
+      // Weekly availability
+      const { data: existingAvail } = await supabase.from("doctor_weekly_availability")
+        .select("id").eq("doctor_id", userId).maybeSingle();
+      if (existingAvail) {
+        await supabase.from("doctor_weekly_availability").update({
+          weekdays, start_time: startTime, end_time: endTime, timezone,
+        }).eq("doctor_id", userId);
+      } else {
+        await supabase.from("doctor_weekly_availability").insert({
+          doctor_id: userId, weekdays, start_time: startTime, end_time: endTime, timezone,
+        });
+      }
+
+      try { localStorage.removeItem(draftKey); } catch {}
+      onSaved();
+      toast.success("Perfil salvo! Status: em análise.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-emerald-50/30">
+        <PageHeader />
+        <div className="grid place-items-center py-24">
+          <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-emerald-50/40" style={{ fontFamily: '"Inter", system-ui, sans-serif' }}>
+      <PageHeader />
+
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {/* MAIN COLUMN */}
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          {!showForm ? (
+            <AuthChoice onLinkedIn={connectLinkedIn} onManual={() => setShowForm(true)} />
+          ) : (
+            <>
+              {linkedinConnected && (
+                <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                  <Check className="h-4 w-4" /> Dados do LinkedIn importados. Revise e preencha os campos médicos abaixo.
+                </div>
+              )}
+
+              <Section step={1} of={12} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
+                <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
+                <FieldGroup>
+                  <Field label="Nome Completo" required>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+                  </Field>
+                  <Field label="Email" required>
+                    <Input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} />
+                  </Field>
+                  <Field label="Localização">
+                    <Input value={location} onChange={(e) => {
+                      setLocation(e.target.value);
+                      const parts = e.target.value.split(",").map(p => p.trim());
+                      setCity(parts[0] ?? "");
+                      const uf = (parts[1] ?? "").toUpperCase();
+                      if (UF_LIST.includes(uf as any)) setState(uf);
+                    }} placeholder="Cidade, UF, País" />
+                  </Field>
+                  <Field label="Headline Profissional" hint={`${headline.length}/120`}>
+                    <Input value={headline} onChange={(e) => setHeadline(e.target.value.slice(0, 120))}
+                      placeholder="Ex: Médico Clínico Geral | Especialista em Telemedicina" />
+                  </Field>
+                </FieldGroup>
+              </Section>
+
+              <Section step={2} of={12} title="Informações Médicas" subtitle="Registro profissional e especialidades">
+                <FieldGroup>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                    <div className="sm:col-span-2">
+                      <Field label="CRM" required>
+                        <Input value={crm} onChange={(e) => setCrm(onlyDigits(e.target.value).slice(0, 7))} placeholder="Ex: 0505" />
+                      </Field>
+                    </div>
+                    <Field label="UF do CRM" required>
+                      <Select value={crmUf} onValueChange={setCrmUf}>
+                        <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
+                        <SelectContent>{UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+                  <Field label="CPF" required>
+                    <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
+                  </Field>
+                  <Field label="Especialidade Principal" required>
+                    <Select value={primarySpecialty} onValueChange={setPrimarySpecialty}>
+                      <SelectTrigger><SelectValue placeholder="Selecione sua especialidade" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {SPECIALTIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Descrição Profissional" required hint={`${bio.length}/1000 (mín. 50)`}>
+                    <Textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 1000))}
+                      rows={4} placeholder="Conte sua experiência, abordagem profissional e áreas de interesse." />
+                  </Field>
+                  <Field label="Anos de Experiência" required hint="Calculado automaticamente a partir das experiências (editável)">
+                    <Input type="number" min={0} max={70} value={yearsExp}
+                      onChange={(e) => setYearsExp(e.target.value === "" ? "" : Math.max(0, Math.min(70, Number(e.target.value))))} />
+                  </Field>
+                  <div>
+                    <Label className="mb-2 block">Especialidades adicionais <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
+                    <div className="relative overflow-hidden transition-[max-height] duration-300"
+                      style={{ maxHeight: showAllSpecs ? "1500px" : "200px" }}>
+                      <div className="flex flex-wrap gap-2">
+                        {SPECIALTIES.map(s => {
+                          const on = extraSpecs.includes(s);
+                          return (
+                            <button type="button" key={s} onClick={() => toggleSpec(s)}
+                              className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                                on ? "border-emerald-600 bg-emerald-600 text-white"
+                                   : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400"}`}>
+                              {s}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {!showAllSpecs && (
+                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                      )}
+                    </div>
+                    <Button type="button" variant="ghost" size="sm" className="mt-2 text-emerald-700 hover:text-emerald-800"
+                      onClick={() => setShowAllSpecs(s => !s)}>
+                      {showAllSpecs ? "Ver menos" : "Ver mais"}
+                    </Button>
+                  </div>
+                </FieldGroup>
+              </Section>
+
+              <Section step={3} of={12} title="Contato" subtitle="Como as redes podem falar com você">
+                <FieldGroup>
+                  <Field label="Telefone" required>
+                    <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
+                  </Field>
+                  <Field label="WhatsApp" hint="Deixe em branco se for o mesmo número">
+                    <Input value={whatsapp} onChange={(e) => setWhatsapp(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
+                  </Field>
+                </FieldGroup>
+              </Section>
+
+              <Section step={4} of={12} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
+                <Textarea rows={4} value={education} onChange={(e) => setEducation(e.target.value)}
+                  placeholder="Ex: USP — Medicina (2015-2020), Especialização em Cardiologia — UNIFESP (2021-2023)" />
+              </Section>
+
+              <Section step={5} of={12} title="Idiomas" subtitle="Idiomas falados">
+                <Textarea rows={2} value={languages} onChange={(e) => setLanguages(e.target.value)}
+                  placeholder="Português, Inglês, Espanhol" />
+              </Section>
+
+              <Section step={6} of={12} title="Experiência Profissional" subtitle="Histórico de atuação">
+                <DynamicList items={experiences} max={10}
+                  onAdd={() => setExperiences(prev => [...prev, { role: "", institution: "", start_date: "", end_date: "", description: "" }])}
+                  onRemove={(i) => setExperiences(prev => prev.filter((_, idx) => idx !== i))}
+                  addLabel="Adicionar experiência"
+                  renderItem={(e, i) => (
+                    <FieldGroup>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field label="Cargo"><Input value={e.role} maxLength={100}
+                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, role: ev.target.value } : x))} /></Field>
+                        <Field label="Instituição"><Input value={e.institution} maxLength={150}
+                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, institution: ev.target.value } : x))} /></Field>
+                        <Field label="Início"><Input type="month" value={e.start_date.slice(0, 7)}
+                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, start_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
+                        <Field label="Término" hint="Deixe vazio se atual"><Input type="month" value={e.end_date ? e.end_date.slice(0, 7) : ""}
+                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, end_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
+                      </div>
+                      <Field label="Descrição" hint={`${e.description.length}/300`}>
+                        <Textarea rows={2} value={e.description}
+                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, description: ev.target.value.slice(0, 300) } : x))} />
+                      </Field>
+                    </FieldGroup>
+                  )} />
+              </Section>
+
+              <Section step={7} of={12} title="Certificações" subtitle="Credenciais e certificações">
+                <DynamicList items={certifications} max={10}
+                  onAdd={() => setCertifications(p => [...p, { title: "", issuer: "", issued_year: "" }])}
+                  onRemove={(i) => setCertifications(p => p.filter((_, idx) => idx !== i))}
+                  addLabel="Adicionar certificação"
+                  renderItem={(c, i) => (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <div className="sm:col-span-2"><Field label="Nome"><Input value={c.title} maxLength={150}
+                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field></div>
+                      <Field label="Ano"><Input type="number" min={1950} max={2100} value={c.issued_year}
+                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issued_year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
+                      <div className="sm:col-span-3"><Field label="Instituição emissora"><Input value={c.issuer} maxLength={150}
+                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issuer: e.target.value } : x))} /></Field></div>
+                    </div>
+                  )} />
+              </Section>
+
+              <Section step={8} of={12} title="Cursos" subtitle="Cursos complementares">
+                <DynamicList items={courses} max={10}
+                  onAdd={() => setCourses(p => [...p, { title: "", institution: "", hours: "", completed_year: "" }])}
+                  onRemove={(i) => setCourses(p => p.filter((_, idx) => idx !== i))}
+                  addLabel="Adicionar curso"
+                  renderItem={(c, i) => (
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <Field label="Curso"><Input value={c.title} maxLength={150}
+                        onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
+                      <Field label="Instituição"><Input value={c.institution} maxLength={150}
+                        onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, institution: e.target.value } : x))} /></Field>
+                    </div>
+                  )} />
+              </Section>
+
+              <Section step={9} of={12} title="Publicações" subtitle="Artigos e publicações científicas">
+                <DynamicList items={publications} max={10}
+                  onAdd={() => setPublications(p => [...p, { title: "", journal: "", year: "", url: "" }])}
+                  onRemove={(i) => setPublications(p => p.filter((_, idx) => idx !== i))}
+                  addLabel="Adicionar publicação"
+                  renderItem={(p, i) => (
+                    <FieldGroup>
+                      <Field label="Título"><Input value={p.title} maxLength={200}
+                        onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field label="Revista / Veículo"><Input value={p.journal}
+                          onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, journal: e.target.value } : x))} /></Field>
+                        <Field label="Ano"><Input type="number" min={1950} max={2100} value={p.year}
+                          onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
+                      </div>
+                      <Field label="Link"><Input type="url" value={p.url} placeholder="https://..."
+                        onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, url: e.target.value } : x))} /></Field>
+                    </FieldGroup>
+                  )} />
+              </Section>
+
+              <Section step={10} of={12} title="Disponibilidade" subtitle="Quando você está disponível para atender">
+                <FieldGroup>
+                  <div>
+                    <Label className="mb-2 block">Dias da semana <span className="text-red-500">*</span></Label>
+                    <div className="flex flex-wrap gap-2">
+                      {WEEKDAYS.map(d => {
+                        const on = weekdays.includes(d.v);
+                        return (
+                          <button type="button" key={d.v} onClick={() => toggleWeekday(d.v)}
+                            className={`min-w-[52px] rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                              on ? "border-emerald-600 bg-emerald-600 text-white"
+                                 : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400"}`}>
+                            {d.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Início" required><Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} /></Field>
+                    <Field label="Término" required><Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} /></Field>
+                  </div>
+                  <Field label="Fuso horário" required>
+                    <Select value={timezone} onValueChange={setTimezone}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{TIMEZONES.map(t => <SelectItem key={t.v} value={t.v}>{t.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </Field>
+                </FieldGroup>
+              </Section>
+
+              <Section step={11} of={12} title="Informações de Pagamento" subtitle="Como você quer receber">
+                <FieldGroup>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Taxa de Consulta/Plantão (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
+                      <Input type="number" min={50} max={1000} step="0.01" value={fee}
+                        onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
+                    </Field>
+                    <Field label="Método preferido" required>
+                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pix">PIX</SelectItem>
+                          <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
+                          <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                  </div>
+
+                  {paymentMethod === "bank_transfer" && (
+                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field label="Banco">
+                          <Select value={bankName} onValueChange={setBankName}>
+                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                            <SelectContent>{BANKS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </Field>
+                        <Field label="Tipo de conta">
+                          <Select value={bankAccountType} onValueChange={setBankAccountType}>
+                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="checking">Corrente</SelectItem>
+                              <SelectItem value="savings">Poupança</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <Field label="Agência"><Input value={bankAgency} maxLength={5} onChange={(e) => setBankAgency(onlyDigits(e.target.value))} /></Field>
+                        <Field label="Conta"><Input value={bankAccount} maxLength={12} onChange={(e) => setBankAccount(onlyDigits(e.target.value))} /></Field>
+                        <Field label="Dígito"><Input value={bankAccountDigit} maxLength={2} onChange={(e) => setBankAccountDigit(e.target.value)} /></Field>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentMethod === "pix" && (
+                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
+                      <Field label="Tipo de chave">
+                        <Select value={pixKeyType} onValueChange={setPixKeyType}>
+                          <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cpf">CPF</SelectItem>
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="phone">Telefone</SelectItem>
+                            <SelectItem value="random">Chave aleatória</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Chave PIX"><Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} /></Field>
+                    </div>
+                  )}
+                </FieldGroup>
+              </Section>
+
+              <Section step={12} of={12} title="Documentos" subtitle="Verificação profissional (privados)">
+                <FieldGroup>
+                  <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
+                  <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
+                  <DocUploader userId={userId} label="Documento de Identidade (RG/CNH) *" url={rgUrl} folder="rg" onChange={setRgUrl} />
+                  <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
+                </FieldGroup>
+              </Section>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <Link to="/dashboard">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    <ArrowLeft className="mr-1 h-4 w-4" /> Voltar
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-3">
+                  {autoSavedAt && (
+                    <span className="text-xs text-gray-500 inline-flex items-center gap-1">
+                      <Save className="h-3 w-3" /> Rascunho salvo {autoSavedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                  <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                    {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* SIDEBAR */}
+        {showForm && (
+          <aside className="lg:sticky lg:top-24 lg:self-start space-y-4">
+            <SummaryCard avatarUrl={avatarUrl} name={name} headline={headline} extras={extraSpecs} progressPct={progressPct} />
+            <ChecklistCard items={checklist} progressPct={progressPct} />
+          </aside>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ================== AUTH CHOICE ================== */
+
+function AuthChoice({ onLinkedIn, onManual }: { onLinkedIn: () => void; onManual: () => void }) {
+  return (
+    <div className="rounded-2xl border bg-white p-6 sm:p-8 shadow-sm">
+      <h1 className="text-3xl font-bold text-gray-900 tracking-tight"
+        style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
+        Crie seu Perfil Profissional
+      </h1>
+      <p className="mt-2 text-gray-600">
+        Conecte-se com redes de telemedicina e acesse plantões.
+      </p>
+
+      <button onClick={onLinkedIn}
+        className="mt-8 inline-flex w-full items-center justify-center gap-2.5 rounded-lg px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:opacity-95"
+        style={{ backgroundColor: "#0A66C2" }}>
+        <Linkedin className="h-5 w-5" /> Entrar com LinkedIn
+      </button>
+      <p className="mt-2 text-sm text-gray-500 text-center">
+        Conecte sua conta LinkedIn para auto-preencher 70% dos seus dados profissionais.
+      </p>
+
+      <div className="my-6 flex items-center gap-3 text-xs uppercase text-gray-400">
+        <div className="h-px flex-1 bg-gray-200" /> ou <div className="h-px flex-1 bg-gray-200" />
+      </div>
+
+      <button onClick={onManual}
+        className="block w-full text-center text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+        Preencher formulário manualmente →
+      </button>
+    </div>
+  );
+}
+
+/* ================== UI BUILDING BLOCKS ================== */
+
+function Section({ step, of, title, subtitle, children }: {
+  step: number; of: number; title: string; subtitle?: string; children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-2xl border bg-white p-6 shadow-sm">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
+            {title}
+          </h2>
+          {subtitle && <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>}
+        </div>
+        <Badge variant="outline" className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700">
+          {step}/{of}
+        </Badge>
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+function FieldGroup({ children }: { children: React.ReactNode }) {
+  return <div className="space-y-4">{children}</div>;
+}
+
+function Field({ label, required, hint, children }: {
+  label: string; required?: boolean; hint?: string; children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <Label className="mb-1.5 block text-sm font-medium text-gray-700">
+        {label} {required && <span className="text-red-500">*</span>}
+      </Label>
+      {children}
+      {hint && <p className="mt-1 text-xs text-gray-500">{hint}</p>}
+    </div>
+  );
+}
+
+function DynamicList<T>({ items, max, onAdd, onRemove, renderItem, addLabel }: {
+  items: T[]; max: number; onAdd: () => void; onRemove: (i: number) => void;
+  renderItem: (item: T, i: number) => React.ReactNode; addLabel: string;
+}) {
+  return (
+    <div className="space-y-3">
+      {items.length === 0 && (
+        <p className="text-sm text-gray-500 italic">Nenhum item adicionado ainda.</p>
+      )}
+      {items.map((item, i) => (
+        <div key={i} className="rounded-lg border border-gray-200 bg-gray-50/40 p-4 relative">
+          <button type="button" onClick={() => onRemove(i)}
+            className="absolute right-3 top-3 text-gray-400 hover:text-red-600" aria-label="Remover">
+            <Trash2 className="h-4 w-4" />
+          </button>
+          {renderItem(item, i)}
+        </div>
+      ))}
+      {items.length < max && (
+        <Button type="button" variant="outline" size="sm" onClick={onAdd}
+          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+          <Plus className="mr-1 h-4 w-4" /> {addLabel}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/* ================== AVATAR / DOC UPLOADERS ================== */
+
+function AvatarUploader({ userId, url, fallback, onChange }: {
+  userId: string; url: string | null; fallback: string; onChange: (url: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -79,739 +953,145 @@ function AvatarUploader({
   };
   return (
     <div className="flex items-center gap-4">
-      <Avatar className="h-20 w-20 border-2 border-primary">
-        {url && <AvatarImage src={url} alt="Foto de perfil" />}
-        <AvatarFallback className="bg-accent">
-          {fallback ? fallback.charAt(0).toUpperCase() : <Icon className="h-8 w-8 text-primary" />}
-        </AvatarFallback>
+      <Avatar className="h-24 w-24 ring-2 ring-emerald-100">
+        {url && <AvatarImage src={url} alt="Avatar" />}
+        <AvatarFallback className="bg-emerald-50 text-emerald-700 text-xl font-semibold">{fallback}</AvatarFallback>
       </Avatar>
-      <div className="flex flex-col gap-2">
-        <input ref={inputRef} type="file" accept="image/*" className="hidden"
-          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={busy} className="gap-2">
-          <Camera className="h-4 w-4" /> {busy ? "Enviando..." : url ? "Trocar foto" : "Adicionar foto"}
+      <div>
+        <Button type="button" variant="outline" size="sm" disabled={busy}
+          onClick={() => inputRef.current?.click()}
+          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+          {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Camera className="mr-1 h-4 w-4" />}
+          {url ? "Alterar foto" : "Adicionar foto"}
         </Button>
-        {url && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)} className="gap-2 text-destructive hover:text-destructive">
-            <Trash2 className="h-4 w-4" /> Remover
-          </Button>
-        )}
+        <p className="mt-1 text-xs text-gray-500">JPG ou PNG, até 5MB</p>
+        <input ref={inputRef} type="file" accept="image/*" hidden
+          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
       </div>
     </div>
   );
 }
 
-/* ============== PDF/DOC UPLOADER (private bucket) ============== */
-function PdfUploader({
-  userId, bucket, url, label, hint, onChange,
-}: {
-  userId: string; bucket: "cvs" | "documents"; url: string | null;
-  label: string; hint: string; onChange: (url: string | null) => void;
+function DocUploader({ userId, label, url, folder, onChange, bucket = "documents" }: {
+  userId: string; label: string; url: string | null; folder: string;
+  onChange: (url: string | null) => void; bucket?: "documents" | "cvs";
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const isPrivate = bucket === "documents";
-
   const upload = async (file: File) => {
-    const ok = ["application/pdf", "image/jpeg", "image/png"].includes(file.type);
-    if (!ok) return toast.error("Formato inválido. Use PDF, JPG ou PNG");
-    if (file.size > 5 * 1024 * 1024) return toast.error("Arquivo muito grande (máx 5MB)");
+    if (file.size > 10 * 1024 * 1024) return toast.error("Arquivo muito grande (máx 10MB)");
     setBusy(true);
     const ext = file.name.split(".").pop() ?? "pdf";
-    const path = `${userId}/${bucket}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true, contentType: file.type });
+    const path = `${userId}/${folder}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
     if (error) { setBusy(false); return toast.error(error.message); }
-    if (isPrivate) {
-      onChange(path);
-    } else {
+    if (bucket === "cvs") {
       const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
       onChange(pub.publicUrl);
+    } else {
+      // private bucket — store the path; signed URL can be generated when needed
+      onChange(path);
     }
     setBusy(false);
-    toast.success("Documento enviado!");
+    toast.success("Arquivo enviado!");
   };
-
-  const openPrivate = async () => {
-    if (!url) return;
-    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(url, 60);
-    if (error || !data) return toast.error("Não foi possível abrir o arquivo");
-    window.open(data.signedUrl, "_blank");
-  };
+  const remove = () => { onChange(null); toast.success("Removido"); };
 
   return (
-    <div className="rounded-lg border-2 border-border bg-muted/20 p-3">
-      <div className="flex items-start gap-2">
-        <FileText className="h-4 w-4 text-primary mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium">{label}</p>
-          <p className="text-xs text-muted-foreground">{hint}</p>
-          {url && (
-            isPrivate ? (
-              <button type="button" onClick={openPrivate} className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                <ExternalLink className="h-3 w-3" /> Abrir arquivo
-              </button>
-            ) : (
-              <a href={url} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                <ExternalLink className="h-3 w-3" /> Ver atual
-              </a>
-            )
-          )}
+    <div className="rounded-lg border border-gray-200 p-3 flex items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600">
+        <FileText className="h-5 w-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-700">{label}</p>
+        <p className="text-xs text-gray-500 truncate">
+          {url ? "Arquivo enviado" : "PDF, JPG ou PNG (máx 10MB)"}
+        </p>
+      </div>
+      {url && (
+        <Button type="button" size="sm" variant="ghost" onClick={remove} className="text-red-600 hover:bg-red-50">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
+      <Button type="button" size="sm" variant="outline" disabled={busy}
+        onClick={() => inputRef.current?.click()}
+        className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+      </Button>
+      <input ref={inputRef} type="file" accept=".pdf,image/*" hidden
+        onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+    </div>
+  );
+}
+
+/* ================== SIDEBAR CARDS ================== */
+
+function SummaryCard({ avatarUrl, name, headline, extras, progressPct }: {
+  avatarUrl: string | null; name: string; headline: string; extras: string[]; progressPct: number;
+}) {
+  return (
+    <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
+          <ShieldAlert className="mr-1 h-3 w-3" /> Em análise
+        </Badge>
+      </div>
+      <div className="flex flex-col items-center text-center">
+        <Avatar className="h-20 w-20 ring-2 ring-emerald-100">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+          <AvatarFallback className="bg-emerald-50 text-emerald-700 font-semibold">
+            {name.charAt(0).toUpperCase() || "?"}
+          </AvatarFallback>
+        </Avatar>
+        <p className="mt-3 font-semibold text-gray-900">{name || "Seu nome"}</p>
+        {headline && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{headline}</p>}
+        <div className="mt-2 flex items-center gap-1 text-xs text-gray-500">
+          <Star className="h-3.5 w-3.5" /> Sem avaliações ainda
         </div>
       </div>
-      <input ref={inputRef} type="file" accept="application/pdf,image/*" className="hidden"
-        onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-      <div className="mt-2 flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => inputRef.current?.click()} disabled={busy} className="gap-2">
-          <Upload className="h-3.5 w-3.5" /> {busy ? "Enviando..." : url ? "Trocar" : "Enviar"}
-        </Button>
-        {url && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => onChange(null)} className="gap-1 text-destructive hover:text-destructive">
-            <Trash2 className="h-3.5 w-3.5" /> Remover
-          </Button>
-        )}
+      {extras.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-1.5 justify-center">
+          {extras.slice(0, 3).map(s => (
+            <Badge key={s} variant="outline" className="border-emerald-200 text-emerald-700 text-[10px]">{s}</Badge>
+          ))}
+          {extras.length > 3 && <Badge variant="outline" className="text-[10px]">+{extras.length - 3}</Badge>}
+        </div>
+      )}
+      <div className="mt-5">
+        <div className="flex items-center justify-between text-xs mb-1.5">
+          <span className="text-gray-600 font-medium">Preenchimento</span>
+          <span className="text-emerald-700 font-semibold">{progressPct}%</span>
+        </div>
+        <Progress value={progressPct} className="h-2" />
       </div>
     </div>
   );
 }
 
-/* ============== DOCTOR FORM ============== */
-const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
-
-const SPECIALTY_OPTIONS = [
-  "Alergia e Imunologia",
-  "Anestesiologia",
-  "Angiologia",
-  "Cardiologia",
-  "Cirurgia Bariátrica",
-  "Cirurgia Cardiovascular",
-  "Cirurgia da Mão",
-  "Cirurgia de Cabeça e Pescoço",
-  "Cirurgia do Aparelho Digestivo",
-  "Cirurgia Geral",
-  "Cirurgia Oncológica",
-  "Cirurgia Pediátrica",
-  "Cirurgia Plástica",
-  "Cirurgia Torácica",
-  "Cirurgia Vascular",
-  "Clínica Médica (Medicina Interna)",
-  "Coloproctologia",
-  "Dermatologia",
-  "Endocrinologia e Metabologia",
-  "Endoscopia Digestiva",
-  "Gastroenterologia",
-  "Geriatria",
-  "Ginecologia e Obstetrícia",
-  "Hematologia e Hemoterapia",
-  "Homeopatia",
-  "Infectologia",
-  "Mastologia",
-  "Medicina de Família e Comunidade",
-  "Medicina do Trabalho",
-  "Medicina do Tráfego",
-  "Medicina Esportiva",
-  "Medicina Física e Reabilitação",
-  "Medicina Intensiva",
-  "Medicina Legal e Perícia Médica",
-  "Medicina Nuclear",
-  "Nefrologia",
-  "Neurocirurgia",
-  "Neurologia",
-  "Nutrologia",
-  "Oftalmologia",
-  "Oncologia Clínica",
-  "Ortopedia e Traumatologia",
-  "Otorrinolaringologia",
-  "Patologia",
-  "Patologia Clínica/Medicina Laboratorial",
-  "Pediatria",
-  "Pneumologia",
-  "Psiquiatria",
-  "Radiologia e Diagnóstico por Imagem",
-  "Radioterapia",
-  "Reumatologia",
-  "Tocoginecologia",
-  "Urologia",
-];
-
-const WEEKDAYS = [
-  { v: 1, label: "Seg" }, { v: 2, label: "Ter" }, { v: 3, label: "Qua" },
-  { v: 4, label: "Qui" }, { v: 5, label: "Sex" }, { v: 6, label: "Sáb" }, { v: 0, label: "Dom" },
-];
-
-const TIMEZONES = [
-  "America/Sao_Paulo", "America/Manaus", "America/Belem", "America/Fortaleza",
-  "America/Recife", "America/Bahia", "America/Campo_Grande", "America/Cuiaba",
-  "America/Boa_Vista", "America/Porto_Velho", "America/Rio_Branco",
-];
-
-function validateCrmFormat(crm: string, uf: string): boolean {
-  return /^[0-9]{4,7}$/.test(crm.trim()) && /^[A-Z]{2}$/.test(uf.trim().toUpperCase());
-}
-
-function CrmStatusBadge({ status }: { status: "verified" | "pending" | "invalid" }) {
-  if (status === "verified") {
-    return <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2.5 py-1 text-xs font-medium text-success-foreground" style={{ color: "oklch(0.40 0.14 150)" }}>
-      <ShieldCheck className="h-3.5 w-3.5" /> CRM verificado
-    </span>;
-  }
-  if (status === "invalid") {
-    return <span className="inline-flex items-center gap-1 rounded-full bg-destructive/15 px-2.5 py-1 text-xs font-medium" style={{ color: "oklch(0.50 0.20 25)" }}>
-      <ShieldAlert className="h-3.5 w-3.5" /> CRM inválido
-    </span>;
-  }
-  return <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-1 text-xs font-medium" style={{ color: "oklch(0.45 0.12 60)" }}>
-    <ShieldQuestion className="h-3.5 w-3.5" /> Em análise
-  </span>;
-}
-
-/** Card com borda destacada (verde escuro / primary) */
-function SectionCard({ title, icon: Icon, children }: {
-  title: string; icon?: React.ComponentType<{ className?: string }>; children: React.ReactNode;
-}) {
+function ChecklistCard({ items, progressPct }: { items: { ok: boolean; label: string }[]; progressPct: number }) {
   return (
-    <section className="rounded-2xl border-2 border-primary/70 bg-card p-5 sm:p-6 space-y-4" style={{ boxShadow: "var(--shadow-card)" }}>
-      <h2 className="flex items-center gap-2 text-base sm:text-lg font-semibold">
-        {Icon && <Icon className="h-5 w-5 text-primary" />}
-        {title}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function DoctorProfileForm({ userId, fullName, onSaved }: { userId: string; fullName: string; onSaved: () => void }) {
-  // Básicos
-  const [name, setName] = useState(fullName);
-  const [bio, setBio] = useState("");
-  const [years, setYears] = useState("");
-  const [education, setEducation] = useState("");
-  const [langs, setLangs] = useState("");
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [cv, setCv] = useState<string | null>(null);
-  const [diploma, setDiploma] = useState<string | null>(null);
-  const [crmDoc, setCrmDoc] = useState<string | null>(null);
-  // Identidade
-  const [cpf, setCpf] = useState("");
-  const [email, setEmail] = useState("");
-  // Contato
-  const [phone, setPhone] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  // Localização
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [country, setCountry] = useState("Brasil");
-  // CRM e especialidade
-  const [crm, setCrm] = useState("");
-  const [crmUf, setCrmUf] = useState("");
-  const [crmStatus, setCrmStatus] = useState<"verified" | "pending" | "invalid">("pending");
-  const [specialty, setSpecialty] = useState("");
-  const [specialties, setSpecialties] = useState<string[]>([]);
-  // Pagamento
-  const [fee, setFee] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [pixKey, setPixKey] = useState("");
-  const [bankName, setBankName] = useState("");
-  const [bankAgency, setBankAgency] = useState("");
-  const [bankAccount, setBankAccount] = useState("");
-  // Disponibilidade
-  const [weekdays, setWeekdays] = useState<number[]>([]);
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("18:00");
-  const [timezone, setTimezone] = useState("America/Sao_Paulo");
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [showAllSpecs, setShowAllSpecs] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const [{ data: doc }, { data: avail }] = await Promise.all([
-        supabase.from("doctors").select("*").eq("id", userId).maybeSingle(),
-        supabase.from("doctor_weekly_availability").select("*").eq("doctor_id", userId).maybeSingle(),
-      ]);
-      if (doc) {
-        const d = doc as any;
-        setSpecialty(d.specialty ?? "");
-        setSpecialties(Array.isArray(d.specialties) ? d.specialties : []);
-        setCrm(d.crm ?? ""); setCrmUf(d.crm_uf ?? "");
-        setCrmStatus((d.crm_status ?? "pending") as any);
-        setBio(d.bio ?? "");
-        setYears(d.years_experience?.toString() ?? "");
-        setEducation(d.education ?? "");
-        setLangs(d.languages ?? "");
-        setAvatar(d.avatar_url ?? null);
-        setCv(d.cv_pdf_url ?? null);
-        setDiploma(d.diploma_url ?? null);
-        setCrmDoc(d.crm_document_url ?? null);
-        setCpf(d.cpf ? maskCPF(d.cpf) : "");
-        setEmail(d.email ?? "");
-        setPhone(d.phone ? maskPhone(d.phone) : "");
-        setWhatsapp(d.whatsapp ? maskPhone(d.whatsapp) : "");
-        setCity(d.city ?? ""); setState(d.state ?? ""); setCountry(d.country ?? "Brasil");
-        setFee(d.consultation_fee?.toString() ?? "");
-        setPaymentMethod(d.payment_method ?? "");
-        setPixKey(d.pix_key ?? "");
-        setBankName(d.bank_name ?? ""); setBankAgency(d.bank_agency ?? ""); setBankAccount(d.bank_account ?? "");
-      }
-      if (avail) {
-        const a = avail as any;
-        setWeekdays(Array.isArray(a.weekdays) ? a.weekdays : []);
-        setStartTime((a.start_time ?? "08:00").slice(0, 5));
-        setEndTime((a.end_time ?? "18:00").slice(0, 5));
-        setTimezone(a.timezone ?? "America/Sao_Paulo");
-      }
-      setLoading(false);
-    })();
-  }, [userId]);
-
-  const crmFormatOk = validateCrmFormat(crm, crmUf);
-
-  // ---- Validações para card de checklist ----
-  const checklist = useMemo(() => ([
-    { label: "Foto de perfil", ok: !!avatar },
-    { label: "Nome completo", ok: name.trim().length >= 2 },
-    { label: "Pelo menos 1 especialidade", ok: specialties.length >= 1 },
-    { label: "E-mail válido", ok: isValidEmail(email) },
-    { label: "Telefone válido", ok: isValidPhone(phone) },
-    { label: "CRM válido", ok: crmFormatOk },
-    { label: "Descrição (mín. 50)", ok: bio.trim().length >= 50 },
-    { label: "Taxa de consulta", ok: !!fee && parseFloat(fee) > 0 },
-  ]), [avatar, name, specialties, email, phone, crmFormatOk, bio, fee]);
-  const completion = Math.round((checklist.filter(c => c.ok).length / checklist.length) * 100);
-
-  const toggleSpecialty = (s: string) => {
-    setSpecialties((cur) => {
-      if (cur.includes(s)) return cur.filter(x => x !== s);
-      if (cur.length >= 10) { toast.error("Máximo 10 especialidades"); return cur; }
-      return [...cur, s];
-    });
-  };
-
-  const toggleWeekday = (d: number) => {
-    setWeekdays((cur) => cur.includes(d) ? cur.filter(x => x !== d) : [...cur, d]);
-  };
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return toast.error("Informe seu nome");
-    if (specialties.length === 0) return toast.error("Selecione pelo menos uma especialidade");
-    if (!crmFormatOk) return toast.error("CRM inválido — use 4 a 7 dígitos e UF de 2 letras");
-    if (email && !isValidEmail(email)) return toast.error("E-mail inválido");
-    if (phone && !isValidPhone(phone)) return toast.error("Telefone inválido");
-    if (whatsapp && !isValidPhone(whatsapp)) return toast.error("WhatsApp inválido");
-    if (cpf && !isValidCPF(cpf)) return toast.error("CPF inválido");
-    if (fee && parseFloat(fee) <= 0) return toast.error("Taxa de consulta deve ser maior que 0");
-
-    setSaving(true);
-    const yearsNum = years.trim() ? parseInt(years, 10) : null;
-    const feeNum = fee.trim() ? parseFloat(fee) : null;
-
-    const { error: pErr } = await supabase.from("profiles").update({ full_name: name.trim() }).eq("id", userId);
-    if (pErr) { setSaving(false); return toast.error(pErr.message); }
-
-    const { error: dErr } = await supabase.from("doctors").update({
-      specialty: specialties[0] ?? null,
-      specialties,
-      crm: crm.trim(),
-      crm_uf: crmUf.trim().toUpperCase(),
-      bio: bio.trim() || null,
-      years_experience: yearsNum && !isNaN(yearsNum) ? yearsNum : null,
-      education: education.trim() || null,
-      languages: langs.trim() || null,
-      avatar_url: avatar,
-      cv_pdf_url: cv,
-      diploma_url: diploma,
-      crm_document_url: crmDoc,
-      cpf: cpf ? onlyDigits(cpf) : null,
-      email: email.trim() || null,
-      phone: phone ? onlyDigits(phone) : null,
-      whatsapp: whatsapp ? onlyDigits(whatsapp) : null,
-      city: city.trim() || null,
-      state: state.trim().toUpperCase() || null,
-      country: country.trim() || null,
-      consultation_fee: feeNum,
-      payment_method: paymentMethod || null,
-      pix_key: pixKey.trim() || null,
-      bank_name: bankName.trim() || null,
-      bank_agency: bankAgency.trim() || null,
-      bank_account: bankAccount.trim() || null,
-      timezone,
-    }).eq("id", userId);
-    if (dErr) { setSaving(false); return toast.error(dErr.message); }
-
-    const { error: aErr } = await supabase.from("doctor_weekly_availability").upsert({
-      doctor_id: userId,
-      weekdays,
-      start_time: startTime,
-      end_time: endTime,
-      timezone,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "doctor_id" });
-    if (aErr) { setSaving(false); return toast.error(aErr.message); }
-
-    const { data: updated } = await supabase.from("doctors").select("crm_status").eq("id", userId).maybeSingle();
-    if (updated) setCrmStatus(((updated as any).crm_status ?? "pending") as any);
-    setSaving(false);
-    toast.success("Perfil salvo com sucesso!");
-    onSaved();
-  };
-
-  if (loading) return <p className="text-muted-foreground">Carregando perfil...</p>;
-
-  return (
-    <form onSubmit={save} className="grid gap-6 lg:grid-cols-3">
-      {/* ====== Coluna esquerda ====== */}
-      <div className="lg:col-span-2 space-y-6">
-
-        <SectionCard title="Informações Básicas" icon={User}>
-          <div className="flex items-start justify-between gap-3 flex-wrap">
-            <AvatarUploader userId={userId} url={avatar} fallback={name} icon={Stethoscope} onChange={setAvatar} />
-            <CrmStatusBadge status={crmStatus} />
-          </div>
-          <div>
-            <Label htmlFor="name">Nome completo *</Label>
-            <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} placeholder="Ex: Dr. Carlos Silva" required />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="crm">CRM *</Label>
-              <Input id="crm" value={crm} maxLength={7} onChange={(e) => setCrm(e.target.value.replace(/\D/g, ""))} placeholder="123456" required />
-            </div>
-            <div>
-              <Label htmlFor="crmuf">UF do CRM *</Label>
-              <select id="crmuf" value={crmUf} onChange={(e) => setCrmUf(e.target.value)} required
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">UF</option>
-                {UFS.map(u => <option key={u} value={u}>{u}</option>)}
-              </select>
-            </div>
-          </div>
-          {!crmFormatOk && (crm || crmUf) && (
-            <p className="text-xs text-destructive">Formato inválido. CRM com 4 a 7 dígitos e UF de 2 letras.</p>
-          )}
-          <div>
-            <Label htmlFor="bio">Descrição profissional * <span className="text-xs text-muted-foreground">(mín. 50, máx. 1000)</span></Label>
-            <Textarea id="bio" value={bio} maxLength={1000} rows={4}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Conte um pouco sobre sua experiência e abordagem profissional..." />
-            <p className="mt-1 text-xs text-muted-foreground">{bio.length}/1000</p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="sm:col-span-2">
-              <Label htmlFor="city">Localização (cidade)</Label>
-              <Input id="city" value={city} maxLength={80} onChange={(e) => setCity(e.target.value)} placeholder="São Paulo" />
-            </div>
-            <div>
-              <Label htmlFor="state">UF</Label>
-              <select id="state" value={state} onChange={(e) => setState(e.target.value)}
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">UF</option>
-                {UFS.map(u => <option key={u} value={u}>{u}</option>)}
-              </select>
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="cpf">CPF</Label>
-              <Input id="cpf" value={cpf} maxLength={14} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
-              {cpf && !isValidCPF(cpf) && <p className="mt-1 text-xs text-destructive">CPF inválido</p>}
-            </div>
-            <div>
-              <Label htmlFor="years">Anos de experiência</Label>
-              <Input id="years" type="number" min={0} max={70} value={years} onChange={(e) => setYears(e.target.value)} />
-            </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Contato" icon={Phone}>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <Label htmlFor="email">E-mail *</Label>
-              <Input id="email" type="email" value={email} maxLength={120}
-                onChange={(e) => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
-              {email && !isValidEmail(email) && <p className="mt-1 text-xs text-destructive">E-mail inválido</p>}
-            </div>
-            <div>
-              <Label htmlFor="phone">Telefone *</Label>
-              <Input id="phone" inputMode="tel" value={phone} placeholder="(11) 99999-9999"
-                onChange={(e) => setPhone(maskPhone(e.target.value))} />
-              {phone && !isValidPhone(phone) && <p className="mt-1 text-xs text-destructive">Telefone inválido</p>}
-            </div>
-            <div>
-              <Label htmlFor="wpp">WhatsApp (opcional)</Label>
-              <Input id="wpp" inputMode="tel" value={whatsapp} placeholder="(11) 99999-9999"
-                onChange={(e) => setWhatsapp(maskPhone(e.target.value))} />
-              {whatsapp && !isValidPhone(whatsapp) && <p className="mt-1 text-xs text-destructive">WhatsApp inválido</p>}
-            </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Especialidades" icon={Stethoscope}>
-          <p className="text-sm text-muted-foreground">Selecione suas especialidades de atuação (até 10).</p>
-          <div
-            className="relative flex flex-wrap gap-2 overflow-hidden transition-[max-height] duration-300"
-            style={{ maxHeight: showAllSpecs ? "1200px" : "212px" }}
-          >
-            {SPECIALTY_OPTIONS.map((s) => {
-              const active = specialties.includes(s);
-              return (
-                <button type="button" key={s} onClick={() => toggleSpecialty(s)}
-                  className={`rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-colors ${
-                    active ? "border-primary bg-primary text-primary-foreground"
-                           : "border-border bg-background hover:bg-accent"
-                  }`}>
-                  {s}
-                </button>
-              );
-            })}
-            {!showAllSpecs && (
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-card to-transparent" />
-            )}
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-muted-foreground">{specialties.length} selecionada(s)</span>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAllSpecs(v => !v)}>
-              {showAllSpecs ? "Ver menos" : "Ver mais"}
-            </Button>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Experiência Profissional" icon={Briefcase}>
-          <DoctorExperiences doctorId={userId} editable />
-        </SectionCard>
-
-        <SectionCard title="Certificações & Formação" icon={Award}>
-          <div>
-            <Label htmlFor="edu">Formação acadêmica</Label>
-            <Textarea id="edu" value={education} maxLength={500} rows={2}
-              onChange={(e) => setEducation(e.target.value)}
-              placeholder="Faculdade, residência, pós-graduação..." />
-          </div>
-          <div>
-            <Label htmlFor="lang">Idiomas</Label>
-            <Input id="lang" value={langs} maxLength={200} onChange={(e) => setLangs(e.target.value)} placeholder="Português, Inglês, Espanhol..." />
-          </div>
-          <div className="border-t pt-4">
-            <p className="mb-3 text-sm font-medium">Portfólio (certificações, cursos e publicações)</p>
-            <DoctorPortfolio doctorId={userId} editable />
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Disponibilidade" icon={Clock}>
-          <div>
-            <Label>Dias da semana</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {WEEKDAYS.map((d) => {
-                const active = weekdays.includes(d.v);
-                return (
-                  <button type="button" key={d.v} onClick={() => toggleWeekday(d.v)}
-                    className={`h-10 w-12 rounded-md border-2 text-sm font-semibold transition-colors ${
-                      active ? "border-primary bg-primary text-primary-foreground"
-                             : "border-border bg-background hover:bg-accent"
-                    }`}>
-                    {d.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <Label htmlFor="st">Horário início</Label>
-              <Input id="st" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="et">Horário fim</Label>
-              <Input id="et" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="tz">Fuso horário</Label>
-              <select id="tz" value={timezone} onChange={(e) => setTimezone(e.target.value)}
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
-              </select>
-            </div>
-          </div>
-        </SectionCard>
-
-        <SectionCard title="Informações de Pagamento" icon={DollarSign}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="fee">Taxa de consulta (R$) *</Label>
-              <Input id="fee" type="number" min={0} step="0.01" value={fee}
-                onChange={(e) => setFee(e.target.value)} placeholder="150.00" />
-            </div>
-            <div>
-              <Label htmlFor="pm">Método de pagamento</Label>
-              <select id="pm" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}
-                className="flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm">
-                <option value="">Selecione</option>
-                <option value="pix">PIX</option>
-                <option value="bank_transfer">Transferência Bancária</option>
-                <option value="card">Cartão</option>
-              </select>
-            </div>
-          </div>
-          {paymentMethod === "pix" && (
-            <div>
-              <Label htmlFor="pix">Chave PIX</Label>
-              <Input id="pix" value={pixKey} maxLength={120} onChange={(e) => setPixKey(e.target.value)} placeholder="CPF, e-mail, telefone ou chave aleatória" />
-            </div>
-          )}
-          {paymentMethod === "bank_transfer" && (
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="sm:col-span-1">
-                <Label htmlFor="bn">Banco</Label>
-                <Input id="bn" value={bankName} maxLength={60} onChange={(e) => setBankName(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="ba">Agência</Label>
-                <Input id="ba" value={bankAgency} maxLength={20} onChange={(e) => setBankAgency(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="bc">Conta</Label>
-                <Input id="bc" value={bankAccount} maxLength={30} onChange={(e) => setBankAccount(e.target.value)} />
-              </div>
-            </div>
-          )}
-        </SectionCard>
-
-        {crmStatus === "invalid" && (
-          <div className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-            Seu CRM está marcado como inválido. Você não aparece nas buscas nem recebe convites até corrigir os dados.
-          </div>
-        )}
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={saving} size="lg" className="w-full sm:w-auto">
-            {saving ? "Salvando..." : "Salvar Perfil"}
-          </Button>
-        </div>
+    <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-2 mb-3">
+        <ShieldCheck className="h-4 w-4 text-emerald-600" />
+        <h3 className="font-semibold text-gray-900 text-sm">Checklist</h3>
       </div>
-
-      {/* ====== Coluna direita ====== */}
-      <aside className="space-y-6">
-        {/* Resumo */}
-        <div className="rounded-2xl border-2 border-primary/70 bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Resumo do Perfil</h3>
-          <div className="flex items-center gap-3">
-            <Avatar className="h-14 w-14 border-2 border-primary">
-              {avatar && <AvatarImage src={avatar} />}
-              <AvatarFallback className="bg-accent">{(name || "M").charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="truncate text-base font-semibold">{name || "Seu nome"}</p>
-              <p className="truncate text-sm text-muted-foreground">{specialty || "Especialidade"}</p>
-              <p className="text-xs text-muted-foreground">⭐ Sem avaliações ainda</p>
-            </div>
-          </div>
-          {specialties.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {specialties.slice(0, 4).map(s => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}
-              {specialties.length > 4 && <Badge variant="outline" className="text-xs">+{specialties.length - 4}</Badge>}
-            </div>
-          )}
-          <div className="mt-4">
-            <div className="flex justify-between text-xs">
-              <span className="font-medium">Preenchimento</span>
-              <span>{completion}%</span>
-            </div>
-            <div className="mt-1 h-2 w-full rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-primary transition-all" style={{ width: `${completion}%` }} />
-            </div>
-          </div>
-        </div>
-
-        {/* Validações */}
-        <div className="rounded-2xl border-2 border-primary/70 bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Validações</h3>
-          <ul className="space-y-2">
-            {checklist.map((c) => (
-              <li key={c.label} className="flex items-center gap-2 text-sm">
-                {c.ok
-                  ? <CheckCircle2 className="h-4 w-4 text-success" style={{ color: "oklch(0.55 0.14 150)" }} />
-                  : <AlertCircle className="h-4 w-4 text-destructive" />}
-                <span className={c.ok ? "text-foreground" : "text-muted-foreground"}>{c.label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Documentos */}
-        <div className="rounded-2xl border-2 border-primary/70 bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Documentos</h3>
-          <PdfUploader userId={userId} bucket="documents" url={diploma}
-            label="Diploma de medicina" hint="PDF, JPG ou PNG (máx 5MB) — privado" onChange={setDiploma} />
-          <PdfUploader userId={userId} bucket="documents" url={crmDoc}
-            label="Documento do CRM" hint="PDF, JPG ou PNG (máx 5MB) — privado" onChange={setCrmDoc} />
-          <PdfUploader userId={userId} bucket="cvs" url={cv}
-            label="Currículo (CV)" hint="PDF público para visualização das redes" onChange={setCv} />
-          <p className="text-xs text-muted-foreground">
-            Status de verificação: {crmStatus === "verified" ? "verificado" : crmStatus === "invalid" ? "inválido" : "em análise"}
-          </p>
-        </div>
-      </aside>
-    </form>
-  );
-}
-
-/* ============== NETWORK FORM (inalterado) ============== */
-function NetworkProfileForm({ userId, fullName, onSaved }: { userId: string; fullName: string; onSaved: () => void }) {
-  const [name, setName] = useState(fullName);
-  const [networkName, setNetworkName] = useState("");
-  const [cnpj, setCnpj] = useState("");
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from("networks").select("network_name, cnpj, avatar_url").eq("id", userId).maybeSingle();
-      if (data) {
-        setNetworkName(data.network_name ?? "");
-        setCnpj(data.cnpj ?? "");
-        setAvatar(data.avatar_url ?? null);
-      }
-      setLoading(false);
-    })();
-  }, [userId]);
-
-  const save = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !networkName.trim()) return toast.error("Preencha os campos obrigatórios");
-    setSaving(true);
-    const [{ error: pErr }, { error: nErr }] = await Promise.all([
-      supabase.from("profiles").update({ full_name: name.trim() }).eq("id", userId),
-      supabase.from("networks").update({
-        network_name: networkName.trim(), cnpj: cnpj.trim(), avatar_url: avatar,
-      }).eq("id", userId),
-    ]);
-    setSaving(false);
-    if (pErr || nErr) return toast.error((pErr ?? nErr)!.message);
-    toast.success("Perfil atualizado!");
-    onSaved();
-  };
-
-  if (loading) return <p className="text-muted-foreground">Carregando perfil...</p>;
-
-  return (
-    <form onSubmit={save} className="space-y-6 rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-      <AvatarUploader userId={userId} url={avatar} fallback={networkName || name} icon={Building2} onChange={setAvatar} />
-      <div>
-        <Label htmlFor="name">Nome do responsável</Label>
-        <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
-      </div>
-      <div>
-        <Label htmlFor="net">Nome da rede</Label>
-        <Input id="net" value={networkName} maxLength={120} onChange={(e) => setNetworkName(e.target.value)} required />
-      </div>
-      <div>
-        <Label htmlFor="cnpj">CNPJ</Label>
-        <Input id="cnpj" value={cnpj} maxLength={20} onChange={(e) => setCnpj(e.target.value)} />
-      </div>
-      <Button type="submit" disabled={saving} className="w-full sm:w-auto">
-        {saving ? "Salvando..." : "Salvar perfil"}
-      </Button>
-    </form>
+      <ul className="space-y-1.5 text-sm">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-center gap-2">
+            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+              item.ok ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"
+            }`}>
+              <Check className="h-3 w-3" strokeWidth={3} />
+            </span>
+            <span className={item.ok ? "text-gray-700" : "text-gray-500"}>{item.label}</span>
+          </li>
+        ))}
+      </ul>
+      {progressPct < 100 && (
+        <p className="mt-3 text-xs text-gray-500">
+          Complete todos os itens para enviar seu perfil para análise.
+        </p>
+      )}
+    </div>
   );
 }
