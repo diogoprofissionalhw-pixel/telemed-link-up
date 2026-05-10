@@ -19,6 +19,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits, UF_LIST } from "@/lib/validators";
+import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/perfil")({
   component: PerfilPage,
@@ -122,11 +123,8 @@ function PageHeader() {
   return (
     <header className="border-b bg-white sticky top-0 z-30">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/dashboard" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-white font-bold text-sm">CM</div>
-          <span className="font-bold text-gray-900 text-lg" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
-            Connect-Med
-          </span>
+        <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
+          <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
         </Link>
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
           <ArrowLeft className="h-4 w-4" /> Voltar
