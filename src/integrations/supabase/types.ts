@@ -204,6 +204,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bank_account: string | null
+          bank_account_digit: string | null
+          bank_account_type: string | null
           bank_agency: string | null
           bank_name: string | null
           bio: string | null
@@ -221,11 +223,14 @@ export type Database = {
           diploma_url: string | null
           education: string | null
           email: string | null
+          headline: string | null
           id: string
           languages: string | null
           payment_method: string | null
           phone: string | null
           pix_key: string | null
+          pix_key_type: string | null
+          rg_document_url: string | null
           specialties: string[]
           specialty: string
           state: string | null
@@ -236,6 +241,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bank_account?: string | null
+          bank_account_digit?: string | null
+          bank_account_type?: string | null
           bank_agency?: string | null
           bank_name?: string | null
           bio?: string | null
@@ -253,11 +260,14 @@ export type Database = {
           diploma_url?: string | null
           education?: string | null
           email?: string | null
+          headline?: string | null
           id: string
           languages?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
+          pix_key_type?: string | null
+          rg_document_url?: string | null
           specialties?: string[]
           specialty: string
           state?: string | null
@@ -268,6 +278,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bank_account?: string | null
+          bank_account_digit?: string | null
+          bank_account_type?: string | null
           bank_agency?: string | null
           bank_name?: string | null
           bio?: string | null
@@ -285,11 +297,14 @@ export type Database = {
           diploma_url?: string | null
           education?: string | null
           email?: string | null
+          headline?: string | null
           id?: string
           languages?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
+          pix_key_type?: string | null
+          rg_document_url?: string | null
           specialties?: string[]
           specialty?: string
           state?: string | null
