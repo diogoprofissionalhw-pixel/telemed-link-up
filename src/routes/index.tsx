@@ -6,6 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
+import doctorPortrait from "@/assets/doctor-portrait.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -246,22 +247,40 @@ function ExploreDoctors() {
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="rounded-3xl border bg-card p-10 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-accent text-primary">
-            <Users className="h-7 w-7" />
-          </div>
-          <h2 className="text-3xl font-bold sm:text-4xl">
-            Conheça Nossos <span className="text-primary">Médicos</span>
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Explore nossa rede de profissionais qualificados. Filtre por especialidade, localização e taxa horária.
-          </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/medicos">
-              <Button size="lg" className="gap-2">
-                Explorar médicos <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+        <div className="rounded-3xl border bg-card p-8 sm:p-12" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div className="flex justify-center lg:justify-start">
+              <div
+                className="relative aspect-square w-64 sm:w-80 lg:w-full lg:max-w-md overflow-hidden rounded-full border-4 border-accent"
+                style={{ boxShadow: "var(--shadow-elegant)" }}
+              >
+                <img
+                  src={doctorPortrait}
+                  alt="Médico profissional da rede Connect-Med"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </div>
+            <div className="text-center lg:text-left">
+              <div className="inline-grid h-14 w-14 place-items-center rounded-2xl bg-accent text-primary">
+                <Users className="h-7 w-7" />
+              </div>
+              <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
+                Conheça Nossos <span className="text-primary">Médicos</span>
+              </h2>
+              <p className="mt-3 text-muted-foreground lg:max-w-md">
+                Explore nossa rede de profissionais qualificados. Filtre por especialidade, localização e taxa horária.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/medicos">
+                  <Button size="lg" className="gap-2">
+                    Explorar médicos <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
