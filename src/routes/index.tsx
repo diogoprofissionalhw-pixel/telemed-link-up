@@ -59,7 +59,10 @@ function Hero() {
       <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <img src={logo} alt="Connect-Med" width="160" height="160" fetchPriority="high" decoding="async" className="mb-6 h-24 w-auto sm:h-32 lg:h-40 drop-shadow-sm" />
+            <div className="mb-6 flex items-center gap-4">
+              <img src={logo} alt="Connect-Med" width="160" height="160" fetchPriority="high" decoding="async" className="h-28 w-auto sm:h-36 lg:h-44 drop-shadow-sm" />
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary tracking-tight">Connect-Med</span>
+            </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-success" /> Plataforma de telemedicina
             </div>
