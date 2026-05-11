@@ -264,10 +264,7 @@ function ExploreDoctors() {
               </div>
             </div>
             <div className="text-center lg:text-left">
-              <div className="inline-grid h-14 w-14 place-items-center rounded-2xl bg-accent text-primary">
-                <Users className="h-7 w-7" />
-              </div>
-              <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
+              <h2 className="text-3xl font-bold sm:text-4xl">
                 Conheça Nossos <span className="text-primary">Médicos</span>
               </h2>
               <p className="mt-3 text-muted-foreground lg:max-w-md">
