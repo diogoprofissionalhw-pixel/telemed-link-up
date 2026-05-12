@@ -135,9 +135,7 @@ function PageHeader() {
         <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
         </Link>
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" /> Voltar
-        </Link>
+        <BackButton to="/dashboard" label="Voltar ao dashboard" />
       </div>
     </header>
   );
