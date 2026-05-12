@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, Search, Ban } from "lucide-react";
+import { MessageCircle, Ban } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { ChatPanel } from "@/components/chat-panel";
+import { ChatView } from "@/components/chat-view";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/mensagens")({
   component: MensagensPage,
@@ -25,7 +25,6 @@ function MensagensPage() {
   const { user } = useAuth();
   const [items, setItems] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [active, setActive] = useState<ConversationItem | null>(null);
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set());
 
@@ -41,10 +40,7 @@ function MensagensPage() {
           .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
           .order("created_at", { ascending: false })
           .limit(500),
-        supabase
-          .from("user_chat_settings")
-          .select("peer_id, cleared_at")
-          .eq("user_id", user.id),
+        supabase.from("user_chat_settings").select("peer_id, cleared_at").eq("user_id", user.id),
         supabase.from("user_blocks").select("blocker_id, blocked_id"),
       ]);
 
@@ -112,69 +108,85 @@ function MensagensPage() {
     };
   }, [user]);
 
-  const filtered = useMemo(
-    () => items.filter((i) => i.peerName.toLowerCase().includes(search.toLowerCase())),
-    [items, search],
-  );
+  const list = useMemo(() => items, [items]);
 
   return (
     <DashboardLayout title="Mensagens" subtitle="Suas conversas">
-      <div className="space-y-4">
-        {loading ? (
-          <p className="text-muted-foreground">Carregando...</p>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border bg-card py-12 text-center">
-            <MessageCircle className="h-10 w-10 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              {items.length === 0 ? "Nenhuma conversa ainda." : "Nenhuma conversa encontrada."}
-            </p>
-          </div>
-        ) : (
-          <ul className="divide-y rounded-lg border bg-card">
-            {filtered.map((c) => (
-              <li key={c.peerId}>
-                <button
-                  onClick={() => setActive(c)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left hover:bg-accent/40 transition-colors"
-                >
-                  <Avatar className="h-11 w-11 border">
-                    {c.peerAvatar && <AvatarImage src={c.peerAvatar} alt={c.peerName} />}
-                    <AvatarFallback>{c.peerName.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="truncate font-medium">{c.peerName}</p>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {new Date(c.lastAt).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
-                      </span>
-                    </div>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {c.fromMe && "Você: "}{c.lastMessage}
-                    </p>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <div className="grid h-[calc(100vh-16rem)] min-h-[480px] grid-cols-1 md:grid-cols-[320px_1fr]">
+          {/* Left: conversation list */}
+          <aside
+            className={cn(
+              "flex min-h-0 flex-col border-r bg-card",
+              active ? "hidden md:flex" : "flex",
+            )}
+          >
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <p className="p-4 text-sm text-muted-foreground">Carregando...</p>
+              ) : list.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                  <MessageCircle className="h-10 w-10 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Nenhuma conversa ainda.</p>
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {list.map((c) => (
+                    <li key={c.peerId}>
+                      <button
+                        onClick={() => setActive(c)}
+                        className={cn(
+                          "flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent/40",
+                          active?.peerId === c.peerId && "bg-accent/60",
+                        )}
+                      >
+                        <Avatar className="h-11 w-11 border">
+                          {c.peerAvatar && <AvatarImage src={c.peerAvatar} alt={c.peerName} />}
+                          <AvatarFallback>{c.peerName.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="truncate font-medium">{c.peerName}</p>
+                            <span className="shrink-0 text-xs text-muted-foreground">
+                              {new Date(c.lastAt).toLocaleString("pt-BR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })}
+                            </span>
+                          </div>
+                          <p className="truncate text-sm text-muted-foreground">
+                            {c.fromMe && "Você: "}{c.lastMessage}
+                          </p>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            {blockedIds.size > 0 && (
+              <p className="flex items-center gap-1.5 border-t px-4 py-2 text-xs text-muted-foreground">
+                <Ban className="h-3 w-3" /> {blockedIds.size} conversa(s) oculta(s) por bloqueio
+              </p>
+            )}
+          </aside>
 
-        {blockedIds.size > 0 && (
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Ban className="h-3 w-3" /> {blockedIds.size} conversa(s) oculta(s) por bloqueio
-          </p>
-        )}
+          {/* Right: chat */}
+          <section className={cn("min-h-0", active ? "flex" : "hidden md:flex", "flex-col")}>
+            {active && user ? (
+              <ChatView
+                currentUserId={user.id}
+                otherUserId={active.peerId}
+                otherName={active.peerName}
+                otherAvatarUrl={active.peerAvatar}
+                onBack={() => setActive(null)}
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-muted-foreground">
+                <MessageCircle className="h-12 w-12" />
+                <p className="text-sm">Selecione uma conversa para começar</p>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
-
-      {active && user && (
-        <ChatPanel
-          open={!!active}
-          onOpenChange={(v) => !v && setActive(null)}
-          currentUserId={user.id}
-          otherUserId={active.peerId}
-          otherName={active.peerName}
-          otherAvatarUrl={active.peerAvatar}
-        />
-      )}
     </DashboardLayout>
   );
 }
