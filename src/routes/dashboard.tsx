@@ -289,10 +289,9 @@ function DoctorPanel({ userId }: { userId: string }) {
 
 
       {chatReq && (
-        <ChatDialog
+        <ChatPanel
           open={!!chatReq}
           onOpenChange={(v) => !v && setChatReq(null)}
-          requestId={chatReq.id}
           currentUserId={userId}
           otherUserId={chatReq.network_id}
           otherName={chatReq.network?.network_name ?? "Rede"}
