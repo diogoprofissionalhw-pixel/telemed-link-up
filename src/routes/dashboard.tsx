@@ -425,10 +425,9 @@ function NetworkPanel({ userId }: { userId: string }) {
       )}
 
       {chatReq && (
-        <ChatDialog
+        <ChatPanel
           open={!!chatReq}
           onOpenChange={(v) => !v && setChatReq(null)}
-          requestId={chatReq.id}
           currentUserId={userId}
           otherUserId={chatReq.doctor_id}
           otherName={chatReq.doctor?.profile?.full_name ?? "Médico"}
