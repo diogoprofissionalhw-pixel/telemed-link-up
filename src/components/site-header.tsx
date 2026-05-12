@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { LogOut, UserCircle2 } from "lucide-react";
+import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
