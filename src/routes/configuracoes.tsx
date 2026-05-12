@@ -30,14 +30,9 @@ function ConfiguracoesPage() {
       title="Configurações"
       subtitle="Gerencie sua segurança, notificações e preferências."
       breadcrumbs={[{ label: "Configurações" }]}
+      actions={<BackButton to="/dashboard" label="Voltar ao dashboard" />}
     >
       <div className="space-y-6">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link to="/dashboard">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar ao dashboard
-          </Link>
-        </Button>
         <ChangePasswordCard />
         <NotificationsCard />
         <PreferencesCard />
