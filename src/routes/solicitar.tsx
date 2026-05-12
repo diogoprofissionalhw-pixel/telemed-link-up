@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Search, Star, MapPin, Clock, DollarSign, Filter, X,
+  Search, Star, MapPin, Clock, DollarSign, Filter, X,
   ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
 } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
