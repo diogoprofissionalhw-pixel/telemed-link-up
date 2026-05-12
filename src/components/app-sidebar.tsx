@@ -254,6 +254,7 @@ export function AppShell({ userType, children }: { userType: UserType; children:
         <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-1 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {user && <MessagesButton />}
           {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
         <div>{children}</div>
