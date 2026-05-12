@@ -147,64 +147,66 @@ function DoctorsPage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <section className="bg-background">
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:py-20">
-          <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" /> Voltar para a página inicial
-          </Link>
-          <div className="text-center">
-            <h1 className="text-3xl font-bold sm:text-4xl">
-              Conheça Nossos <span className="text-primary">Médicos</span>
-            </h1>
-            <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
-          </div>
+      <main className="bg-background">
+        <section>
+          <div className="mx-auto max-w-6xl px-4 py-12 sm:py-20">
+            <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" /> Voltar para a página inicial
+            </Link>
+            <div className="text-center">
+              <h1 className="text-3xl font-bold sm:text-4xl">
+                Conheça Nossos <span className="text-primary">Médicos</span>
+              </h1>
+              <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
+            </div>
 
-          <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
-            <aside className="hidden lg:block">
-              <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
-                <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
-                <FilterPanel {...panelProps} />
-              </div>
-            </aside>
+            <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
+              <aside className="hidden lg:block">
+                <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                  <FilterPanel {...panelProps} />
+                </div>
+              </aside>
 
-            <div>
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {loading ? "Carregando..." : <><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</>}
-                </p>
-                <Sheet open={open} onOpenChange={setOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 lg:hidden">
-                      <Filter className="h-4 w-4" /> Filtros
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
-                    <SheetTitle className="sr-only">Filtros</SheetTitle>
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
-                      <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    {loading ? "Carregando..." : <><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</>}
+                  </p>
+                  <Sheet open={open} onOpenChange={setOpen}>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2 lg:hidden">
+                        <Filter className="h-4 w-4" /> Filtros
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
+                      <SheetTitle className="sr-only">Filtros</SheetTitle>
+                      <div className="mb-4 flex items-center justify-between">
+                        <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                        <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+                      </div>
+                      <FilterPanel {...panelProps} />
+                      <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+
+                <div className="space-y-4">
+                  {loading ? (
+                    <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
+                  ) : filtered.length === 0 ? (
+                    <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
+                      {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado com esses filtros."}
                     </div>
-                    <FilterPanel {...panelProps} />
-                    <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
-                  </SheetContent>
-                </Sheet>
-              </div>
-
-              <div className="space-y-4">
-                {loading ? (
-                  <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
-                ) : filtered.length === 0 ? (
-                  <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
-                    {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado com esses filtros."}
-                  </div>
-                ) : (
-                  filtered.map((d) => <DoctorCard key={d.id} d={d} />)
-                )}
+                  ) : (
+                    filtered.map((d) => <DoctorCard key={d.id} d={d} />)
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
     </div>
   );
 }
