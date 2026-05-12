@@ -33,6 +33,11 @@ export function SiteHeader() {
           {user ? (
             <>
               {user && <NotificationsBell userId={user.id} />}
+              <Link to="/mensagens" aria-label="Mensagens">
+                <Button variant="ghost" size="icon">
+                  <MessageCircle className="h-5 w-5" />
+                </Button>
+              </Link>
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Painel</Button>
               </Link>
