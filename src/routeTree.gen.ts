@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as SolicitacoesRouteImport } from './routes/solicitacoes'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PerfilEmpresaRouteImport } from './routes/perfil-empresa'
@@ -34,6 +35,11 @@ const SolicitarRoute = SolicitarRouteImport.update({
 const SolicitacoesRoute = SolicitacoesRouteImport.update({
   id: '/solicitacoes',
   path: '/solicitacoes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/perfil-empresa'
     | '/profile'
     | '/relatorios'
+    | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/perfil-empresa'
     | '/profile'
     | '/relatorios'
+    | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/perfil-empresa'
     | '/profile'
     | '/relatorios'
+    | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   PerfilEmpresaRoute: typeof PerfilEmpresaRoute
   ProfileRoute: typeof ProfileRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SolicitacoesRoute: typeof SolicitacoesRoute
   SolicitarRoute: typeof SolicitarRoute
 }
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/solicitacoes'
       fullPath: '/solicitacoes'
       preLoaderRoute: typeof SolicitacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/relatorios': {
@@ -370,18 +390,10 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilEmpresaRoute: PerfilEmpresaRoute,
   ProfileRoute: ProfileRoute,
   RelatoriosRoute: RelatoriosRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SolicitacoesRoute: SolicitacoesRoute,
   SolicitarRoute: SolicitarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
