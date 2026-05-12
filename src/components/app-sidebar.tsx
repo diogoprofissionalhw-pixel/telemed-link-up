@@ -216,6 +216,16 @@ function HeaderProfile() {
 
 /* Layout wrapper: aplica margin-left para o conteúdo no desktop e mostra
    bell de notificações no topo desktop. */
+function MessagesButton() {
+  return (
+    <Link to="/mensagens" aria-label="Mensagens">
+      <Button variant="ghost" size="icon">
+        <MessageCircle className="h-5 w-5" />
+      </Button>
+    </Link>
+  );
+}
+
 function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
