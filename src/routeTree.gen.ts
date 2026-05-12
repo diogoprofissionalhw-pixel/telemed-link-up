@@ -15,6 +15,7 @@ import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PerfilEmpresaRouteImport } from './routes/perfil-empresa'
 import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MedicosRouteImport } from './routes/medicos'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -53,6 +54,11 @@ const PerfilEmpresaRoute = PerfilEmpresaRouteImport.update({
 const PerfilRoute = PerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MensagensRoute = MensagensRouteImport.update({
+  id: '/mensagens',
+  path: '/mensagens',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MedicosRoute = MedicosRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
   '/medicos': typeof MedicosRoute
+  '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
   '/medicos': typeof MedicosRoute
+  '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
   '/medicos': typeof MedicosRoute
+  '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
   '/profile': typeof ProfileRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/historico'
     | '/medicos'
+    | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
     | '/profile'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/historico'
     | '/medicos'
+    | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
     | '/profile'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/historico'
     | '/medicos'
+    | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
     | '/profile'
@@ -217,6 +229,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   HistoricoRoute: typeof HistoricoRoute
   MedicosRoute: typeof MedicosRoute
+  MensagensRoute: typeof MensagensRoute
   PerfilRoute: typeof PerfilRoute
   PerfilEmpresaRoute: typeof PerfilEmpresaRoute
   ProfileRoute: typeof ProfileRoute
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/perfil'
       preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mensagens': {
+      id: '/mensagens'
+      path: '/mensagens'
+      fullPath: '/mensagens'
+      preLoaderRoute: typeof MensagensRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/medicos': {
@@ -345,6 +365,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   HistoricoRoute: HistoricoRoute,
   MedicosRoute: MedicosRoute,
+  MensagensRoute: MensagensRoute,
   PerfilRoute: PerfilRoute,
   PerfilEmpresaRoute: PerfilEmpresaRoute,
   ProfileRoute: ProfileRoute,

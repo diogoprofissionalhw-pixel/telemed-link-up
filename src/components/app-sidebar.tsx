@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Inbox, User, Settings,
+  Home, Inbox, User, Settings, MessageCircle,
   Users, Briefcase, BarChart3, Building2, Menu, X, LogOut, UserCircle2,
 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
@@ -24,6 +24,7 @@ interface MenuItem {
 const DOCTOR_MENU: MenuItem[] = [
   { label: "Dashboard", icon: Home, to: "/dashboard" },
   { label: "Perfil",    icon: User, to: "/perfil" },
+  { label: "Mensagens", icon: MessageCircle, to: "/mensagens" },
 ];
 
 const NETWORK_MENU: MenuItem[] = [
@@ -33,6 +34,7 @@ const NETWORK_MENU: MenuItem[] = [
   { label: "Contratações",      icon: Briefcase,  to: "/contratacoes" },
   { label: "Relatórios",        icon: BarChart3,  to: "/relatorios" },
   { label: "Perfil da empresa", icon: Building2,  to: "/perfil-empresa" },
+  { label: "Mensagens",         icon: MessageCircle, to: "/mensagens" },
 ];
 
 interface SidebarItemProps {
