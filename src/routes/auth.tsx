@@ -23,6 +23,18 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     mode: (s.mode === "signup" ? "signup" : "signin") as Mode,
   }),
+  head: () => ({
+    meta: [
+      { title: "Entrar ou cadastrar — Connect-Med" },
+      { name: "description", content: "Acesse sua conta Connect-Med ou cadastre-se como médico ou rede de telemedicina e comece a usar a plataforma em minutos." },
+      { property: "og:title", content: "Entrar ou cadastrar — Connect-Med" },
+      { property: "og:description", content: "Acesse sua conta ou cadastre-se como médico ou rede de telemedicina." },
+      { property: "og:url", content: "https://telemed-link-up.lovable.app/auth" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://telemed-link-up.lovable.app/auth" },
+    ],
+  }),
   component: AuthPage,
 });
 
@@ -45,7 +57,7 @@ function AuthPage() {
   return (
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <SiteHeader />
-      <div className="mx-auto flex max-w-md flex-col px-4 py-12">
+      <main className="mx-auto flex max-w-md flex-col px-4 py-12">
         <Link to="/" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Voltar ao início
         </Link>
@@ -68,7 +80,7 @@ function AuthPage() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
