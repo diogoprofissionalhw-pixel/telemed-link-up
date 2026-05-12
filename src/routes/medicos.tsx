@@ -13,10 +13,28 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/medicos")({
   head: () => ({
     meta: [
-      { title: "Conheça Nossos Médicos — Connect-Med" },
-      { name: "description", content: "Explore a rede Connect-Med de médicos qualificados. Filtre por especialidade, localização e taxa horária." },
-      { property: "og:title", content: "Conheça Nossos Médicos — Connect-Med" },
-      { property: "og:description", content: "Explore profissionais qualificados em telemedicina." },
+      { title: "Médicos da rede Connect-Med — diretório de profissionais" },
+      { name: "description", content: "Diretório de médicos verificados da Connect-Med. Filtre por especialidade, cidade, UF e valor da hora para encontrar o profissional ideal para o seu plantão." },
+      { property: "og:title", content: "Médicos da rede Connect-Med" },
+      { property: "og:description", content: "Diretório de médicos verificados — filtre por especialidade, localização e valor da hora." },
+      { property: "og:url", content: "https://telemed-link-up.lovable.app/medicos" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://telemed-link-up.lovable.app/medicos" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Médicos da rede Connect-Med",
+          description: "Diretório de médicos verificados disponíveis para plantões de telemedicina.",
+          url: "https://telemed-link-up.lovable.app/medicos",
+          isPartOf: { "@type": "WebSite", name: "Connect-Med", url: "https://telemed-link-up.lovable.app" },
+        }),
+      },
     ],
   }),
   component: DoctorsPage,
