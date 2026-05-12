@@ -150,14 +150,21 @@ function DoctorsPage() {
       <main className="bg-background">
         <section>
           <div className="mx-auto max-w-6xl px-4 py-12 sm:py-20">
-            <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" /> Voltar para a página inicial
-            </Link>
-            <div className="text-center">
-              <h1 className="text-3xl font-bold sm:text-4xl">
-                Conheça Nossos <span className="text-primary">Médicos</span>
-              </h1>
-              <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
+            <div className="relative flex items-center justify-center">
+              <Link
+                to="/"
+                aria-label="Voltar para a página inicial"
+                title="Voltar para a página inicial"
+                className="absolute left-0 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-success text-success-foreground shadow-md transition-transform hover:scale-105 hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success focus-visible:ring-offset-2"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+              <div className="text-center">
+                <h1 className="text-3xl font-bold sm:text-4xl">
+                  Conheça Nossos <span className="text-primary">Médicos</span>
+                </h1>
+                <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
+              </div>
             </div>
 
             <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
