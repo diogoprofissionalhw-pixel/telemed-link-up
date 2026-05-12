@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle, Ban } from "lucide-react";
+import { MessageCircle, Ban, ArrowLeft } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
@@ -111,7 +113,17 @@ function MensagensPage() {
   const list = useMemo(() => items, [items]);
 
   return (
-    <DashboardLayout title="Mensagens" subtitle="Suas conversas">
+    <DashboardLayout
+      title="Mensagens"
+      subtitle="Suas conversas"
+      actions={
+        <Button asChild variant="outline" size="sm">
+          <Link to="/dashboard">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar ao dashboard
+          </Link>
+        </Button>
+      }
+    >
       <div className="overflow-hidden rounded-lg border bg-card">
         <div className="grid h-[calc(100vh-16rem)] min-h-[480px] grid-cols-1 md:grid-cols-[320px_1fr]">
           {/* Left: conversation list */}
