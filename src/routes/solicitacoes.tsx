@@ -237,10 +237,9 @@ function SolicitacoesPage() {
       )}
 
       {chatReq && user && (
-        <ChatDialog
+        <ChatPanel
           open={!!chatReq}
           onOpenChange={(v) => !v && setChatReq(null)}
-          requestId={chatReq.id}
           currentUserId={user.id}
           otherUserId={isDoctor ? chatReq.network_id : chatReq.doctor_id}
           otherName={isDoctor ? (chatReq.network?.network_name ?? "Rede") : (chatReq.doctor?.profile?.full_name ?? "Médico")}
