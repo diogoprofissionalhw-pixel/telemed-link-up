@@ -153,6 +153,7 @@ export function AppSidebar({ userType }: { userType: UserType }) {
         <div className="flex items-center gap-1">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {user && <MessagesButton />}
           {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
       </div>
@@ -216,6 +217,16 @@ function HeaderProfile() {
 
 /* Layout wrapper: aplica margin-left para o conteúdo no desktop e mostra
    bell de notificações no topo desktop. */
+function MessagesButton() {
+  return (
+    <Link to="/mensagens" aria-label="Mensagens">
+      <Button variant="ghost" size="icon">
+        <MessageCircle className="h-5 w-5" />
+      </Button>
+    </Link>
+  );
+}
+
 function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
@@ -243,6 +254,7 @@ export function AppShell({ userType, children }: { userType: UserType; children:
         <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-1 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {user && <MessagesButton />}
           {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
         <div>{children}</div>
