@@ -124,6 +124,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                   </span>
                 </div>
               </div>
+              {user && user.id !== doctor.id && (
+                <Button size="sm" onClick={() => setChatOpen(true)} className="gap-1.5 self-start">
+                  <MessageCircle className="h-4 w-4" /> Mensagem
+                </Button>
+              )}
             </div>
 
             {doctor.cv_pdf_url && (
