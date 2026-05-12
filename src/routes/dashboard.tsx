@@ -23,6 +23,15 @@ import { ReputationSummary } from "@/components/reputation-summary";
 import { NetworkAnalytics } from "@/components/network-analytics";
 
 export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard — Connect-Med" },
+      { name: "description", content: "Painel central com estatísticas, solicitações e atalhos para gerenciar plantões." },
+      { property: "og:title", content: "Dashboard — Connect-Med" },
+      { property: "og:description", content: "Painel central com estatísticas, solicitações e atalhos para gerenciar plantões." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: DashboardPage,
 });
 

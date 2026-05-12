@@ -9,6 +9,15 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState } from "@/components/dashboard/empty-state";
 
 export const Route = createFileRoute("/relatorios")({
+  head: () => ({
+    meta: [
+      { title: "Relatórios — Connect-Med" },
+      { name: "description", content: "Métricas de desempenho dos seus plantões: receita, horas e tendências." },
+      { property: "og:title", content: "Relatórios — Connect-Med" },
+      { property: "og:description", content: "Métricas de desempenho dos seus plantões: receita, horas e tendências." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: RelatoriosPage,
 });
 

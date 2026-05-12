@@ -8,6 +8,15 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { StatusBadge, type RequestStatus } from "@/components/dashboard/status-badge";
 
 export const Route = createFileRoute("/contratacoes")({
+  head: () => ({
+    meta: [
+      { title: "Contratações — Connect-Med" },
+      { name: "description", content: "Veja contratações de plantões realizadas pela sua rede ou aceitas como médico." },
+      { property: "og:title", content: "Contratações — Connect-Med" },
+      { property: "og:description", content: "Veja contratações de plantões realizadas pela sua rede ou aceitas como médico." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ContratacoesPage,
 });
 

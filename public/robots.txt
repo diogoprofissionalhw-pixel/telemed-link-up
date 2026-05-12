@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://telemed-link-up.lovable.app/sitemap.xml

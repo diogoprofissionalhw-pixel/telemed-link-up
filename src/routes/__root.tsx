@@ -37,12 +37,34 @@ export const Route = createRootRoute({
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90c12180-2db6-494a-b6bc-65e02e49a0e2/id-preview-7ce05f73--6a4d2c29-609f-43bd-9307-f2af6fddec69.lovable.app-1777405507492.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/90c12180-2db6-494a-b6bc-65e02e49a0e2/id-preview-7ce05f73--6a4d2c29-609f-43bd-9307-f2af6fddec69.lovable.app-1777405507492.png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:site_name", content: "Connect-Med" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" },
       { rel: "stylesheet", href: appCss },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Connect-Med",
+          url: "https://telemed-link-up.lovable.app",
+          description: "Plataforma que conecta médicos a redes de telemedicina.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Connect-Med",
+          url: "https://telemed-link-up.lovable.app",
+        }),
+      },
     ],
   }),
   shellComponent: RootShell,

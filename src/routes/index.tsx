@@ -15,6 +15,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Conectamos médicos a redes de telemedicina. Solicite plantões, encontre profissionais qualificados e gerencie sua agenda em um só lugar." },
       { property: "og:title", content: "Connect-Med — Plantões de Telemedicina" },
       { property: "og:description", content: "Plantões simplificados, oportunidades ampliadas para médicos e redes de telemedicina." },
+      { property: "og:url", content: "https://telemed-link-up.lovable.app/" },
+      { property: "og:type", content: "website" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://telemed-link-up.lovable.app/" },
     ],
   }),
   component: LandingPage,
@@ -38,12 +43,14 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <Hero />
-      <HowItWorksDoctors />
-      <HowItWorksNetworks />
-      <Benefits />
-      <ExploreDoctors />
-      <FinalCTA />
+      <main>
+        <Hero />
+        <HowItWorksDoctors />
+        <HowItWorksNetworks />
+        <Benefits />
+        <ExploreDoctors />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   );

@@ -1,0 +1,9 @@
+# Connect-Med
+
+> Plataforma que conecta médicos a redes de telemedicina. Redes solicitam plantões, médicos aceitam com poucos cliques e ambos gerenciam agenda, contratos e avaliações em um único lugar.
+
+## Pages
+
+- [Home](/): Visão geral do Connect-Med, como funciona para médicos e para redes de telemedicina.
+- [Médicos](/medicos): Diretório de médicos da rede com filtros por especialidade, localização e valor da hora.
+- [Entrar / Cadastrar](/auth): Login e cadastro para médicos e redes de telemedicina.

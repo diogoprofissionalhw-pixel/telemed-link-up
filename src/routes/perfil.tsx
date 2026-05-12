@@ -22,6 +22,15 @@ import { isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits,
 import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/perfil")({
+  head: () => ({
+    meta: [
+      { title: "Meu perfil — Connect-Med" },
+      { name: "description", content: "Atualize seus dados profissionais, especialidades, currículo e disponibilidade." },
+      { property: "og:title", content: "Meu perfil — Connect-Med" },
+      { property: "og:description", content: "Atualize seus dados profissionais, especialidades, currículo e disponibilidade." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: PerfilPage,
 });
 
