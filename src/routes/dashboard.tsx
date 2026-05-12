@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChatDialog } from "@/components/chat-dialog";
+import { ChatPanel } from "@/components/chat-panel";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
 import { RatingDialog } from "@/components/rating-dialog";
 import { StarRating } from "@/components/star-rating";
