@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentType } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Inbox, User, Settings,
+  Home, Inbox, User, Settings, MessageCircle,
   Users, Briefcase, BarChart3, Building2, Menu, X, LogOut, UserCircle2,
 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
