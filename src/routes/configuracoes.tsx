@@ -11,6 +11,15 @@ import { Switch } from "@/components/ui/switch";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 
 export const Route = createFileRoute("/configuracoes")({
+  head: () => ({
+    meta: [
+      { title: "Configurações — Connect-Med" },
+      { name: "description", content: "Gerencie segurança, notificações e preferências da sua conta." },
+      { property: "og:title", content: "Configurações — Connect-Med" },
+      { property: "og:description", content: "Gerencie segurança, notificações e preferências da sua conta." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ConfiguracoesPage,
 });
 

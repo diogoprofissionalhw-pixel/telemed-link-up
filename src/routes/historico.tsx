@@ -8,6 +8,15 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { StatusBadge, type RequestStatus } from "@/components/dashboard/status-badge";
 
 export const Route = createFileRoute("/historico")({
+  head: () => ({
+    meta: [
+      { title: "Histórico — Connect-Med" },
+      { name: "description", content: "Histórico completo de plantões concluídos, recusados e cancelados." },
+      { property: "og:title", content: "Histórico — Connect-Med" },
+      { property: "og:description", content: "Histórico completo de plantões concluídos, recusados e cancelados." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: HistoricoPage,
 });
 

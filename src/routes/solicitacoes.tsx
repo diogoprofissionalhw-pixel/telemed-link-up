@@ -16,6 +16,15 @@ import { EmptyState } from "@/components/dashboard/empty-state";
 import { StatusBadge, type RequestStatus } from "@/components/dashboard/status-badge";
 
 export const Route = createFileRoute("/solicitacoes")({
+  head: () => ({
+    meta: [
+      { title: "Solicitações — Connect-Med" },
+      { name: "description", content: "Gerencie solicitações de plantão pendentes, aceitas e recusadas." },
+      { property: "og:title", content: "Solicitações — Connect-Med" },
+      { property: "og:description", content: "Gerencie solicitações de plantão pendentes, aceitas e recusadas." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: SolicitacoesPage,
 });
 

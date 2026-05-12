@@ -11,6 +11,15 @@ import { ChatView } from "@/components/chat-view";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/mensagens")({
+  head: () => ({
+    meta: [
+      { title: "Mensagens — Connect-Med" },
+      { name: "description", content: "Converse em tempo real com médicos e redes parceiras." },
+      { property: "og:title", content: "Mensagens — Connect-Med" },
+      { property: "og:description", content: "Converse em tempo real com médicos e redes parceiras." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: MensagensPage,
 });
 

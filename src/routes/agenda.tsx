@@ -15,6 +15,15 @@ import { StatusBadge } from "@/components/dashboard/status-badge";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/agenda")({
+  head: () => ({
+    meta: [
+      { title: "Agenda — Connect-Med" },
+      { name: "description", content: "Visualize, agende e organize seus plantões em um calendário interativo." },
+      { property: "og:title", content: "Agenda — Connect-Med" },
+      { property: "og:description", content: "Visualize, agende e organize seus plantões em um calendário interativo." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: AgendaPage,
 });
 

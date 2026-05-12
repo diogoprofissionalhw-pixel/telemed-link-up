@@ -9,6 +9,15 @@ import { StatusBadge } from "@/components/dashboard/status-badge";
 import { SearchInput } from "@/components/dashboard/search-input";
 
 export const Route = createFileRoute("/consultas")({
+  head: () => ({
+    meta: [
+      { title: "Consultas — Connect-Med" },
+      { name: "description", content: "Acompanhe suas consultas e plantões agendados em tempo real." },
+      { property: "og:title", content: "Consultas — Connect-Med" },
+      { property: "og:description", content: "Acompanhe suas consultas e plantões agendados em tempo real." },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
   component: ConsultasPage,
 });
 
