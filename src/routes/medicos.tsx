@@ -155,7 +155,7 @@ function DoctorsPage() {
                 to="/"
                 aria-label="Voltar para a página inicial"
                 title="Voltar para a página inicial"
-                className="absolute left-0 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-success text-success-foreground shadow-md transition-transform hover:scale-105 hover:bg-success/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success focus-visible:ring-offset-2"
+                className="absolute left-0 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-transform hover:scale-105 hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <ArrowLeft className="h-5 w-5" />
               </Link>
