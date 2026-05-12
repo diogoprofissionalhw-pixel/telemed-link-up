@@ -153,6 +153,7 @@ export function AppSidebar({ userType }: { userType: UserType }) {
         <div className="flex items-center gap-1">
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
+          {user && <MessagesButton />}
           {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
       </div>
