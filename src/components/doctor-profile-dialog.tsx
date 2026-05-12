@@ -44,9 +44,11 @@ interface Props {
 }
 
 export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
+  const { user } = useAuth();
   const [doctor, setDoctor] = useState<DoctorFull | null>(null);
   const [ratings, setRatings] = useState<RatingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
