@@ -813,11 +813,7 @@ function DoctorRegistration({
               </Section>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Link to="/dashboard">
-                  <Button variant="outline" className="w-full sm:w-auto">
-                    <ArrowLeft className="mr-1 h-4 w-4" /> Voltar
-                  </Button>
-                </Link>
+                <BackButton to="/dashboard" label="Voltar ao dashboard" />
                 <div className="flex items-center gap-3">
                   {autoSavedAt && (
                     <span className="text-xs text-gray-500 inline-flex items-center gap-1">
