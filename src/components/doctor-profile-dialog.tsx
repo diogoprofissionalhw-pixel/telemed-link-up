@@ -197,6 +197,16 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           </div>
         )}
       </DialogContent>
+      {user && doctor && (
+        <ChatPanel
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          currentUserId={user.id}
+          otherUserId={doctor.id}
+          otherName={doctor.full_name}
+          otherAvatarUrl={doctor.avatar_url}
+        />
+      )}
     </Dialog>
   );
 }
