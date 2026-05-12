@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Mail, IdCard, Eye } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Mail, IdCard, Eye, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
 import { NetworkDoctorTagPanel } from "@/components/network-doctor-tag-panel";
+import { ChatPanel } from "@/components/chat-panel";
 
 interface DoctorFull {
   id: string;
@@ -41,9 +44,11 @@ interface Props {
 }
 
 export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
+  const { user } = useAuth();
   const [doctor, setDoctor] = useState<DoctorFull | null>(null);
   const [ratings, setRatings] = useState<RatingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -119,6 +124,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                   </span>
                 </div>
               </div>
+              {user && user.id !== doctor.id && (
+                <Button size="sm" onClick={() => setChatOpen(true)} className="gap-1.5 self-start">
+                  <MessageCircle className="h-4 w-4" /> Mensagem
+                </Button>
+              )}
             </div>
 
             {doctor.cv_pdf_url && (
@@ -187,6 +197,16 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           </div>
         )}
       </DialogContent>
+      {user && doctor && (
+        <ChatPanel
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+          currentUserId={user.id}
+          otherUserId={doctor.id}
+          otherName={doctor.full_name}
+          otherAvatarUrl={doctor.avatar_url}
+        />
+      )}
     </Dialog>
   );
 }

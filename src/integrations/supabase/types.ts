@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      direct_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read_at: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       doctor_availabilities: {
         Row: {
           available_date: string
@@ -604,12 +631,64 @@ export type Database = {
           },
         ]
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      user_chat_settings: {
+        Row: {
+          cleared_at: string | null
+          created_at: string
+          id: string
+          muted_at: string | null
+          peer_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cleared_at?: string | null
+          created_at?: string
+          id?: string
+          muted_at?: string | null
+          peer_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cleared_at?: string | null
+          created_at?: string
+          id?: string
+          muted_at?: string | null
+          peer_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       auto_finalize_shifts: { Args: never; Returns: undefined }
+      is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       send_shift_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
