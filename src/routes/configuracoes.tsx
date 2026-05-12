@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { KeyRound, Bell, CalendarCheck, ArrowLeft } from "lucide-react";
+import { KeyRound, Bell, CalendarCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { BackButton } from "@/components/back-button";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -29,14 +30,9 @@ function ConfiguracoesPage() {
       title="Configurações"
       subtitle="Gerencie sua segurança, notificações e preferências."
       breadcrumbs={[{ label: "Configurações" }]}
+      actions={<BackButton to="/dashboard" label="Voltar ao dashboard" />}
     >
       <div className="space-y-6">
-        <Button asChild variant="ghost" size="sm" className="-ml-2">
-          <Link to="/dashboard">
-            <ArrowLeft className="h-4 w-4" />
-            Voltar ao dashboard
-          </Link>
-        </Button>
         <ChangePasswordCard />
         <NotificationsCard />
         <PreferencesCard />

@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Search, Star, MapPin, Clock, DollarSign, Filter, X,
+  Search, Star, MapPin, Clock, DollarSign, Filter, X,
   ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
 } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -223,9 +224,7 @@ function SolicitarPage() {
       <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-4 w-4" /> Voltar
-            </Link>
+            <BackButton to="/dashboard" label="Voltar ao dashboard" />
             <div className="hidden md:block h-6 w-px bg-border" />
             <Link to="/" className="hidden md:flex items-center gap-2">
               <img src={logo} alt="Connect-Med" className="h-7 w-auto" />

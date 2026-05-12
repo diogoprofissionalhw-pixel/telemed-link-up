@@ -1,6 +1,7 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Stethoscope, Building2, Check, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Stethoscope, Building2, Check, ArrowRight, Loader2 } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -58,9 +59,9 @@ function AuthPage() {
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <SiteHeader />
       <main className="mx-auto flex max-w-md flex-col px-4 py-12">
-        <Link to="/" className="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Voltar ao início
-        </Link>
+        <div className="mb-4">
+          <BackButton to="/" label="Voltar ao início" />
+        </div>
         <div className="rounded-2xl border bg-card p-6 sm:p-8" style={{ boxShadow: "var(--shadow-card)" }}>
           <h1 className="text-2xl font-bold">Acessar Connect-Med</h1>
           <p className="mt-1 text-sm text-muted-foreground">Entre ou crie sua conta para continuar.</p>

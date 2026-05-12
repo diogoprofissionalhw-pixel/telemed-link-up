@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Camera, Trash2, Plus, Linkedin, Check, Upload,
+  Camera, Trash2, Plus, Linkedin, Check, Upload,
   Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
 } from "lucide-react";
+import { BackButton } from "@/components/back-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -135,9 +136,7 @@ function PageHeader() {
         <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
         </Link>
-        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" /> Voltar
-        </Link>
+        <BackButton to="/dashboard" label="Voltar ao dashboard" />
       </div>
     </header>
   );
@@ -815,11 +814,7 @@ function DoctorRegistration({
               </Section>
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <Link to="/dashboard">
-                  <Button variant="outline" className="w-full sm:w-auto">
-                    <ArrowLeft className="mr-1 h-4 w-4" /> Voltar
-                  </Button>
-                </Link>
+                <BackButton to="/dashboard" label="Voltar ao dashboard" />
                 <div className="flex items-center gap-3">
                   {autoSavedAt && (
                     <span className="text-xs text-gray-500 inline-flex items-center gap-1">
