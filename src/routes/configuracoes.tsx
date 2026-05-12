@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { KeyRound, Bell, CalendarCheck, ArrowLeft } from "lucide-react";
+import { KeyRound, Bell, CalendarCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
+import { BackButton } from "@/components/back-button";
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
