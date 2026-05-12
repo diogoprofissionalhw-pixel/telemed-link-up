@@ -24,6 +24,9 @@ export const Route = createFileRoute("/solicitar")({
     meta: [
       { title: "Solicitar médico — Connect-Med" },
       { name: "description", content: "Encontre e convide médicos qualificados para o seu plantão de telemedicina." },
+      { property: "og:title", content: "Solicitar médico — Connect-Med" },
+      { property: "og:description", content: "Convide médicos qualificados para o seu plantão de telemedicina." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: SolicitarPage,
