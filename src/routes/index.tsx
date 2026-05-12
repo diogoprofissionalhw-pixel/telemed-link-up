@@ -43,12 +43,14 @@ function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
-      <Hero />
-      <HowItWorksDoctors />
-      <HowItWorksNetworks />
-      <Benefits />
-      <ExploreDoctors />
-      <FinalCTA />
+      <main>
+        <Hero />
+        <HowItWorksDoctors />
+        <HowItWorksNetworks />
+        <Benefits />
+        <ExploreDoctors />
+        <FinalCTA />
+      </main>
       <Footer />
     </div>
   );
