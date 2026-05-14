@@ -482,6 +482,7 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allHist, setAllHist] = useState<Array<{ status: string; agreed_value: number | null; duration_hours: number; created_at: string; responded_at: string | null }>>([]);
   const [doctors, setDoctors] = useState<NetDoctor[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
@@ -490,6 +491,7 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
+  const [addOpen, setAddOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
