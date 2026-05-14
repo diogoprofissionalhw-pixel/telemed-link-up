@@ -133,10 +133,7 @@ function DashboardPage() {
           {isDoctor ? (
             <DoctorPanel userId={user.id} />
           ) : (
-            <>
-              <DashboardStats userId={user.id} userType={profile.account_type} />
-              <NetworkPanel userId={user.id} />
-            </>
+            <NetworkPanel userId={user.id} />
           )}
         </div>
       )}
@@ -468,27 +465,71 @@ function DoctorPanel({ userId }: { userId: string }) {
     </div>
   );
 }
+interface NetDoctor {
+  id: string;
+  full_name: string;
+  specialty: string;
+  crm: string;
+  crm_uf: string;
+  avatar_url: string | null;
+  city: string | null;
+  state: string | null;
+  avg_stars: number;
+  rating_count: number;
+}
+
 function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
+  const [allHist, setAllHist] = useState<Array<{ status: string; agreed_value: number | null; duration_hours: number; created_at: string; responded_at: string | null }>>([]);
+  const [doctors, setDoctors] = useState<NetDoctor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
   const [ratingReq, setRatingReq] = useState<ShiftRequest | null>(null);
   const [cancelTarget, setCancelTarget] = useState<ShiftRequest | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
+  const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("shift_requests")
-      .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
-      .eq("network_id", userId)
-      .not("status", "in", "(cancelled,completed)")
-      .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setRequests((data ?? []) as ShiftRequest[]);
+    const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+    const [reqRes, histRes, docRes, ratingRes] = await Promise.all([
+      supabase
+        .from("shift_requests")
+        .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
+        .eq("network_id", userId)
+        .not("status", "in", "(cancelled,completed)")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("shift_requests")
+        .select("status, agreed_value, duration_hours, created_at, responded_at")
+        .eq("network_id", userId)
+        .gte("created_at", since),
+      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(50),
+      supabase.from("ratings").select("doctor_id, stars"),
+    ]);
+    if (reqRes.error) toast.error(reqRes.error.message);
+    else setRequests((reqRes.data ?? []) as ShiftRequest[]);
+    setAllHist((histRes.data ?? []) as any);
+
+    const ratingMap = new Map<string, { sum: number; n: number }>();
+    (ratingRes.data ?? []).forEach((r: any) => {
+      const c = ratingMap.get(r.doctor_id) ?? { sum: 0, n: 0 };
+      c.sum += r.stars; c.n += 1;
+      ratingMap.set(r.doctor_id, c);
+    });
+    const docs: NetDoctor[] = (docRes.data ?? []).map((d: any) => {
+      const ag = ratingMap.get(d.id);
+      return {
+        id: d.id, specialty: d.specialty, crm: d.crm, crm_uf: d.crm_uf,
+        avatar_url: d.avatar_url ?? null, city: d.city ?? null, state: d.state ?? null,
+        full_name: d.profiles?.full_name ?? "Médico",
+        avg_stars: ag ? ag.sum / ag.n : 0,
+        rating_count: ag?.n ?? 0,
+      };
+    });
+    setDoctors(docs);
     setLoading(false);
   }, [userId]);
 
@@ -504,7 +545,6 @@ function NetworkPanel({ userId }: { userId: string }) {
     return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [userId, load]);
 
-  // Toast de novas mensagens recebidas
   useEffect(() => {
     const ch = supabase
       .channel(`msg-net-${userId}`)
@@ -535,39 +575,238 @@ function NetworkPanel({ userId }: { userId: string }) {
     setCancelReason("");
   };
 
+  const pending = requests.filter(r => r.status === "pending");
+  const ongoing = requests.filter(r => r.status === "accepted");
+
+  const acceptedHist = allHist.filter(h => h.status === "accepted" || h.status === "completed");
+  const declinedHist = allHist.filter(h => h.status === "declined");
+  const totalCost = acceptedHist.reduce((a, h) => a + (Number(h.agreed_value) || 0), 0);
+  const totalHours = acceptedHist.reduce((a, h) => a + (Number(h.duration_hours) || 0), 0);
+  const avgCostPerHour = totalHours > 0 ? totalCost / totalHours : 0;
+  const filledWithTime = acceptedHist.filter(h => h.responded_at);
+  const avgFillMin = filledWithTime.length
+    ? filledWithTime.reduce((a, h) => a + (new Date(h.responded_at!).getTime() - new Date(h.created_at).getTime()), 0) / filledWithTime.length / 1000 / 60
+    : 0;
+
+  const specialties = useMemo(() => {
+    const set = new Set<string>(doctors.map(d => d.specialty).filter(Boolean));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+  }, [doctors]);
+
+  const filteredDoctors = useMemo(() => {
+    return doctors
+      .filter(d => specialtyFilter === "all" || d.specialty === specialtyFilter)
+      .sort((a, b) => b.avg_stars - a.avg_stars)
+      .slice(0, 6);
+  }, [doctors, specialtyFilter]);
+
   return (
     <div className="space-y-10">
-      <NetworkAnalytics networkId={userId} />
+      {/* TOP — Resumo (esquerda) + CTA grande (direita) */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        {/* Coluna esquerda: contadores empilhados */}
+        <div className="space-y-6 lg:col-span-1">
+          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Solicitação</p>
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                <Inbox className="h-[18px] w-[18px] text-primary" />
+              </div>
+            </div>
+            <p className="mt-3 text-3xl font-bold leading-none tracking-tight">{loading ? "—" : pending.length}</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {pending.length === 1 ? "pendente aguardando médico" : "pendentes aguardando médico"}
+            </p>
+            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+              <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+            </div>
+          </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitas / Negadas</p>
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                <CheckCircle2 className="h-[18px] w-[18px] text-primary" />
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: "oklch(0.40 0.14 150)" }}>{acceptedHist.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Aceitas (90d)</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold tabular-nums" style={{ color: "oklch(0.50 0.20 25)" }}>{declinedHist.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Negadas (90d)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Coluna direita: CTA grande de Nova solicitação */}
+        <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-8 lg:col-span-2 flex flex-col justify-between min-h-[300px]" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
+                <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
+                <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                  Encontre um médico disponível para o plantão da sua rede com o match inteligente.
+                </p>
+              </div>
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10">
+                <Plus className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <p className="text-3xl font-bold tabular-nums">{loading ? "—" : pending.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Solicitações pendentes</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold tabular-nums">{loading ? "—" : ongoing.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Em andamento</p>
+              </div>
+            </div>
+            <Link to="/solicitar">
+              <Button size="lg" className="gap-2 shadow-lg">
+                <Plus className="h-5 w-5" /> Solicitar médico
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* GRÁFICO — custo médio/hora + tempo médio em minutos */}
+      <section className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Indicadores (90 dias)</p>
+            <h3 className="mt-1 text-base font-semibold tracking-tight">Custo médio por hora & tempo médio de preenchimento</h3>
+          </div>
+          <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+            <TrendingUp className="h-[18px] w-[18px] text-primary" />
+          </div>
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <MetricBar
+            label="Custo médio por hora"
+            value={avgCostPerHour > 0 ? avgCostPerHour.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}
+            ratio={Math.min(1, avgCostPerHour / 500)}
+            icon={DollarSign}
+            colorVar="var(--primary)"
+          />
+          <MetricBar
+            label="Tempo médio de resposta"
+            value={avgFillMin > 0 ? `${Math.round(avgFillMin)} min` : "—"}
+            ratio={avgFillMin > 0 ? Math.min(1, avgFillMin / 240) : 0}
+            icon={Clock}
+            colorVar="oklch(0.55 0.18 250)"
+          />
+        </div>
+      </section>
+
+      {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
+      <section className="grid gap-6 lg:grid-cols-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Atividade</p>
-          <h2 className="mt-1 text-lg font-semibold tracking-tight">Suas solicitações</h2>
-        </div>
-        <Link to="/solicitar">
-          <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Nova solicitação</Button>
-        </Link>
-      </div>
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Especialidade</p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">Médicos a serem solicitados</h2>
+            </div>
+          </div>
 
-      {loading ? (
-        <p className="text-muted-foreground">Carregando...</p>
-      ) : requests.length === 0 ? (
-        <EmptyStateBox icon={Inbox} title="Você ainda não enviou solicitações" description="Crie a primeira clicando em Nova solicitação." />
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {requests.map(r => (
-            <RequestCard
-              key={r.id}
-              req={r}
-              viewerType="network"
-              onCancel={() => setCancelTarget(r)}
-              onChat={() => setChatReq(r)}
-              onViewProfile={() => setProfileDoctorId(r.doctor_id)}
-              onRate={() => setRatingReq(r)}
-            />
-          ))}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+              <SelectTrigger className="w-full sm:w-[260px]">
+                <SelectValue placeholder="Filtrar por especialidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as especialidades</SelectItem>
+                {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Link to="/solicitar" className="ml-auto">
+              <Button size="sm" variant="outline" className="gap-1.5">
+                <Plus className="h-4 w-4" /> Adicionar médico
+              </Button>
+            </Link>
+          </div>
+
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : filteredDoctors.length === 0 ? (
+            <EmptyStateBox icon={Stethoscope} title="Nenhum médico encontrado para essa especialidade." />
+          ) : (
+            <div className="space-y-3">
+              {filteredDoctors.map(d => (
+                <button
+                  key={d.id}
+                  type="button"
+                  onClick={() => setProfileDoctorId(d.id)}
+                  className="w-full text-left rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                  style={{ boxShadow: "var(--shadow-card)" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-11 w-11 border">
+                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                      <AvatarFallback className="bg-accent">
+                        <Stethoscope className="h-5 w-5 text-primary" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold leading-tight">{d.full_name}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                        {d.city ? ` · ${d.city}` : ""}
+                      </p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <StarRating value={d.avg_stars} readonly size={14} />
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
+                        </span>
+                      </div>
+                    </div>
+                    <Plus className="h-5 w-5 text-primary shrink-0" />
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        <div>
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitos</p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações em andamento</h2>
+            </div>
+            {!loading && ongoing.length > 0 && (
+              <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-primary">{ongoing.length}</span>
+            )}
+          </div>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : ongoing.length === 0 && pending.length === 0 ? (
+            <EmptyStateBox icon={Inbox} title="Nenhuma solicitação ativa." description="Crie a primeira clicando em Solicitar médico." />
+          ) : (
+            <div className="space-y-4">
+              {[...pending, ...ongoing].map(r => (
+                <RequestCard
+                  key={r.id}
+                  req={r}
+                  viewerType="network"
+                  onCancel={() => setCancelTarget(r)}
+                  onChat={() => setChatReq(r)}
+                  onViewProfile={() => setProfileDoctorId(r.doctor_id)}
+                  onRate={() => setRatingReq(r)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {chatReq && (
         <ChatPanel
@@ -630,6 +869,23 @@ function NetworkPanel({ userId }: { userId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function MetricBar({ label, value, ratio, icon: Icon, colorVar }: { label: string; value: string; ratio: number; icon: any; colorVar: string }) {
+  return (
+    <div className="rounded-xl border bg-muted/30 p-4">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" /> {label}
+      </div>
+      <div className="mt-2 text-2xl font-bold tabular-nums">{value}</div>
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-background">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${Math.max(4, ratio * 100)}%`, backgroundColor: colorVar }}
+        />
+      </div>
     </div>
   );
 }
