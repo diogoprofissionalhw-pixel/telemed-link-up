@@ -213,20 +213,32 @@ function DashboardStats({ userId, userType }: { userId: string; userType: "docto
 /* ----------------- DOCTOR PANEL ----------------- */
 function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
+  const [allRequests, setAllRequests] = useState<Array<{ created_at: string; status: string }>>([]);
+  const [ratings, setRatings] = useState<Array<{ stars: number }>>([]);
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [declineId, setDeclineId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("shift_requests")
-      .select("*, network:networks(network_name, avatar_url)")
-      .eq("doctor_id", userId)
-      .not("status", "in", "(cancelled,completed)")
-      .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setRequests((data ?? []) as ShiftRequest[]);
+    const [activeRes, allRes, ratingRes] = await Promise.all([
+      supabase
+        .from("shift_requests")
+        .select("*, network:networks(network_name, avatar_url)")
+        .eq("doctor_id", userId)
+        .not("status", "in", "(cancelled,completed)")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("shift_requests")
+        .select("created_at, status")
+        .eq("doctor_id", userId)
+        .gte("created_at", new Date(Date.now() - 56 * 24 * 60 * 60 * 1000).toISOString()),
+      supabase.from("ratings").select("stars").eq("doctor_id", userId),
+    ]);
+    if (activeRes.error) toast.error(activeRes.error.message);
+    else setRequests((activeRes.data ?? []) as ShiftRequest[]);
+    setAllRequests((allRes.data ?? []) as Array<{ created_at: string; status: string }>);
+    setRatings((ratingRes.data ?? []) as Array<{ stars: number }>);
     setLoading(false);
   }, [userId]);
 
@@ -238,12 +250,10 @@ function DoctorPanel({ userId }: { userId: string }) {
         { event: "*", schema: "public", table: "shift_requests", filter: `doctor_id=eq.${userId}` },
         () => load())
       .subscribe();
-    // Auto-refresh seguro a cada 60s (fallback caso realtime caia)
     const interval = setInterval(load, 60_000);
     return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [userId, load]);
 
-  // Toast de novas mensagens recebidas (quando o chat estiver fechado para esse pedido)
   useEffect(() => {
     const ch = supabase
       .channel(`msg-doc-${userId}`)
@@ -269,37 +279,161 @@ function DoctorPanel({ userId }: { userId: string }) {
   };
 
   const pending = requests.filter(r => r.status === "pending");
+  const ongoing = requests.filter(r => r.status === "accepted");
+
+  const avgRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b.stars, 0) / ratings.length : 0;
+
+  const weeklyData = useMemo(() => {
+    const buckets: { label: string; total: number }[] = [];
+    const now = new Date();
+    for (let i = 7; i >= 0; i--) {
+      const end = new Date(now); end.setDate(now.getDate() - i * 7);
+      const start = new Date(end); start.setDate(end.getDate() - 7);
+      const total = allRequests.filter(r => {
+        const d = new Date(r.created_at);
+        return d >= start && d < end;
+      }).length;
+      buckets.push({
+        label: `${start.getDate()}/${start.getMonth() + 1}`,
+        total,
+      });
+    }
+    return buckets;
+  }, [allRequests]);
+
+  const maxBar = Math.max(1, ...weeklyData.map(d => d.total));
 
   return (
     <div className="space-y-10">
-      <ReputationSummary doctorId={userId} />
-
-      <section>
-        <div className="mb-4 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Pendentes</p>
-            <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações aguardando resposta</h2>
+      {/* TOP: Resumo (esquerda) + Gráfico (direita) */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-1">
+          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Solicitações</p>
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                <Inbox className="h-[18px] w-[18px] text-primary" />
+              </div>
+            </div>
+            <p className="mt-3 text-3xl font-bold leading-none tracking-tight">
+              {loading ? "—" : pending.length}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {pending.length === 1 ? "pendente aguardando resposta" : "pendentes aguardando resposta"}
+            </p>
+            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+              <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+            </div>
           </div>
-          {!loading && pending.length > 0 && (
-            <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-primary">{pending.length}</span>
-          )}
+
+          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Avaliação</p>
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                <Star className="h-[18px] w-[18px] text-primary" />
+              </div>
+            </div>
+            <p className="mt-3 text-3xl font-bold leading-none tracking-tight">
+              {ratings.length > 0 ? avgRating.toFixed(1) : "—"}
+            </p>
+            <div className="mt-2">
+              <StarRating value={avgRating} readonly size={18} />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {ratings.length === 0
+                ? "Sem avaliações ainda"
+                : `${ratings.length} ${ratings.length === 1 ? "avaliação recebida" : "avaliações recebidas"}`}
+            </p>
+          </div>
         </div>
-        {loading ? (
-          <p className="text-sm text-muted-foreground">Carregando...</p>
-        ) : pending.length === 0 ? (
-          <EmptyStateBox icon={Inbox} title="Nenhuma solicitação pendente no momento." />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {pending.map(r => (
-              <RequestCard key={r.id} req={r} viewerType="doctor"
-                onAccept={() => respond(r.id, "accepted")}
-                onDecline={() => setDeclineId(r.id)}
-                onChat={() => setChatReq(r)} />
+
+        <div className="rounded-2xl border bg-card p-6 lg:col-span-2" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="mb-1 flex items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Atividade</p>
+              <h3 className="mt-1 text-base font-semibold tracking-tight">Solicitações por semana</h3>
+              <p className="mt-1 text-xs text-muted-foreground">Quantidade de solicitações recebidas nas últimas 8 semanas.</p>
+            </div>
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+              <TrendingUp className="h-[18px] w-[18px] text-primary" />
+            </div>
+          </div>
+          <div className="mt-6 flex h-56 items-end gap-2">
+            {weeklyData.map((d, i) => (
+              <div key={i} className="group flex flex-1 flex-col items-center gap-2">
+                <div className="relative flex w-full flex-1 items-end">
+                  <div
+                    className="w-full rounded-t-md bg-primary/80 transition-all group-hover:bg-primary"
+                    style={{ height: `${(d.total / maxBar) * 100}%`, minHeight: d.total > 0 ? "4px" : "0" }}
+                    title={`${d.total} solicitações`}
+                  />
+                  {d.total > 0 && (
+                    <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-semibold tabular-nums text-foreground">
+                      {d.total}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] tabular-nums text-muted-foreground">{d.label}</span>
+              </div>
             ))}
           </div>
-        )}
+        </div>
       </section>
 
+      <ReputationSummary doctorId={userId} />
+
+      {/* BOTTOM: Novas solicitações | Em andamento */}
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Pendentes</p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">Novas solicitações</h2>
+            </div>
+            {!loading && pending.length > 0 && (
+              <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-primary">{pending.length}</span>
+            )}
+          </div>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : pending.length === 0 ? (
+            <EmptyStateBox icon={Inbox} title="Nenhuma solicitação pendente." />
+          ) : (
+            <div className="space-y-4">
+              {pending.map(r => (
+                <RequestCard key={r.id} req={r} viewerType="doctor"
+                  onAccept={() => respond(r.id, "accepted")}
+                  onDecline={() => setDeclineId(r.id)}
+                  onChat={() => setChatReq(r)} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="mb-4 flex items-end justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitos</p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações em andamento</h2>
+            </div>
+            {!loading && ongoing.length > 0 && (
+              <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-semibold text-primary">{ongoing.length}</span>
+            )}
+          </div>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : ongoing.length === 0 ? (
+            <EmptyStateBox icon={CalendarCheck} title="Nenhum plantão em andamento." />
+          ) : (
+            <div className="space-y-4">
+              {ongoing.map(r => (
+                <RequestCard key={r.id} req={r} viewerType="doctor"
+                  onChat={() => setChatReq(r)} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       {chatReq && (
         <ChatPanel
