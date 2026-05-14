@@ -533,6 +533,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       };
     });
     setDoctors(docs);
+    setFavoriteIds(new Set(((favRes.data ?? []) as Array<{ doctor_id: string }>).map(f => f.doctor_id)));
     setLoading(false);
   }, [userId]);
 
