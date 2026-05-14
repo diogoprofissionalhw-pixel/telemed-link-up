@@ -133,10 +133,7 @@ function DashboardPage() {
           {isDoctor ? (
             <DoctorPanel userId={user.id} />
           ) : (
-            <>
-              <DashboardStats userId={user.id} userType={profile.account_type} />
-              <NetworkPanel userId={user.id} />
-            </>
+            <NetworkPanel userId={user.id} />
           )}
         </div>
       )}
