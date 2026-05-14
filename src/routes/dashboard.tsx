@@ -592,17 +592,44 @@ function NetworkPanel({ userId }: { userId: string }) {
     ? filledWithTime.reduce((a, h) => a + (new Date(h.responded_at!).getTime() - new Date(h.created_at).getTime()), 0) / filledWithTime.length / 1000 / 60
     : 0;
 
+  const favoriteDoctors = useMemo(
+    () => doctors.filter(d => favoriteIds.has(d.id)),
+    [doctors, favoriteIds]
+  );
+
   const specialties = useMemo(() => {
-    const set = new Set<string>(doctors.map(d => d.specialty).filter(Boolean));
+    const set = new Set<string>(favoriteDoctors.map(d => d.specialty).filter(Boolean));
     return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [doctors]);
+  }, [favoriteDoctors]);
 
   const filteredDoctors = useMemo(() => {
-    return doctors
+    return favoriteDoctors
       .filter(d => specialtyFilter === "all" || d.specialty === specialtyFilter)
-      .sort((a, b) => b.avg_stars - a.avg_stars)
-      .slice(0, 6);
-  }, [doctors, specialtyFilter]);
+      .sort((a, b) => b.avg_stars - a.avg_stars);
+  }, [favoriteDoctors, specialtyFilter]);
+
+  const addDoctor = useCallback(async (doctorId: string) => {
+    const { error } = await supabase
+      .from("network_doctor_tags")
+      .upsert(
+        { network_id: userId, doctor_id: doctorId, is_favorite: true, is_blocked: false },
+        { onConflict: "network_id,doctor_id" }
+      );
+    if (error) { toast.error(error.message); return; }
+    setFavoriteIds(prev => new Set(prev).add(doctorId));
+    toast.success("Médico adicionado");
+  }, [userId]);
+
+  const removeDoctor = useCallback(async (doctorId: string) => {
+    const { error } = await supabase
+      .from("network_doctor_tags")
+      .update({ is_favorite: false })
+      .eq("network_id", userId)
+      .eq("doctor_id", doctorId);
+    if (error) { toast.error(error.message); return; }
+    setFavoriteIds(prev => { const n = new Set(prev); n.delete(doctorId); return n; });
+    toast.success("Médico removido");
+  }, [userId]);
 
   return (
     <div className="space-y-10">
