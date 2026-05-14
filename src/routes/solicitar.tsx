@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  Search, MapPin, Clock, DollarSign, Filter, X,
+  Search, MapPin, Clock, Filter, X,
   ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
@@ -12,7 +12,6 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
