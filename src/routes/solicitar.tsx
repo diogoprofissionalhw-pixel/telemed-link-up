@@ -534,10 +534,8 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
 }) {
   const [period, setPeriod] = useState<"morning" | "night" | "custom">("night");
   const [date, setDate] = useState("");
-  const [start, setStart] = useState("19:00");
-  const [end, setEnd] = useState("07:00");
-  const [value, setValue] = useState("");
-  const [notes, setNotes] = useState("");
+  const [start, setStart] = useState(PRESETS.night.start);
+  const [end, setEnd] = useState(PRESETS.night.end);
   const [submitting, setSubmitting] = useState(false);
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
@@ -550,13 +548,9 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!doctor) return;
-    if (!date || !start || !end) return toast.error("Preencha data e horários");
+    if (!date) return toast.error("Selecione a data");
     const hours = calcHours(start, end);
     if (hours <= 0) return toast.error("Horário inválido");
-    const valNum = value.trim() ? Number(value.replace(",", ".")) : null;
-    if (value.trim() && (valNum === null || isNaN(valNum) || valNum < 0)) {
-      return toast.error("Valor inválido");
-    }
     setSubmitting(true);
     const { error } = await supabase.from("shift_requests").insert({
       network_id: networkId,
@@ -566,8 +560,8 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
       end_time: end,
       duration_hours: hours,
       shift_period: period,
-      agreed_value: valNum,
-      notes: notes.trim() || null,
+      agreed_value: null,
+      notes: null,
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
@@ -603,29 +597,21 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <Label htmlFor="s">Início</Label>
-              <Input id="s" type="time" value={start} onChange={(e) => { setStart(e.target.value); setPeriod("custom"); }} required />
+          {period === "custom" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="s">Início</Label>
+                <Input id="s" type="time" value={start} onChange={(e) => setStart(e.target.value)} required />
+              </div>
+              <div>
+                <Label htmlFor="e">Fim</Label>
+                <Input id="e" type="time" value={end} onChange={(e) => setEnd(e.target.value)} required />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="e">Fim</Label>
-              <Input id="e" type="time" value={end} onChange={(e) => { setEnd(e.target.value); setPeriod("custom"); }} required />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="v">Valor acordado (R$)</Label>
-            <div className="relative">
-              <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input id="v" inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)}
-                placeholder={doctor?.consultation_fee ? `Sugerido: ${doctor.consultation_fee}` : "0,00"} className="pl-8" />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="n">Observações</Label>
-            <Textarea id="n" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500}
-              placeholder="Detalhes do plantão..." />
-          </div>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Valor e detalhes podem ser combinados no chat após o aceite.
+          </p>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={submitting} className="gap-2">

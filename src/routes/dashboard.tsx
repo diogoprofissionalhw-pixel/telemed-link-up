@@ -19,7 +19,7 @@ import { StarRating } from "@/components/star-rating";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
-import { ReputationSummary } from "@/components/reputation-summary";
+
 import { NetworkAnalytics } from "@/components/network-analytics";
 
 export const Route = createFileRoute("/dashboard")({
@@ -379,8 +379,6 @@ function DoctorPanel({ userId }: { userId: string }) {
           </div>
         </div>
       </section>
-
-      <ReputationSummary doctorId={userId} />
 
       {/* BOTTOM: Novas solicitações | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
