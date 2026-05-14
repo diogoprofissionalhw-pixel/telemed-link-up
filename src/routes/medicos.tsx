@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, Star, MapPin, Filter, X, ArrowLeft, Stethoscope, BadgeCheck } from "lucide-react";
+import { Search, MapPin, Filter, X, ArrowLeft, Stethoscope, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
