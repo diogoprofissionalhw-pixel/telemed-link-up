@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  Search, Star, MapPin, Clock, DollarSign, Filter, X,
+  Search, MapPin, Clock, DollarSign, Filter, X,
   ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
