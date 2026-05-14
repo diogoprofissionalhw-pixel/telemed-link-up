@@ -444,7 +444,7 @@ function FilterPanel({
 
 function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; onInvite: () => void; onView: () => void }) {
   return (
-    <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md sm:p-5">
+    <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md sm:p-5 max-h-[340px] overflow-y-auto">
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex sm:flex-col sm:items-center sm:gap-2">
           <Avatar className="h-16 w-16">
@@ -470,24 +470,27 @@ function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; on
             </div>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-              <span className="font-medium text-foreground">
-                {d.rating_count > 0 ? d.avg_stars.toFixed(1) : "Sem avaliações"}
-              </span>
-              {d.rating_count > 0 && <span>({d.rating_count})</span>}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <StarRating value={d.avg_stars} readonly size={16} />
+              {d.rating_count > 0 ? (
+                <span className="font-medium text-foreground">{d.avg_stars.toFixed(1)} ({d.rating_count})</span>
+              ) : (
+                <span>Sem avaliações</span>
+              )}
             </span>
-            {(d.city || d.state) && (
-              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {[d.city, d.state].filter(Boolean).join(", ")}</span>
-            )}
-            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {d.years_experience ?? 0} anos exp.</span>
-            <span>CRM {d.crm}/{d.crm_uf}</span>
+            <span className="font-medium text-foreground">CRM {d.crm}/{d.crm_uf}</span>
+            {/* Espaço reservado para futuras conquistas */}
+            <span className="achievements-slot inline-flex items-center gap-1" />
             {d.crm_status === "verified" ? (
               <span className="inline-flex items-center gap-0.5 text-success"><ShieldCheck className="h-3 w-3" /> Verificado</span>
             ) : (
               <span className="inline-flex items-center gap-0.5 text-warning"><ShieldQuestion className="h-3 w-3" /> Em análise</span>
             )}
+            {(d.city || d.state) && (
+              <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {[d.city, d.state].filter(Boolean).join(", ")}</span>
+            )}
+            <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {d.years_experience ?? 0} anos exp.</span>
           </div>
 
           {d.bio && (
