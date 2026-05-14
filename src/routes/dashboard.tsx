@@ -482,6 +482,7 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allHist, setAllHist] = useState<Array<{ status: string; agreed_value: number | null; duration_hours: number; created_at: string; responded_at: string | null }>>([]);
   const [doctors, setDoctors] = useState<NetDoctor[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
@@ -490,11 +491,12 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
+  const [addOpen, setAddOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-    const [reqRes, histRes, docRes, ratingRes] = await Promise.all([
+    const [reqRes, histRes, docRes, ratingRes, favRes] = await Promise.all([
       supabase
         .from("shift_requests")
         .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
@@ -506,8 +508,9 @@ function NetworkPanel({ userId }: { userId: string }) {
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(50),
+      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
+      supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
     if (reqRes.error) toast.error(reqRes.error.message);
     else setRequests((reqRes.data ?? []) as ShiftRequest[]);
@@ -530,6 +533,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       };
     });
     setDoctors(docs);
+    setFavoriteIds(new Set(((favRes.data ?? []) as Array<{ doctor_id: string }>).map(f => f.doctor_id)));
     setLoading(false);
   }, [userId]);
 
@@ -588,17 +592,44 @@ function NetworkPanel({ userId }: { userId: string }) {
     ? filledWithTime.reduce((a, h) => a + (new Date(h.responded_at!).getTime() - new Date(h.created_at).getTime()), 0) / filledWithTime.length / 1000 / 60
     : 0;
 
+  const favoriteDoctors = useMemo(
+    () => doctors.filter(d => favoriteIds.has(d.id)),
+    [doctors, favoriteIds]
+  );
+
   const specialties = useMemo(() => {
-    const set = new Set<string>(doctors.map(d => d.specialty).filter(Boolean));
+    const set = new Set<string>(favoriteDoctors.map(d => d.specialty).filter(Boolean));
     return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [doctors]);
+  }, [favoriteDoctors]);
 
   const filteredDoctors = useMemo(() => {
-    return doctors
+    return favoriteDoctors
       .filter(d => specialtyFilter === "all" || d.specialty === specialtyFilter)
-      .sort((a, b) => b.avg_stars - a.avg_stars)
-      .slice(0, 6);
-  }, [doctors, specialtyFilter]);
+      .sort((a, b) => b.avg_stars - a.avg_stars);
+  }, [favoriteDoctors, specialtyFilter]);
+
+  const addDoctor = useCallback(async (doctorId: string) => {
+    const { error } = await supabase
+      .from("network_doctor_tags")
+      .upsert(
+        { network_id: userId, doctor_id: doctorId, is_favorite: true, is_blocked: false },
+        { onConflict: "network_id,doctor_id" }
+      );
+    if (error) { toast.error(error.message); return; }
+    setFavoriteIds(prev => new Set(prev).add(doctorId));
+    toast.success("Médico adicionado");
+  }, [userId]);
+
+  const removeDoctor = useCallback(async (doctorId: string) => {
+    const { error } = await supabase
+      .from("network_doctor_tags")
+      .update({ is_favorite: false })
+      .eq("network_id", userId)
+      .eq("doctor_id", doctorId);
+    if (error) { toast.error(error.message); return; }
+    setFavoriteIds(prev => { const n = new Set(prev); n.delete(doctorId); return n; });
+    toast.success("Médico removido");
+  }, [userId]);
 
   return (
     <div className="space-y-10">
@@ -727,50 +758,56 @@ function NetworkPanel({ userId }: { userId: string }) {
                 {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Link to="/solicitar" className="ml-auto">
-              <Button size="sm" variant="outline" className="gap-1.5">
-                <Plus className="h-4 w-4" /> Adicionar médico
-              </Button>
-            </Link>
+            <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" /> Adicionar médico
+            </Button>
           </div>
 
           {loading ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : favoriteDoctors.length === 0 ? (
+            <EmptyStateBox
+              icon={Stethoscope}
+              title="Nenhum médico adicionado ainda."
+              description='Clique em "Adicionar médico" para montar a sua lista.'
+            />
           ) : filteredDoctors.length === 0 ? (
-            <EmptyStateBox icon={Stethoscope} title="Nenhum médico encontrado para essa especialidade." />
+            <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
           ) : (
             <div className="space-y-3">
               {filteredDoctors.map(d => (
-                <button
+                <div
                   key={d.id}
-                  type="button"
-                  onClick={() => setProfileDoctorId(d.id)}
-                  className="w-full text-left rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                  className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
                   style={{ boxShadow: "var(--shadow-card)" }}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11 border">
-                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
-                      <AvatarFallback className="bg-accent">
-                        <Stethoscope className="h-5 w-5 text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold leading-tight">{d.full_name}</p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {d.specialty} · CRM {d.crm}/{d.crm_uf}
-                        {d.city ? ` · ${d.city}` : ""}
-                      </p>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <StarRating value={d.avg_stars} readonly size={14} />
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
-                        </span>
+                    <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
+                      <Avatar className="h-11 w-11 border">
+                        {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                        <AvatarFallback className="bg-accent">
+                          <Stethoscope className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold leading-tight">{d.full_name}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                          {d.city ? ` · ${d.city}` : ""}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <StarRating value={d.avg_stars} readonly size={14} />
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <Plus className="h-5 w-5 text-primary shrink-0" />
+                    </button>
+                    <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                      <XCircle className="h-4 w-4" />
+                    </Button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -869,7 +906,84 @@ function NetworkPanel({ userId }: { userId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Adicionar médico à lista */}
+      <AddDoctorDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        doctors={doctors}
+        favoriteIds={favoriteIds}
+        onAdd={addDoctor}
+        onRemove={removeDoctor}
+      />
     </div>
+  );
+}
+
+function AddDoctorDialog({
+  open, onOpenChange, doctors, favoriteIds, onAdd, onRemove,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  doctors: NetDoctor[];
+  favoriteIds: Set<string>;
+  onAdd: (id: string) => Promise<void> | void;
+  onRemove: (id: string) => Promise<void> | void;
+}) {
+  const [q, setQ] = useState("");
+  const list = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return doctors;
+    return doctors.filter(d =>
+      d.full_name.toLowerCase().includes(t) ||
+      (d.specialty ?? "").toLowerCase().includes(t) ||
+      (d.crm ?? "").toLowerCase().includes(t)
+    );
+  }, [doctors, q]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Adicionar médico à sua lista</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, especialidade ou CRM..." className="pl-9" />
+          </div>
+          <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+            {list.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nenhum médico encontrado.</p>
+            ) : list.map(d => {
+              const added = favoriteIds.has(d.id);
+              return (
+                <div key={d.id} className="flex items-center gap-3 rounded-lg border bg-card p-3">
+                  <Avatar className="h-10 w-10 border">
+                    {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                    <AvatarFallback className="bg-accent"><Stethoscope className="h-4 w-4 text-primary" /></AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium leading-tight">{d.full_name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {d.specialty} · CRM {d.crm}/{d.crm_uf}{d.city ? ` · ${d.city}` : ""}
+                    </p>
+                  </div>
+                  {added ? (
+                    <Button size="sm" variant="outline" onClick={() => onRemove(d.id)}>Remover</Button>
+                  ) : (
+                    <Button size="sm" onClick={() => onAdd(d.id)} className="gap-1"><Plus className="h-3.5 w-3.5" /> Adicionar</Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Concluído</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
