@@ -758,50 +758,56 @@ function NetworkPanel({ userId }: { userId: string }) {
                 {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Link to="/solicitar" className="ml-auto">
-              <Button size="sm" variant="outline" className="gap-1.5">
-                <Plus className="h-4 w-4" /> Adicionar médico
-              </Button>
-            </Link>
+            <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" /> Adicionar médico
+            </Button>
           </div>
 
           {loading ? (
             <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : favoriteDoctors.length === 0 ? (
+            <EmptyStateBox
+              icon={Stethoscope}
+              title="Nenhum médico adicionado ainda."
+              description='Clique em "Adicionar médico" para montar a sua lista.'
+            />
           ) : filteredDoctors.length === 0 ? (
-            <EmptyStateBox icon={Stethoscope} title="Nenhum médico encontrado para essa especialidade." />
+            <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
           ) : (
             <div className="space-y-3">
               {filteredDoctors.map(d => (
-                <button
+                <div
                   key={d.id}
-                  type="button"
-                  onClick={() => setProfileDoctorId(d.id)}
-                  className="w-full text-left rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                  className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
                   style={{ boxShadow: "var(--shadow-card)" }}
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-11 w-11 border">
-                      {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
-                      <AvatarFallback className="bg-accent">
-                        <Stethoscope className="h-5 w-5 text-primary" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold leading-tight">{d.full_name}</p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {d.specialty} · CRM {d.crm}/{d.crm_uf}
-                        {d.city ? ` · ${d.city}` : ""}
-                      </p>
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <StarRating value={d.avg_stars} readonly size={14} />
-                        <span className="text-xs text-muted-foreground tabular-nums">
-                          {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
-                        </span>
+                    <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
+                      <Avatar className="h-11 w-11 border">
+                        {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                        <AvatarFallback className="bg-accent">
+                          <Stethoscope className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold leading-tight">{d.full_name}</p>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                          {d.city ? ` · ${d.city}` : ""}
+                        </p>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <StarRating value={d.avg_stars} readonly size={14} />
+                          <span className="text-xs text-muted-foreground tabular-nums">
+                            {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <Plus className="h-5 w-5 text-primary shrink-0" />
+                    </button>
+                    <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                      <XCircle className="h-4 w-4" />
+                    </Button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           )}
