@@ -296,7 +296,7 @@ function DoctorCard({ d }: { d: Doctor }) {
   const loc = [d.city, d.state].filter(Boolean).join(", ");
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
   return (
-    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ boxShadow: "var(--shadow-card)" }}>
+    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg max-h-[340px] overflow-y-auto" style={{ boxShadow: "var(--shadow-card)" }}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <Avatar className="h-16 w-16 shrink-0 border-2 border-border">
           {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
@@ -311,7 +311,7 @@ function DoctorCard({ d }: { d: Doctor }) {
                 {d.full_name}
                 {d.crm_status === "verified" && <BadgeCheck className="h-4 w-4 text-primary" />}
               </h3>
-              <p className="text-sm text-muted-foreground">{d.specialty} · CRM {d.crm}/{d.crm_uf}</p>
+              <p className="text-sm text-muted-foreground">{d.specialty}</p>
             </div>
             {d.consultation_fee != null && (
               <div className="text-right">
@@ -319,12 +319,14 @@ function DoctorCard({ d }: { d: Doctor }) {
               </div>
             )}
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-warning text-warning" />
-              <span className="font-medium text-foreground">{d.avg_stars > 0 ? d.avg_stars.toFixed(1) : "—"}</span>
-              {d.reviews_count > 0 && <span>({d.reviews_count})</span>}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <StarRating value={d.avg_stars} readonly size={16} />
+              {d.reviews_count > 0 && <span className="font-medium text-foreground">{d.avg_stars.toFixed(1)} ({d.reviews_count})</span>}
             </span>
+            <span className="font-medium text-foreground">CRM {d.crm}/{d.crm_uf}</span>
+            {/* Espaço reservado para futuras conquistas */}
+            <span className="achievements-slot inline-flex items-center gap-1" />
             {loc && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {loc}</span>}
             {d.years_experience != null && <span>{d.years_experience} anos de experiência</span>}
           </div>
