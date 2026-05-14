@@ -161,7 +161,29 @@ function DoctorsPage() {
               </div>
             </div>
 
-            <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
+            <div className="mt-10 mb-4 flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {loading ? "Carregando..." : <><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</>}
+              </p>
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 lg:hidden">
+                    <Filter className="h-4 w-4" /> Filtros
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
+                  <SheetTitle className="sr-only">Filtros</SheetTitle>
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
+                    <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
+                  </div>
+                  <FilterPanel {...panelProps} />
+                  <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-[280px_1fr] lg:items-start">
               <aside className="hidden lg:block">
                 <div className="sticky top-24 rounded-2xl border bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
                   <h3 className="mb-4 flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
@@ -170,28 +192,6 @@ function DoctorsPage() {
               </aside>
 
               <div>
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    {loading ? "Carregando..." : <><span className="font-semibold text-foreground">{filtered.length}</span> {filtered.length === 1 ? "médico encontrado" : "médicos encontrados"}</>}
-                  </p>
-                  <Sheet open={open} onOpenChange={setOpen}>
-                    <SheetTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2 lg:hidden">
-                        <Filter className="h-4 w-4" /> Filtros
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="w-[85vw] sm:w-[380px] overflow-y-auto">
-                      <SheetTitle className="sr-only">Filtros</SheetTitle>
-                      <div className="mb-4 flex items-center justify-between">
-                        <h3 className="flex items-center gap-2 font-semibold"><Filter className="h-4 w-4 text-primary" /> Filtros</h3>
-                        <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
-                      </div>
-                      <FilterPanel {...panelProps} />
-                      <Button onClick={() => setOpen(false)} className="mt-6 w-full">Aplicar filtros</Button>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-
                 <div className="space-y-4">
                   {loading ? (
                     <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
