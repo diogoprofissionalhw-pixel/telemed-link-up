@@ -906,7 +906,84 @@ function NetworkPanel({ userId }: { userId: string }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Adicionar médico à lista */}
+      <AddDoctorDialog
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        doctors={doctors}
+        favoriteIds={favoriteIds}
+        onAdd={addDoctor}
+        onRemove={removeDoctor}
+      />
     </div>
+  );
+}
+
+function AddDoctorDialog({
+  open, onOpenChange, doctors, favoriteIds, onAdd, onRemove,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  doctors: NetDoctor[];
+  favoriteIds: Set<string>;
+  onAdd: (id: string) => Promise<void> | void;
+  onRemove: (id: string) => Promise<void> | void;
+}) {
+  const [q, setQ] = useState("");
+  const list = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    if (!t) return doctors;
+    return doctors.filter(d =>
+      d.full_name.toLowerCase().includes(t) ||
+      (d.specialty ?? "").toLowerCase().includes(t) ||
+      (d.crm ?? "").toLowerCase().includes(t)
+    );
+  }, [doctors, q]);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Adicionar médico à sua lista</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nome, especialidade ou CRM..." className="pl-9" />
+          </div>
+          <div className="max-h-[420px] space-y-2 overflow-y-auto pr-1">
+            {list.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Nenhum médico encontrado.</p>
+            ) : list.map(d => {
+              const added = favoriteIds.has(d.id);
+              return (
+                <div key={d.id} className="flex items-center gap-3 rounded-lg border bg-card p-3">
+                  <Avatar className="h-10 w-10 border">
+                    {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                    <AvatarFallback className="bg-accent"><Stethoscope className="h-4 w-4 text-primary" /></AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium leading-tight">{d.full_name}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {d.specialty} · CRM {d.crm}/{d.crm_uf}{d.city ? ` · ${d.city}` : ""}
+                    </p>
+                  </div>
+                  {added ? (
+                    <Button size="sm" variant="outline" onClick={() => onRemove(d.id)}>Remover</Button>
+                  ) : (
+                    <Button size="sm" onClick={() => onAdd(d.id)} className="gap-1"><Plus className="h-3.5 w-3.5" /> Adicionar</Button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Concluído</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
