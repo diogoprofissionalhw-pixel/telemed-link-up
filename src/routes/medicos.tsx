@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
+import { StarRating } from "@/components/star-rating";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/medicos")({
