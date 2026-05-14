@@ -130,10 +130,14 @@ function DashboardPage() {
     >
       {user && profile && (
         <div className="space-y-10">
-          {isDoctor && <DashboardStats userId={user.id} userType={profile.account_type} />}
-          {isDoctor
-            ? <DoctorPanel userId={user.id} />
-            : <NetworkPanel userId={user.id} />}
+          {isDoctor ? (
+            <DoctorPanel userId={user.id} />
+          ) : (
+            <>
+              <DashboardStats userId={user.id} userType={profile.account_type} />
+              <NetworkPanel userId={user.id} />
+            </>
+          )}
         </div>
       )}
     </DashboardLayout>
