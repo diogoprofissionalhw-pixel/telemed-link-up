@@ -496,7 +496,7 @@ function NetworkPanel({ userId }: { userId: string }) {
   const load = useCallback(async () => {
     setLoading(true);
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
-    const [reqRes, histRes, docRes, ratingRes] = await Promise.all([
+    const [reqRes, histRes, docRes, ratingRes, favRes] = await Promise.all([
       supabase
         .from("shift_requests")
         .select("*, doctor:doctors(specialty, crm, crm_uf, avatar_url, profile:profiles(full_name))")
@@ -508,8 +508,9 @@ function NetworkPanel({ userId }: { userId: string }) {
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(50),
+      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
+      supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
     if (reqRes.error) toast.error(reqRes.error.message);
     else setRequests((reqRes.data ?? []) as ShiftRequest[]);
