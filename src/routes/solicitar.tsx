@@ -562,8 +562,8 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
       end_time: end,
       duration_hours: hours,
       shift_period: period,
-      agreed_value: null,
-      notes: null,
+      agreed_value: negotiate && proposedValue ? Number(proposedValue) : null,
+      notes: negotiate && negotiationNote.trim() ? negotiationNote.trim() : null,
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
