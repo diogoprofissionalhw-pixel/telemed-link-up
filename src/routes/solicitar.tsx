@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Search, MapPin, Clock, Filter, X,
-  ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
+  ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp, DollarSign,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
 import logo from "@/assets/connect-med-logo.webp";
 
@@ -536,6 +537,9 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
   const [start, setStart] = useState(PRESETS.night.start);
   const [end, setEnd] = useState(PRESETS.night.end);
   const [submitting, setSubmitting] = useState(false);
+  const [negotiate, setNegotiate] = useState(false);
+  const [proposedValue, setProposedValue] = useState("");
+  const [negotiationNote, setNegotiationNote] = useState("");
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
     setPeriod(p);
@@ -559,8 +563,8 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
       end_time: end,
       duration_hours: hours,
       shift_period: period,
-      agreed_value: null,
-      notes: null,
+      agreed_value: negotiate && proposedValue ? Number(proposedValue) : null,
+      notes: negotiate && negotiationNote.trim() ? negotiationNote.trim() : null,
     });
     setSubmitting(false);
     if (error) return toast.error(error.message);
@@ -610,9 +614,55 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
             <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Começa às <strong className="text-foreground">{start}</strong> e termina às <strong className="text-foreground">{end}</strong></span>
             <span>{calcHours(start, end)}h</span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Valor e detalhes podem ser combinados no chat após o aceite.
-          </p>
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setNegotiate((v) => !v)}
+              className={`w-full flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-xs transition-colors ${negotiate ? "border-primary bg-accent" : "border-border hover:bg-muted/40"}`}
+            >
+              <span className="flex items-center gap-1.5 font-medium">
+                <DollarSign className="h-3.5 w-3.5 text-primary" />
+                {negotiate ? "Proposta de valor" : "Negociar valor"}
+              </span>
+              <span className="text-muted-foreground">{negotiate ? "Ocultar" : "Adicionar"}</span>
+            </button>
+            {negotiate ? (
+              <div className="space-y-2 rounded-md border border-dashed p-3">
+                <div>
+                  <Label htmlFor="value" className="text-xs">Valor proposto (R$)</Label>
+                  <Input
+                    id="value"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ex: 1500"
+                    value={proposedValue}
+                    onChange={(e) => setProposedValue(e.target.value)}
+                  />
+                  {proposedValue && calcHours(start, end) > 0 && (
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      ≈ R$ {(Number(proposedValue) / calcHours(start, end)).toFixed(2)}/h
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="negnote" className="text-xs">Observação (opcional)</Label>
+                  <Textarea
+                    id="negnote"
+                    rows={2}
+                    placeholder="Detalhes sobre a proposta..."
+                    value={negotiationNote}
+                    onChange={(e) => setNegotiationNote(e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Valor e detalhes podem ser combinados no chat após o aceite.
+              </p>
+            )}
+          </div>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
             <Button type="submit" disabled={submitting} className="gap-2">
