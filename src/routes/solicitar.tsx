@@ -596,18 +596,20 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
               ))}
             </div>
           </div>
-          {period === "custom" && (
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="s">Início</Label>
-                <Input id="s" type="time" value={start} onChange={(e) => setStart(e.target.value)} required />
-              </div>
-              <div>
-                <Label htmlFor="e">Fim</Label>
-                <Input id="e" type="time" value={end} onChange={(e) => setEnd(e.target.value)} required />
-              </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="s">Início</Label>
+              <Input id="s" type="time" value={start} onChange={(e) => { setStart(e.target.value); setPeriod("custom"); }} required />
             </div>
-          )}
+            <div>
+              <Label htmlFor="e">Fim</Label>
+              <Input id="e" type="time" value={end} onChange={(e) => { setEnd(e.target.value); setPeriod("custom"); }} required />
+            </div>
+          </div>
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground flex items-center justify-between">
+            <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Começa às <strong className="text-foreground">{start}</strong> e termina às <strong className="text-foreground">{end}</strong></span>
+            <span>{calcHours(start, end)}h</span>
+          </div>
           <p className="text-xs text-muted-foreground">
             Valor e detalhes podem ser combinados no chat após o aceite.
           </p>
