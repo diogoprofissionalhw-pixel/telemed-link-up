@@ -536,6 +536,9 @@ function InviteDialog({ doctor, networkId, onClose, onSent }: {
   const [start, setStart] = useState(PRESETS.night.start);
   const [end, setEnd] = useState(PRESETS.night.end);
   const [submitting, setSubmitting] = useState(false);
+  const [negotiate, setNegotiate] = useState(false);
+  const [proposedValue, setProposedValue] = useState("");
+  const [negotiationNote, setNegotiationNote] = useState("");
 
   const onPeriodChange = (p: "morning" | "night" | "custom") => {
     setPeriod(p);
