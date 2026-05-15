@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Search, MapPin, Clock, Filter, X,
-  ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp,
+  ShieldCheck, ShieldQuestion, Sparkles, Send, Sun, Moon, TrendingUp, DollarSign,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
