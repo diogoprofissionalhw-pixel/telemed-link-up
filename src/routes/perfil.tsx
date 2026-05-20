@@ -548,21 +548,9 @@ function DoctorRegistration({
             <AuthChoice onLinkedIn={connectLinkedIn} onManual={() => setShowForm(true)} />
           ) : (
             <>
-              {linkedinConnected ? (
+              {linkedinConnected && (
                 <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  <Check className="h-4 w-4" /> Dados do LinkedIn importados. Revise e preencha os campos médicos abaixo.
-                </div>
-              ) : (
-                <div className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">Importar dados do LinkedIn</p>
-                    <p className="text-xs text-gray-500">Auto-preenche até 70% do formulário em segundos.</p>
-                  </div>
-                  <button onClick={connectLinkedIn}
-                    className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 shrink-0"
-                    style={{ backgroundColor: "#0A66C2" }}>
-                    <Linkedin className="h-4 w-4" /> Entrar com LinkedIn
-                  </button>
+                  <Check className="h-4 w-4" /> Dados importados. Revise e preencha os campos médicos abaixo.
                 </div>
               )}
 
