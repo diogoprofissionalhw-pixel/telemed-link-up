@@ -753,6 +753,28 @@ function DoctorRegistration({
                   )} />
               </Section>
 
+              <Section step={13} of={14} title="Experiência Médica & Links" subtitle="Detalhe sua trajetória clínica e suas redes profissionais">
+                <FieldGroup>
+                  <Field label="Experiência Médica" hint={`${medicalExperience.length}/2000 — relate condutas, áreas de atuação e diferenciais`}>
+                    <Textarea value={medicalExperience} rows={6}
+                      onChange={(e) => setMedicalExperience(e.target.value.slice(0, 2000))}
+                      placeholder="Conte sua experiência clínica em detalhes: tipos de pacientes, condutas, condutas em telemedicina, casos relevantes…" />
+                  </Field>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Currículo Lattes" hint="URL pública do Lattes">
+                      <Input type="url" value={lattesUrl} placeholder="http://lattes.cnpq.br/..."
+                        onChange={(e) => setLattesUrl(e.target.value.slice(0, 300))} />
+                    </Field>
+                    <Field label="LinkedIn" hint="URL do seu perfil">
+                      <Input type="url" value={linkedinUrl} placeholder="https://linkedin.com/in/..."
+                        onChange={(e) => setLinkedinUrl(e.target.value.slice(0, 300))} />
+                    </Field>
+                  </div>
+                </FieldGroup>
+              </Section>
+
+
+
               <Section step={10} of={14} title="Disponibilidade" subtitle="Quando você está disponível para atender">
                 <FieldGroup>
                   <div>
