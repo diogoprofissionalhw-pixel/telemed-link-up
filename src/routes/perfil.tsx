@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
   Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
+  BadgeCheck, GraduationCap, Image as ImageIcon,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { supabase } from "@/integrations/supabase/client";
