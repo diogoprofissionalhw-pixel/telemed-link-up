@@ -300,11 +300,6 @@ function ExploreDoctors() {
 /* ====================== Explore Networks ====================== */
 const NETWORKS = [
   { id: 1, name: "9T Saúde", area: "Telemedicina Ocupacional", city: "São Paulo, SP", openings: 12, logo: network9TLogo, featured: true },
-  { id: 2, name: "MedRede Brasil", area: "Clínica Geral e Pronto Atendimento", city: "Rio de Janeiro, RJ", openings: 8 },
-  { id: 3, name: "Vita Conecta", area: "Saúde Mental e Psiquiatria", city: "Belo Horizonte, MG", openings: 5 },
-  { id: 4, name: "PlantãoMed", area: "Plantões de Emergência 24h", city: "Curitiba, PR", openings: 15 },
-  { id: 5, name: "CuidarBem", area: "Medicina Preventiva e Família", city: "Porto Alegre, RS", openings: 6 },
-  { id: 6, name: "TeleClínica", area: "Cardiologia e Endocrinologia", city: "Brasília, DF", openings: 9 },
 ];
 
 function ExploreNetworks() {
