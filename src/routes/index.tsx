@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
-import network9TLogo from "@/assets/network-9t-logo.png";
+import network9TLogo from "@/assets/network-9t-logo.jpeg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
