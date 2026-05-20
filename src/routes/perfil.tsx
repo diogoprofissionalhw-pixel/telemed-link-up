@@ -433,6 +433,9 @@ function DoctorRegistration({
         rg_document_url: rgUrl,
         cv_pdf_url: cvUrl,
         timezone,
+        medical_experience: medicalExperience.trim() || null,
+        lattes_url: lattesUrl.trim() || null,
+        linkedin_url: linkedinUrl.trim() || null,
       };
       const { error: docErr } = await supabase.from("doctors").upsert(doctorPayload);
       if (docErr) throw docErr;
