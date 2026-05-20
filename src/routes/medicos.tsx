@@ -1,107 +1,121 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, MapPin, Filter, X, ArrowLeft, Stethoscope, BadgeCheck } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Search, MapPin, Filter, X, Stethoscope, BadgeCheck, ShieldCheck, Lock, Star } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { getFirstName, formatPublicId } from "@/lib/utils";
 
 export const Route = createFileRoute("/medicos")({
   head: () => ({
     meta: [
       { title: "Médicos da rede Connect-Med — diretório de profissionais" },
-      { name: "description", content: "Diretório de médicos verificados da Connect-Med. Filtre por especialidade, cidade, UF e valor da hora para encontrar o profissional ideal para o seu plantão." },
+      { name: "description", content: "Diretório de médicos verificados da Connect-Med. Perfis com identidade protegida (shadow profiles) — apenas redes verificadas via CNPJ acessam dados completos." },
       { property: "og:title", content: "Médicos da rede Connect-Med" },
-      { property: "og:description", content: "Diretório de médicos verificados — filtre por especialidade, localização e valor da hora." },
+      { property: "og:description", content: "Diretório com privacidade reforçada. Cadastre sua rede para acessar perfis completos." },
       { property: "og:url", content: "https://telemed-link-up.lovable.app/medicos" },
       { property: "og:type", content: "website" },
     ],
-    links: [
-      { rel: "canonical", href: "https://telemed-link-up.lovable.app/medicos" },
-    ],
-    scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          name: "Médicos da rede Connect-Med",
-          description: "Diretório de médicos verificados disponíveis para plantões de telemedicina.",
-          url: "https://telemed-link-up.lovable.app/medicos",
-          isPartOf: { "@type": "WebSite", name: "Connect-Med", url: "https://telemed-link-up.lovable.app" },
-        }),
-      },
-    ],
+    links: [{ rel: "canonical", href: "https://telemed-link-up.lovable.app/medicos" }],
+    scripts: [{
+      type: "application/ld+json",
+      children: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Médicos da rede Connect-Med",
+        description: "Diretório de médicos verificados disponíveis para plantões de telemedicina.",
+        url: "https://telemed-link-up.lovable.app/medicos",
+      }),
+    }],
   }),
   component: DoctorsPage,
 });
 
-interface Doctor {
+interface PublicDoctor {
   id: string;
-  full_name: string;
+  public_id: string;
+  first_name: string;
   specialty: string;
   specialties: string[];
   city: string | null;
   state: string | null;
   consultation_fee: number | null;
-  avatar_url: string | null;
-  bio: string | null;
-  crm: string;
-  crm_uf: string;
   crm_status: string;
+  identity_verified: boolean;
   years_experience: number | null;
   avg_stars: number;
   reviews_count: number;
+  approval_rate: number; // 0-100
 }
 
 function DoctorsPage() {
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+
+  const [doctors, setDoctors] = useState<PublicDoctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [specs, setSpecs] = useState<string[]>([]);
   const [locs, setLocs] = useState<string[]>([]);
   const [minRate, setMinRate] = useState(0);
   const [maxRate, setMaxRate] = useState(1000);
+  const [minStars, setMinStars] = useState(0);
   const [open, setOpen] = useState(false);
+
+  // Verification status of the logged-in network (if any)
+  const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
+  const [gateOpen, setGateOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const { data: docs } = await supabase
-        .from("doctors")
-        .select("id, specialty, specialties, crm, crm_uf, crm_status, bio, years_experience, city, state, consultation_fee, avatar_url, profiles!inner(full_name)");
-      const { data: ratings } = await supabase.from("ratings").select("doctor_id, stars");
+      const [{ data: docs }, { data: ratings }, { data: reqs }] = await Promise.all([
+        supabase
+          .from("doctors")
+          .select("id, public_id, specialty, specialties, crm_status, identity_verified, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
+        supabase.from("ratings").select("doctor_id, stars"),
+        supabase.from("shift_requests").select("doctor_id, status"),
+      ]);
 
-      const ratingsMap = new Map<string, { sum: number; count: number }>();
+      const rMap = new Map<string, { sum: number; count: number }>();
       (ratings ?? []).forEach((r: any) => {
-        const cur = ratingsMap.get(r.doctor_id) ?? { sum: 0, count: 0 };
-        cur.sum += r.stars; cur.count += 1;
-        ratingsMap.set(r.doctor_id, cur);
+        const c = rMap.get(r.doctor_id) ?? { sum: 0, count: 0 };
+        c.sum += r.stars; c.count++; rMap.set(r.doctor_id, c);
+      });
+      const aMap = new Map<string, { acc: number; total: number }>();
+      (reqs ?? []).forEach((r: any) => {
+        const c = aMap.get(r.doctor_id) ?? { acc: 0, total: 0 };
+        c.total++; if (r.status === "accepted" || r.status === "completed") c.acc++;
+        aMap.set(r.doctor_id, c);
       });
 
-      const list: Doctor[] = (docs ?? []).map((d: any) => {
-        const r = ratingsMap.get(d.id);
+      const list: PublicDoctor[] = (docs ?? []).map((d: any) => {
+        const r = rMap.get(d.id);
+        const a = aMap.get(d.id);
         return {
           id: d.id,
-          full_name: d.profiles?.full_name ?? "Médico",
+          public_id: d.public_id ?? "----",
+          first_name: getFirstName(d.profiles?.full_name),
           specialty: d.specialty,
           specialties: d.specialties ?? [],
           city: d.city,
           state: d.state,
           consultation_fee: d.consultation_fee,
-          avatar_url: d.avatar_url,
-          bio: d.bio,
-          crm: d.crm,
-          crm_uf: d.crm_uf,
           crm_status: d.crm_status,
+          identity_verified: !!d.identity_verified,
           years_experience: d.years_experience,
           avg_stars: r ? r.sum / r.count : 0,
           reviews_count: r?.count ?? 0,
+          approval_rate: a && a.total > 0 ? Math.round((a.acc / a.total) * 100) : 0,
         };
       });
       setDoctors(list);
@@ -109,42 +123,60 @@ function DoctorsPage() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (!user || profile?.account_type !== "network") { setNetworkVerified(null); return; }
+    supabase.from("networks").select("is_verified").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setNetworkVerified(!!data?.is_verified));
+  }, [user, profile]);
+
   const allSpecialties = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => {
-      if (d.specialty) set.add(d.specialty);
-      d.specialties.forEach((s) => set.add(s));
-    });
-    return Array.from(set).sort();
+    const s = new Set<string>();
+    doctors.forEach((d) => { if (d.specialty) s.add(d.specialty); d.specialties.forEach(x => s.add(x)); });
+    return Array.from(s).sort();
   }, [doctors]);
-
   const allLocations = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => {
-      const loc = [d.city, d.state].filter(Boolean).join(", ");
-      if (loc) set.add(loc);
-    });
-    return Array.from(set).sort();
+    const s = new Set<string>();
+    doctors.forEach((d) => { const l = [d.city, d.state].filter(Boolean).join(", "); if (l) s.add(l); });
+    return Array.from(s).sort();
   }, [doctors]);
-
-  const toggle = (arr: string[], v: string) => arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v];
+  const toggle = (a: string[], v: string) => a.includes(v) ? a.filter(x => x !== v) : [...a, v];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return doctors.filter((d) => {
       const loc = [d.city, d.state].filter(Boolean).join(", ");
-      if (q && !(d.full_name.toLowerCase().includes(q) || d.specialty?.toLowerCase().includes(q) || d.specialties.some(s => s.toLowerCase().includes(q)))) return false;
+      if (q && !(d.first_name.toLowerCase().includes(q) || d.public_id.includes(q) || d.specialty?.toLowerCase().includes(q) || d.specialties.some(s => s.toLowerCase().includes(q)))) return false;
       if (specs.length > 0 && !(specs.includes(d.specialty) || d.specialties.some(s => specs.includes(s)))) return false;
       if (locs.length > 0 && !locs.includes(loc)) return false;
       const fee = d.consultation_fee ?? 0;
       if (fee < minRate || fee > maxRate) return false;
+      if (minStars > 0 && d.avg_stars < minStars) return false;
       return true;
     });
-  }, [doctors, query, specs, locs, minRate, maxRate]);
+  }, [doctors, query, specs, locs, minRate, maxRate, minStars]);
 
-  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); };
+  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); setMinStars(0); };
 
-  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations };
+  const handleViewProfile = (d: PublicDoctor) => {
+    if (!user) {
+      toast.info("Cadastre sua rede para ver perfis completos.");
+      navigate({ to: "/auth", search: { mode: "signup" } });
+      return;
+    }
+    if (profile?.account_type === "doctor") {
+      // Doctors can see full profiles
+      navigate({ to: "/medicos" }); // placeholder — no public profile route yet
+      return;
+    }
+    if (profile?.account_type === "network" && !networkVerified) {
+      setGateOpen(true);
+      return;
+    }
+    // Verified network — could navigate to detail page (not implemented here)
+    toast.success(`Acesso liberado a ${d.first_name} ${formatPublicId(d.public_id)}`);
+  };
+
+  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations };
 
   return (
     <div className="min-h-screen bg-background">
@@ -158,7 +190,7 @@ function DoctorsPage() {
                 <h1 className="text-3xl font-bold sm:text-4xl">
                   Conheça Nossos <span className="text-primary">Médicos</span>
                 </h1>
-                <p className="mt-3 text-muted-foreground">Explore uma rede de profissionais qualificados.</p>
+                <p className="mt-3 text-muted-foreground">Identidades protegidas — apenas redes verificadas acessam dados completos.</p>
               </div>
             </div>
 
@@ -192,23 +224,37 @@ function DoctorsPage() {
                 </div>
               </aside>
 
-              <div>
-                <div className="space-y-4">
-                  {loading ? (
-                    <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
-                  ) : filtered.length === 0 ? (
-                    <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
-                      {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado com esses filtros."}
-                    </div>
-                  ) : (
-                    filtered.map((d) => <DoctorCard key={d.id} d={d} />)
-                  )}
-                </div>
+              <div className="space-y-4">
+                {loading ? (
+                  <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">Carregando médicos...</div>
+                ) : filtered.length === 0 ? (
+                  <div className="rounded-2xl border bg-card p-10 text-center text-muted-foreground">
+                    {doctors.length === 0 ? "Ainda não há médicos cadastrados." : "Nenhum médico encontrado com esses filtros."}
+                  </div>
+                ) : (
+                  filtered.map((d) => <ShadowDoctorCard key={d.id} d={d} onView={() => handleViewProfile(d)} />)
+                )}
               </div>
             </div>
           </div>
         </section>
       </main>
+
+      <Dialog open={gateOpen} onOpenChange={setGateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Lock className="h-5 w-5 text-primary" /> Verificação necessária</DialogTitle>
+            <DialogDescription>
+              A visualização total dos perfis depende da validação do CNPJ da sua rede.
+              Confirme a atividade econômica em saúde para liberar nomes completos, currículos e o início de conversas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setGateOpen(false)}>Mais tarde</Button>
+            <Button onClick={() => { setGateOpen(false); navigate({ to: "/perfil-empresa" }); }}>Validar agora</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -219,12 +265,13 @@ interface PanelProps {
   locs: string[]; toggleLoc: (l: string) => void;
   minRate: number; setMinRate: (n: number) => void;
   maxRate: number; setMaxRate: (n: number) => void;
+  minStars: number; setMinStars: (n: number) => void;
   clear: () => void;
   allSpecialties: string[];
   allLocations: string[];
 }
 
-function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, clear, allSpecialties, allLocations }: PanelProps) {
+function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations }: PanelProps) {
   const [specQ, setSpecQ] = useState("");
   const [locQ, setLocQ] = useState("");
   const filteredSpecs = useMemo(() => {
@@ -242,7 +289,7 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
         <label className="mb-2 block text-sm font-medium">Busca</label>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome" className="pl-9" />
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Nome ou ID" className="pl-9" />
         </div>
       </div>
       <div>
@@ -286,6 +333,21 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
           </div>
         </div>
       </div>
+      <div>
+        <p className="mb-2 text-sm font-medium">Avaliação mínima</p>
+        <div className="flex items-center gap-2">
+          {[0, 1, 2, 3, 4, 5].map((n) => (
+            <button
+              key={n}
+              type="button"
+              onClick={() => setMinStars(n)}
+              className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs ${minStars === n ? "border-primary bg-accent text-accent-foreground" : "border-border text-muted-foreground hover:bg-muted"}`}
+            >
+              {n === 0 ? "Qualquer" : <><Star className="h-3 w-3 fill-current" /> {n}+</>}
+            </button>
+          ))}
+        </div>
+      </div>
       <button type="button" onClick={clear} className="text-sm font-medium text-primary hover:underline">
         Limpar filtros
       </button>
@@ -293,24 +355,24 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
   );
 }
 
-function DoctorCard({ d }: { d: Doctor }) {
+function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }) {
   const loc = [d.city, d.state].filter(Boolean).join(", ");
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
+  const crmLabel = d.crm_status === "verified" ? "CRM Validado" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
   return (
-    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg max-h-[340px] overflow-y-auto" style={{ boxShadow: "var(--shadow-card)" }}>
+    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ boxShadow: "var(--shadow-card)" }}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <Avatar className="h-16 w-16 shrink-0 border-2 border-border">
-          {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
           <AvatarFallback className="bg-accent text-primary">
-            {d.full_name ? d.full_name.charAt(0).toUpperCase() : <Stethoscope className="h-7 w-7" />}
+            <Stethoscope className="h-7 w-7" />
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="font-semibold flex items-center gap-1.5">
-                {d.full_name}
-                {d.crm_status === "verified" && <BadgeCheck className="h-4 w-4 text-primary" />}
+              <h3 className="font-semibold flex flex-wrap items-center gap-1.5">
+                Dr(a). {d.first_name}
+                <span className="text-xs font-mono text-muted-foreground">— ID {formatPublicId(d.public_id)}</span>
               </h3>
               <p className="text-sm text-muted-foreground">{d.specialty}</p>
             </div>
@@ -320,25 +382,43 @@ function DoctorCard({ d }: { d: Doctor }) {
               </div>
             )}
           </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {d.crm_status === "verified" && (
+              <Badge variant="secondary" className="gap-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-100"><BadgeCheck className="h-3.5 w-3.5" /> {crmLabel}</Badge>
+            )}
+            {d.crm_status === "pending" && (
+              <Badge variant="secondary" className="gap-1 bg-amber-100 text-amber-700 hover:bg-amber-100"><BadgeCheck className="h-3.5 w-3.5" /> {crmLabel}</Badge>
+            )}
+            {d.identity_verified && (
+              <Badge variant="secondary" className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100"><ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada</Badge>
+            )}
+          </div>
+
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <StarRating value={d.avg_stars} readonly size={16} />
               {d.reviews_count > 0 && <span className="font-medium text-foreground">{d.avg_stars.toFixed(1)} ({d.reviews_count})</span>}
             </span>
-            <span className="font-medium text-foreground">CRM {d.crm}/{d.crm_uf}</span>
-            {/* Espaço reservado para futuras conquistas */}
-            <span className="achievements-slot inline-flex items-center gap-1" />
             {loc && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {loc}</span>}
-            {d.years_experience != null && <span>{d.years_experience} anos de experiência</span>}
           </div>
-          {d.bio && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{d.bio}</p>}
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Experiência</p>
+              <p className="text-sm font-semibold text-foreground">{d.years_experience ?? 0} anos</p>
+            </div>
+            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Taxa de aprovação</p>
+              <p className="text-sm font-semibold text-foreground">{d.approval_rate}%</p>
+            </div>
+          </div>
+
           <div className="mt-3 flex flex-wrap gap-1.5">
             {tags.map((s) => <Badge key={s} variant="secondary" className="bg-accent text-accent-foreground">{s}</Badge>)}
           </div>
           <div className="mt-4 flex justify-end">
-            <Link to="/auth" search={{ mode: "signup" }}>
-              <Button size="sm">Ver perfil</Button>
-            </Link>
+            <Button size="sm" onClick={onView} className="gap-1.5"><Lock className="h-3.5 w-3.5" /> Ver perfil</Button>
           </div>
         </div>
       </div>

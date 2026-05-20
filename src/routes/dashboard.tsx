@@ -492,6 +492,12 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [cancelling, setCancelling] = useState(false);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.from("networks").select("is_verified").eq("id", userId).maybeSingle()
+      .then(({ data }) => setNetworkVerified(!!(data as any)?.is_verified));
+  }, [userId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -633,6 +639,19 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-10">
+      {networkVerified === false && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-semibold text-amber-900">Sua rede ainda não está verificada</p>
+            <p className="text-sm text-amber-800">
+              Valide o CNPJ para liberar nomes completos dos médicos, currículos e o início de conversas.
+            </p>
+          </div>
+          <Link to="/perfil-empresa">
+            <Button size="sm" variant="default">Validar CNPJ</Button>
+          </Link>
+        </div>
+      )}
       {/* TOP — Resumo (esquerda) + CTA grande (direita) */}
       <section className="grid gap-6 lg:grid-cols-3">
         {/* Coluna esquerda: contadores empilhados */}
