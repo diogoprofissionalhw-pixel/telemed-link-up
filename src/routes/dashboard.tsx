@@ -492,6 +492,12 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [cancelling, setCancelling] = useState(false);
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.from("networks").select("is_verified").eq("id", userId).maybeSingle()
+      .then(({ data }) => setNetworkVerified(!!(data as any)?.is_verified));
+  }, [userId]);
 
   const load = useCallback(async () => {
     setLoading(true);
