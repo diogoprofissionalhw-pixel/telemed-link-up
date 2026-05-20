@@ -321,6 +321,26 @@ function DoctorRegistration({
     }, 1100);
   };
 
+  /* ---------- Identity verification (mock CFM / KYC) ---------- */
+  const verifyIdentity = async () => {
+    if (!idDocumentUrl || !selfieUrl) {
+      return toast.error("Envie o documento e a selfie antes de verificar.");
+    }
+    setVerifyingIdentity(true);
+    // Simulação de análise (futura integração com API do CFM e provedor de KYC)
+    await new Promise((r) => setTimeout(r, 1500));
+    const verifiedAtIso = new Date().toISOString();
+    const { error } = await supabase.from("doctors").update({
+      identity_verified: true,
+      identity_verified_at: verifiedAtIso,
+    } as any).eq("id", userId);
+    setVerifyingIdentity(false);
+    if (error) return toast.error(error.message);
+    setIdentityVerified(true);
+    setIdentityVerifiedAt(verifiedAtIso);
+    toast.success("Identidade verificada com sucesso!");
+  };
+
   /* ---------- Validation / progress ---------- */
   const checklist = useMemo(() => [
     { ok: !!avatarUrl, label: "Foto de perfil" },
