@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
   Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
+  BadgeCheck,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { supabase } from "@/integrations/supabase/client";
@@ -207,6 +208,19 @@ function DoctorRegistration({
   const [rgUrl, setRgUrl] = useState<string | null>(null);
   const [cvUrl, setCvUrl] = useState<string | null>(null);
 
+  // Extra professional fields
+  const [medicalExperience, setMedicalExperience] = useState("");
+  const [lattesUrl, setLattesUrl] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+
+  // CRM / Identity verification
+  const [crmStatus, setCrmStatus] = useState<string>("pending");
+  const [identityVerified, setIdentityVerified] = useState(false);
+  const [identityVerifiedAt, setIdentityVerifiedAt] = useState<string | null>(null);
+  const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
+  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
+  const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
@@ -256,6 +270,14 @@ function DoctorRegistration({
         setRgUrl((doc as any).rg_document_url ?? null);
         setCvUrl(doc.cv_pdf_url);
         setTimezone(doc.timezone ?? "America/Sao_Paulo");
+        setMedicalExperience((doc as any).medical_experience ?? "");
+        setLattesUrl((doc as any).lattes_url ?? "");
+        setLinkedinUrl((doc as any).linkedin_url ?? "");
+        setCrmStatus(doc.crm_status ?? "pending");
+        setIdentityVerified(!!(doc as any).identity_verified);
+        setIdentityVerifiedAt((doc as any).identity_verified_at ?? null);
+        setIdDocumentUrl((doc as any).id_document_url ?? null);
+        setSelfieUrl((doc as any).selfie_url ?? null);
         if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
@@ -297,6 +319,26 @@ function DoctorRegistration({
       setShowForm(true);
       toast.success("Dados do LinkedIn importados! Preencha os campos médicos para finalizar.", { id: "li", duration: 5000 });
     }, 1100);
+  };
+
+  /* ---------- Identity verification (mock CFM / KYC) ---------- */
+  const verifyIdentity = async () => {
+    if (!idDocumentUrl || !selfieUrl) {
+      return toast.error("Envie o documento e a selfie antes de verificar.");
+    }
+    setVerifyingIdentity(true);
+    // Simulação de análise (futura integração com API do CFM e provedor de KYC)
+    await new Promise((r) => setTimeout(r, 1500));
+    const verifiedAtIso = new Date().toISOString();
+    const { error } = await supabase.from("doctors").update({
+      identity_verified: true,
+      identity_verified_at: verifiedAtIso,
+    } as any).eq("id", userId);
+    setVerifyingIdentity(false);
+    if (error) return toast.error(error.message);
+    setIdentityVerified(true);
+    setIdentityVerifiedAt(verifiedAtIso);
+    toast.success("Identidade verificada com sucesso!");
   };
 
   /* ---------- Validation / progress ---------- */
@@ -411,6 +453,9 @@ function DoctorRegistration({
         rg_document_url: rgUrl,
         cv_pdf_url: cvUrl,
         timezone,
+        medical_experience: medicalExperience.trim() || null,
+        lattes_url: lattesUrl.trim() || null,
+        linkedin_url: linkedinUrl.trim() || null,
       };
       const { error: docErr } = await supabase.from("doctors").upsert(doctorPayload);
       if (docErr) throw docErr;
@@ -521,7 +566,7 @@ function DoctorRegistration({
                 </div>
               )}
 
-              <Section step={1} of={12} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
+              <Section step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
                 <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
                 <FieldGroup>
                   <Field label="Nome Completo" required>
@@ -546,7 +591,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={2} of={12} title="Informações Médicas" subtitle="Registro profissional e especialidades">
+              <Section step={2} of={14} title="Informações Médicas" subtitle="Registro profissional e especialidades">
                 <FieldGroup>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="sm:col-span-2">
@@ -609,7 +654,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={3} of={12} title="Contato" subtitle="Como as redes podem falar com você">
+              <Section step={3} of={14} title="Contato" subtitle="Como as redes podem falar com você">
                 <FieldGroup>
                   <Field label="Telefone" required>
                     <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
@@ -620,17 +665,17 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={4} of={12} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
+              <Section step={4} of={14} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
                 <Textarea rows={4} value={education} onChange={(e) => setEducation(e.target.value)}
                   placeholder="Ex: USP — Medicina (2015-2020), Especialização em Cardiologia — UNIFESP (2021-2023)" />
               </Section>
 
-              <Section step={5} of={12} title="Idiomas" subtitle="Idiomas falados">
+              <Section step={5} of={14} title="Idiomas" subtitle="Idiomas falados">
                 <Textarea rows={2} value={languages} onChange={(e) => setLanguages(e.target.value)}
                   placeholder="Português, Inglês, Espanhol" />
               </Section>
 
-              <Section step={6} of={12} title="Experiência Profissional" subtitle="Histórico de atuação">
+              <Section step={6} of={14} title="Experiência Profissional" subtitle="Histórico de atuação">
                 <DynamicList items={experiences} max={10}
                   onAdd={() => setExperiences(prev => [...prev, { role: "", institution: "", start_date: "", end_date: "", description: "" }])}
                   onRemove={(i) => setExperiences(prev => prev.filter((_, idx) => idx !== i))}
@@ -655,7 +700,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={7} of={12} title="Certificações" subtitle="Credenciais e certificações">
+              <Section step={7} of={14} title="Certificações" subtitle="Credenciais e certificações">
                 <DynamicList items={certifications} max={10}
                   onAdd={() => setCertifications(p => [...p, { title: "", issuer: "", issued_year: "" }])}
                   onRemove={(i) => setCertifications(p => p.filter((_, idx) => idx !== i))}
@@ -672,7 +717,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={8} of={12} title="Cursos" subtitle="Cursos complementares">
+              <Section step={8} of={14} title="Cursos" subtitle="Cursos complementares">
                 <DynamicList items={courses} max={10}
                   onAdd={() => setCourses(p => [...p, { title: "", institution: "", hours: "", completed_year: "" }])}
                   onRemove={(i) => setCourses(p => p.filter((_, idx) => idx !== i))}
@@ -687,7 +732,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={9} of={12} title="Publicações" subtitle="Artigos e publicações científicas">
+              <Section step={9} of={14} title="Publicações" subtitle="Artigos e publicações científicas">
                 <DynamicList items={publications} max={10}
                   onAdd={() => setPublications(p => [...p, { title: "", journal: "", year: "", url: "" }])}
                   onRemove={(i) => setPublications(p => p.filter((_, idx) => idx !== i))}
@@ -708,7 +753,29 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={10} of={12} title="Disponibilidade" subtitle="Quando você está disponível para atender">
+              <Section step={13} of={14} title="Experiência Médica & Links" subtitle="Detalhe sua trajetória clínica e suas redes profissionais">
+                <FieldGroup>
+                  <Field label="Experiência Médica" hint={`${medicalExperience.length}/2000 — relate condutas, áreas de atuação e diferenciais`}>
+                    <Textarea value={medicalExperience} rows={6}
+                      onChange={(e) => setMedicalExperience(e.target.value.slice(0, 2000))}
+                      placeholder="Conte sua experiência clínica em detalhes: tipos de pacientes, condutas, condutas em telemedicina, casos relevantes…" />
+                  </Field>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Currículo Lattes" hint="URL pública do Lattes">
+                      <Input type="url" value={lattesUrl} placeholder="http://lattes.cnpq.br/..."
+                        onChange={(e) => setLattesUrl(e.target.value.slice(0, 300))} />
+                    </Field>
+                    <Field label="LinkedIn" hint="URL do seu perfil">
+                      <Input type="url" value={linkedinUrl} placeholder="https://linkedin.com/in/..."
+                        onChange={(e) => setLinkedinUrl(e.target.value.slice(0, 300))} />
+                    </Field>
+                  </div>
+                </FieldGroup>
+              </Section>
+
+
+
+              <Section step={10} of={14} title="Disponibilidade" subtitle="Quando você está disponível para atender">
                 <FieldGroup>
                   <div>
                     <Label className="mb-2 block">Dias da semana <span className="text-red-500">*</span></Label>
@@ -739,7 +806,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={11} of={12} title="Informações de Pagamento" subtitle="Como você quer receber">
+              <Section step={11} of={14} title="Informações de Pagamento" subtitle="Como você quer receber">
                 <FieldGroup>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Taxa de Consulta/Plantão (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
@@ -804,7 +871,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={12} of={12} title="Documentos" subtitle="Verificação profissional (privados)">
+              <Section step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
                 <FieldGroup>
                   <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
                   <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
@@ -812,6 +879,63 @@ function DoctorRegistration({
                   <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
                 </FieldGroup>
               </Section>
+
+              <Section step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
+                <FieldGroup>
+                  <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500 max-w-md">
+                        Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
+                        A análise é simulada e prepara a estrutura para integração com a API do CFM.
+                      </p>
+                    </div>
+                    {identityVerified ? (
+                      <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                        Não verificada
+                      </Badge>
+                    )}
+                  </div>
+
+                  {identityVerified && identityVerifiedAt && (
+                    <p className="text-xs text-sky-700">
+                      Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
+                    <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
+                  </div>
+
+                  {!identityVerified && (
+                    <Button type="button" onClick={verifyIdentity}
+                      disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
+                      className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
+                      {verifyingIdentity
+                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
+                        : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
+                    </Button>
+                  )}
+
+                  <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 text-xs text-emerald-900">
+                    <p className="font-semibold flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> Selo de CRM</p>
+                    <p className="mt-1">
+                      {crmStatus === "verified" && "CRM Validado — selo verde ativo no diretório."}
+                      {crmStatus === "pending" && "Registro em análise — será exibido como “Registro Provisório (P)” até a integração com a API do CFM concluir."}
+                      {crmStatus === "invalid" && "CRM inválido — revise o número e a UF para validação automática."}
+                    </p>
+                  </div>
+                </FieldGroup>
+              </Section>
+
+
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <BackButton to="/dashboard" label="Voltar ao dashboard" />

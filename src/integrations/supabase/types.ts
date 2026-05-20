@@ -256,6 +256,9 @@ export type Database = {
           identity_verified: boolean
           identity_verified_at: string | null
           languages: string | null
+          lattes_url: string | null
+          linkedin_url: string | null
+          medical_experience: string | null
           payment_method: string | null
           phone: string | null
           pix_key: string | null
@@ -298,6 +301,9 @@ export type Database = {
           identity_verified?: boolean
           identity_verified_at?: string | null
           languages?: string | null
+          lattes_url?: string | null
+          linkedin_url?: string | null
+          medical_experience?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
@@ -340,6 +346,9 @@ export type Database = {
           identity_verified?: boolean
           identity_verified_at?: string | null
           languages?: string | null
+          lattes_url?: string | null
+          linkedin_url?: string | null
+          medical_experience?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
