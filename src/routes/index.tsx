@@ -1,12 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Users,
+  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
+import network9TLogo from "@/assets/network-9t-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
