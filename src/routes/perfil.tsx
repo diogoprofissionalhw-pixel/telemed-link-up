@@ -880,6 +880,63 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
+              <Section step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
+                <FieldGroup>
+                  <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500 max-w-md">
+                        Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
+                        A análise é simulada e prepara a estrutura para integração com a API do CFM.
+                      </p>
+                    </div>
+                    {identityVerified ? (
+                      <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                        Não verificada
+                      </Badge>
+                    )}
+                  </div>
+
+                  {identityVerified && identityVerifiedAt && (
+                    <p className="text-xs text-sky-700">
+                      Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
+                    <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
+                  </div>
+
+                  {!identityVerified && (
+                    <Button type="button" onClick={verifyIdentity}
+                      disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
+                      className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
+                      {verifyingIdentity
+                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
+                        : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
+                    </Button>
+                  )}
+
+                  <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 text-xs text-emerald-900">
+                    <p className="font-semibold flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> Selo de CRM</p>
+                    <p className="mt-1">
+                      {crmStatus === "verified" && "CRM Validado — selo verde ativo no diretório."}
+                      {crmStatus === "pending" && "Registro em análise — será exibido como “Registro Provisório (P)” até a integração com a API do CFM concluir."}
+                      {crmStatus === "invalid" && "CRM inválido — revise o número e a UF para validação automática."}
+                    </p>
+                  </div>
+                </FieldGroup>
+              </Section>
+
+
+
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <BackButton to="/dashboard" label="Voltar ao dashboard" />
                 <div className="flex items-center gap-3">
