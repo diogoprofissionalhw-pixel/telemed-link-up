@@ -309,86 +309,83 @@ const NETWORKS = [
 
 function ExploreNetworks() {
   return (
-    <section className="bg-accent/30">
+    <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="text-center">
-          <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-1.5 text-xs font-semibold text-primary">
-            <Building2 className="h-3.5 w-3.5" /> Redes parceiras
-          </div>
-          <h2 className="text-3xl font-bold sm:text-4xl">
-            Conheça Nossas <span className="text-primary">Redes</span>
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Descubra as empresas de telemedicina que contratam profissionais através do Connect-Med e encontre oportunidades alinhadas à sua especialidade.
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {NETWORKS.map((n) => (
-            <div
-              key={n.id}
-              className="group flex flex-col rounded-2xl border bg-card p-6 transition-all hover:-translate-y-1"
-              style={{ boxShadow: "var(--shadow-card)" }}
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-background">
-                  {n.logo ? (
-                    <img src={n.logo} alt={`Logo ${n.name}`} width={64} height={64} loading="lazy" decoding="async" className="h-full w-full object-contain p-1" />
-                  ) : (
-                    <Building2 className="h-7 w-7 text-primary" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="truncate text-lg font-semibold">{n.name}</h3>
-                    {n.featured && (
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                        Destaque
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{n.area}</p>
-                </div>
+        <div className="rounded-3xl border bg-card p-8 sm:p-12" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div className="flex justify-center lg:justify-start">
+              <div
+                className="relative aspect-square w-64 sm:w-80 lg:w-full lg:max-w-md overflow-hidden rounded-full border-4 border-accent bg-foreground"
+                style={{ boxShadow: "var(--shadow-elegant)" }}
+              >
+                <img
+                  src={network9TLogo}
+                  alt="Logo da rede parceira 9T Saúde"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-contain p-8"
+                />
               </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {n.city}</span>
-                <span className="inline-flex items-center gap-1"><Briefcase className="h-3.5 w-3.5" /> {n.openings} vagas abertas</span>
+            </div>
+            <div className="text-center lg:text-left">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-1.5 text-xs font-semibold text-primary">
+                <Building2 className="h-3.5 w-3.5" /> Redes parceiras
               </div>
-
-              <div className="mt-6 flex gap-2">
-                <Link to="/auth" search={{ mode: "signup" }} className="flex-1">
-                  <Button variant="outline" className="w-full gap-2">
-                    Ver detalhes
-                  </Button>
-                </Link>
-                <Link to="/auth" search={{ mode: "signup" }} className="flex-1">
-                  <Button className="w-full gap-2">
-                    Ver vagas <ArrowRight className="h-4 w-4" />
+              <h2 className="text-3xl font-bold sm:text-4xl">
+                Conheça Nossas <span className="text-primary">Redes</span>
+              </h2>
+              <p className="mt-3 text-muted-foreground lg:max-w-md">
+                Descubra as empresas de telemedicina que contratam profissionais através do Connect-Med e encontre oportunidades alinhadas à sua especialidade.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  <Button size="lg" className="gap-2">
+                    Conheça nossas redes <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <div className="mt-10 rounded-2xl border bg-card p-6 text-center sm:p-8" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h3 className="text-xl font-semibold">É médico e quer ser contratado por essas redes?</h3>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-muted-foreground">
-            Cadastre-se gratuitamente e tenha acesso ao perfil completo de cada empresa, vagas exclusivas e contato direto com os recrutadores.
-          </p>
-          <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link to="/auth" search={{ mode: "signup" }}>
-              <Button size="lg" className="gap-2">
-                Cadastrar como Médico <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {NETWORKS.map((n) => (
+              <div
+                key={n.id}
+                className="flex items-center gap-4 rounded-2xl border bg-background p-4 transition-all hover:-translate-y-0.5"
+                style={{ boxShadow: "var(--shadow-card)" }}
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
+                  {n.logo ? (
+                    <img src={n.logo} alt={`Logo ${n.name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-contain p-1.5" />
+                  ) : (
+                    <Building2 className="h-6 w-6 text-primary-foreground" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="truncate text-sm font-semibold">{n.name}</h3>
+                    {n.featured && (
+                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+                        Destaque
+                      </span>
+                    )}
+                  </div>
+                  <p className="truncate text-xs text-muted-foreground">{n.area}</p>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {n.city}</span>
+                    <span className="inline-flex items-center gap-1"><Briefcase className="h-3 w-3" /> {n.openings} vagas</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+
 
 
 /* ====================== Final CTA ====================== */
