@@ -546,7 +546,7 @@ function DoctorRegistration({
                 </div>
               )}
 
-              <Section step={1} of={12} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
+              <Section step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
                 <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
                 <FieldGroup>
                   <Field label="Nome Completo" required>
@@ -571,7 +571,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={2} of={12} title="Informações Médicas" subtitle="Registro profissional e especialidades">
+              <Section step={2} of={14} title="Informações Médicas" subtitle="Registro profissional e especialidades">
                 <FieldGroup>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="sm:col-span-2">
@@ -634,7 +634,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={3} of={12} title="Contato" subtitle="Como as redes podem falar com você">
+              <Section step={3} of={14} title="Contato" subtitle="Como as redes podem falar com você">
                 <FieldGroup>
                   <Field label="Telefone" required>
                     <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
@@ -645,17 +645,17 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={4} of={12} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
+              <Section step={4} of={14} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
                 <Textarea rows={4} value={education} onChange={(e) => setEducation(e.target.value)}
                   placeholder="Ex: USP — Medicina (2015-2020), Especialização em Cardiologia — UNIFESP (2021-2023)" />
               </Section>
 
-              <Section step={5} of={12} title="Idiomas" subtitle="Idiomas falados">
+              <Section step={5} of={14} title="Idiomas" subtitle="Idiomas falados">
                 <Textarea rows={2} value={languages} onChange={(e) => setLanguages(e.target.value)}
                   placeholder="Português, Inglês, Espanhol" />
               </Section>
 
-              <Section step={6} of={12} title="Experiência Profissional" subtitle="Histórico de atuação">
+              <Section step={6} of={14} title="Experiência Profissional" subtitle="Histórico de atuação">
                 <DynamicList items={experiences} max={10}
                   onAdd={() => setExperiences(prev => [...prev, { role: "", institution: "", start_date: "", end_date: "", description: "" }])}
                   onRemove={(i) => setExperiences(prev => prev.filter((_, idx) => idx !== i))}
@@ -680,7 +680,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={7} of={12} title="Certificações" subtitle="Credenciais e certificações">
+              <Section step={7} of={14} title="Certificações" subtitle="Credenciais e certificações">
                 <DynamicList items={certifications} max={10}
                   onAdd={() => setCertifications(p => [...p, { title: "", issuer: "", issued_year: "" }])}
                   onRemove={(i) => setCertifications(p => p.filter((_, idx) => idx !== i))}
@@ -697,7 +697,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={8} of={12} title="Cursos" subtitle="Cursos complementares">
+              <Section step={8} of={14} title="Cursos" subtitle="Cursos complementares">
                 <DynamicList items={courses} max={10}
                   onAdd={() => setCourses(p => [...p, { title: "", institution: "", hours: "", completed_year: "" }])}
                   onRemove={(i) => setCourses(p => p.filter((_, idx) => idx !== i))}
@@ -712,7 +712,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={9} of={12} title="Publicações" subtitle="Artigos e publicações científicas">
+              <Section step={9} of={14} title="Publicações" subtitle="Artigos e publicações científicas">
                 <DynamicList items={publications} max={10}
                   onAdd={() => setPublications(p => [...p, { title: "", journal: "", year: "", url: "" }])}
                   onRemove={(i) => setPublications(p => p.filter((_, idx) => idx !== i))}
@@ -733,7 +733,7 @@ function DoctorRegistration({
                   )} />
               </Section>
 
-              <Section step={10} of={12} title="Disponibilidade" subtitle="Quando você está disponível para atender">
+              <Section step={10} of={14} title="Disponibilidade" subtitle="Quando você está disponível para atender">
                 <FieldGroup>
                   <div>
                     <Label className="mb-2 block">Dias da semana <span className="text-red-500">*</span></Label>
@@ -764,7 +764,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={11} of={12} title="Informações de Pagamento" subtitle="Como você quer receber">
+              <Section step={11} of={14} title="Informações de Pagamento" subtitle="Como você quer receber">
                 <FieldGroup>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Taxa de Consulta/Plantão (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
@@ -829,7 +829,7 @@ function DoctorRegistration({
                 </FieldGroup>
               </Section>
 
-              <Section step={12} of={12} title="Documentos" subtitle="Verificação profissional (privados)">
+              <Section step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
                 <FieldGroup>
                   <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
                   <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
