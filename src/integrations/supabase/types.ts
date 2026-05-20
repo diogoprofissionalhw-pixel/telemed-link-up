@@ -252,12 +252,17 @@ export type Database = {
           email: string | null
           headline: string | null
           id: string
+          id_document_url: string | null
+          identity_verified: boolean
+          identity_verified_at: string | null
           languages: string | null
           payment_method: string | null
           phone: string | null
           pix_key: string | null
           pix_key_type: string | null
+          public_id: string | null
           rg_document_url: string | null
+          selfie_url: string | null
           specialties: string[]
           specialty: string
           state: string | null
@@ -289,12 +294,17 @@ export type Database = {
           email?: string | null
           headline?: string | null
           id: string
+          id_document_url?: string | null
+          identity_verified?: boolean
+          identity_verified_at?: string | null
           languages?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          public_id?: string | null
           rg_document_url?: string | null
+          selfie_url?: string | null
           specialties?: string[]
           specialty: string
           state?: string | null
@@ -326,12 +336,17 @@ export type Database = {
           email?: string | null
           headline?: string | null
           id?: string
+          id_document_url?: string | null
+          identity_verified?: boolean
+          identity_verified_at?: string | null
           languages?: string | null
           payment_method?: string | null
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          public_id?: string | null
           rg_document_url?: string | null
+          selfie_url?: string | null
           specialties?: string[]
           specialty?: string
           state?: string | null
@@ -427,22 +442,31 @@ export type Database = {
         Row: {
           avatar_url: string | null
           cnpj: string
+          cnpj_activity: string | null
+          cnpj_verified_at: string | null
           created_at: string
           id: string
+          is_verified: boolean
           network_name: string
         }
         Insert: {
           avatar_url?: string | null
           cnpj: string
+          cnpj_activity?: string | null
+          cnpj_verified_at?: string | null
           created_at?: string
           id: string
+          is_verified?: boolean
           network_name: string
         }
         Update: {
           avatar_url?: string | null
           cnpj?: string
+          cnpj_activity?: string | null
+          cnpj_verified_at?: string | null
           created_at?: string
           id?: string
+          is_verified?: boolean
           network_name?: string
         }
         Relationships: [
@@ -689,6 +713,7 @@ export type Database = {
     Functions: {
       auto_finalize_shifts: { Args: never; Returns: undefined }
       is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
+      is_verified_network: { Args: { _uid: string }; Returns: boolean }
       send_shift_reminders: { Args: never; Returns: undefined }
     }
     Enums: {
