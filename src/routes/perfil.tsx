@@ -208,6 +208,19 @@ function DoctorRegistration({
   const [rgUrl, setRgUrl] = useState<string | null>(null);
   const [cvUrl, setCvUrl] = useState<string | null>(null);
 
+  // Extra professional fields
+  const [medicalExperience, setMedicalExperience] = useState("");
+  const [lattesUrl, setLattesUrl] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+
+  // CRM / Identity verification
+  const [crmStatus, setCrmStatus] = useState<string>("pending");
+  const [identityVerified, setIdentityVerified] = useState(false);
+  const [identityVerifiedAt, setIdentityVerifiedAt] = useState<string | null>(null);
+  const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
+  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
+  const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
