@@ -350,18 +350,9 @@ function ExploreNetworks() {
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="truncate text-sm font-semibold">{n.name}</h3>
-                    {n.featured && (
-                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
-                        Destaque
-                      </span>
-                    )}
-                  </div>
-                  <p className="truncate text-xs text-muted-foreground">{n.area}</p>
-                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" /> {n.city}</span>
-                    <span className="inline-flex items-center gap-1"><Briefcase className="h-3 w-3" /> {n.openings} vagas</span>
+                  <h3 className="truncate text-sm font-semibold">{n.name}</h3>
+                  <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <MapPin className="h-3 w-3" /> {n.city}
                   </div>
                 </div>
               </div>
