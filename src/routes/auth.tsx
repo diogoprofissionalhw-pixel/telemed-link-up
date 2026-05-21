@@ -300,8 +300,14 @@ function SignUpWizard() {
           </div>
           <div className="col-span-3">
             <Field label="Especialidade" htmlFor="specialty">
-              <Input id="specialty" value={state.specialty} placeholder="Clínica geral"
-                onChange={(e) => set("specialty", e.target.value)} />
+              <Select value={state.specialty} onValueChange={(v) => set("specialty", v)}>
+                <SelectTrigger id="specialty"><SelectValue placeholder="Selecione sua especialidade" /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {SPECIALTIES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
           <div className="col-span-3">
