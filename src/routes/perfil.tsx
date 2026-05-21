@@ -759,61 +759,11 @@ function DoctorRegistration({
                       <Input type="number" min={50} max={1000} step="0.01" value={fee}
                         onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
                     </Field>
-                    <Field label="Método preferido" required>
-                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pix">PIX</SelectItem>
-                          <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
-                          <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <Field label="Nome do titular" required>
+                      <Input value={accountHolderName} maxLength={120}
+                        onChange={(e) => setAccountHolderName(e.target.value)} placeholder="Nome completo do titular da conta" />
                     </Field>
                   </div>
-
-                  {paymentMethod === "bank_transfer" && (
-                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Field label="Banco">
-                          <Select value={bankName} onValueChange={setBankName}>
-                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                            <SelectContent>{BANKS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </Field>
-                        <Field label="Tipo de conta">
-                          <Select value={bankAccountType} onValueChange={setBankAccountType}>
-                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="checking">Corrente</SelectItem>
-                              <SelectItem value="savings">Poupança</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <Field label="Agência"><Input value={bankAgency} maxLength={5} onChange={(e) => setBankAgency(onlyDigits(e.target.value))} /></Field>
-                        <Field label="Conta"><Input value={bankAccount} maxLength={12} onChange={(e) => setBankAccount(onlyDigits(e.target.value))} /></Field>
-                        <Field label="Dígito"><Input value={bankAccountDigit} maxLength={2} onChange={(e) => setBankAccountDigit(e.target.value)} /></Field>
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === "pix" && (
-                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
-                      <Field label="Tipo de chave">
-                        <Select value={pixKeyType} onValueChange={setPixKeyType}>
-                          <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cpf">CPF</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Telefone</SelectItem>
-                            <SelectItem value="random">Chave aleatória</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field label="Chave PIX"><Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} /></Field>
-                    </div>
-                  )}
                 </FieldGroup>
               </Section>
 
