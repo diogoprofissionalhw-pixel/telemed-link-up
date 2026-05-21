@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
 import network9TLogo from "@/assets/network-9t-logo.jpeg";
+import networkBuilding from "@/assets/network-building.avif";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -314,11 +315,11 @@ function ExploreNetworks() {
                 style={{ boxShadow: "var(--shadow-elegant)" }}
               >
                 <img
-                  src={network9TLogo}
-                  alt="Logo da rede parceira 9T Saúde"
+                  src={networkBuilding}
+                  alt="Redes parceiras Connect-Med"
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-contain p-8"
+                  className="h-full w-full object-cover"
                 />
               </div>
             </div>
