@@ -341,8 +341,7 @@ function DoctorRegistration({
           name, emailVal, location, city, state, headline, crm, crmUf, cpf,
           primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp,
           education, languages, weekdays, startTime, endTime, timezone,
-          fee, paymentMethod, bankName, bankAccountType, bankAgency, bankAccount,
-          bankAccountDigit, pixKeyType, pixKey,
+          fee, accountHolderName,
         }));
         setAutoSavedAt(new Date());
       } catch {}
@@ -350,8 +349,7 @@ function DoctorRegistration({
     return () => clearInterval(t);
   }, [loading, draftKey, name, emailVal, location, city, state, headline, crm, crmUf, cpf,
       primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp, education, languages,
-      weekdays, startTime, endTime, timezone, fee, paymentMethod, bankName, bankAccountType,
-      bankAgency, bankAccount, bankAccountDigit, pixKeyType, pixKey]);
+      weekdays, startTime, endTime, timezone, fee, accountHolderName]);
 
   /* ---------- Toggle helpers ---------- */
   const toggleSpec = (s: string) => {
