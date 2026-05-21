@@ -233,14 +233,7 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setPaymentMethod(doc.payment_method ?? "");
-        setBankName(doc.bank_name ?? "");
-        setBankAccountType((doc as any).bank_account_type ?? "");
-        setBankAgency(doc.bank_agency ?? "");
-        setBankAccount(doc.bank_account ?? "");
-        setBankAccountDigit((doc as any).bank_account_digit ?? "");
-        setPixKeyType((doc as any).pix_key_type ?? "");
-        setPixKey(doc.pix_key ?? "");
+        setAccountHolderName(doc.account_holder_name ?? "");
         setDiplomaUrl(doc.diploma_url);
         setCrmDocUrl(doc.crm_document_url);
         setRgUrl((doc as any).rg_document_url ?? null);
