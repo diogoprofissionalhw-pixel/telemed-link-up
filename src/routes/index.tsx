@@ -332,13 +332,6 @@ function ExploreNetworks() {
               <p className="mt-3 text-muted-foreground lg:max-w-md">
                 Descubra as empresas de telemedicina que contratam profissionais através do Connect-Med e encontre oportunidades alinhadas à sua especialidade.
               </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
-                <Link to="/auth" search={{ mode: "signup" }}>
-                  <Button size="lg" className="gap-2">
-                    Conheça nossas redes <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
 
