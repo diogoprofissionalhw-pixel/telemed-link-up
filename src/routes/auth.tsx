@@ -16,6 +16,7 @@ import {
   UF_LIST, isValidCPF, isValidCNPJ, isValidCRM, isValidEmail, isValidPhone,
   maskCPF, maskCNPJ, maskCRM, maskPhone, onlyDigits,
 } from "@/lib/validators";
+import { SPECIALTIES } from "@/lib/specialties";
 
 type Mode = "signin" | "signup";
 type AccountType = "doctor" | "network";
