@@ -322,12 +322,11 @@ function DoctorRegistration({
     { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)" },
     { ok: isValidPhone(phone), label: "Telefone válido" },
     { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta" },
-    { ok: !!paymentMethod, label: "Método de pagamento" },
     { ok: weekdays.length >= 1, label: "Dias da semana" },
     { ok: !!diplomaUrl, label: "Diploma enviado" },
     { ok: !!crmDocUrl, label: "Documento do CRM" },
     { ok: !!rgUrl, label: "Documento de identidade" },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, paymentMethod, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
+  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
 
   const completedCount = checklist.filter(c => c.ok).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
