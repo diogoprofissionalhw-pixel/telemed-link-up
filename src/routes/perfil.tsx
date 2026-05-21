@@ -645,11 +645,11 @@ function DoctorRegistration({
                       onChange={(e) => setYearsExp(e.target.value === "" ? "" : Math.max(0, Math.min(70, Number(e.target.value))))} />
                   </Field>
                   <div>
-                    <Label className="mb-2 block">Especialidades adicionais <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
+                    <Label className="mb-2 block">Especialidades adicionais e áreas de atuação <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
                     <div className="relative overflow-hidden transition-[max-height] duration-300"
-                      style={{ maxHeight: showAllSpecs ? "1500px" : "200px" }}>
+                      style={{ maxHeight: showAllSpecs ? "2500px" : "200px" }}>
                       <div className="flex flex-wrap gap-2">
-                        {SPECIALTIES.map(s => {
+                        {ADDITIONAL_OPTIONS.map(s => {
                           const on = extraSpecs.includes(s);
                           return (
                             <button type="button" key={s} onClick={() => toggleSpec(s)}
