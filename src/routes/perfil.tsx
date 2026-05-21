@@ -373,7 +373,6 @@ function DoctorRegistration({
     if (bio.trim().length < 50) errs.push("Descrição");
     if (!isValidPhone(phone)) errs.push("Telefone");
     if (typeof fee !== "number" || fee < 50) errs.push("Taxa");
-    if (!paymentMethod) errs.push("Pagamento");
     if (weekdays.length < 1) errs.push("Disponibilidade");
     if (!diplomaUrl) errs.push("Diploma");
     if (!crmDocUrl) errs.push("Documento do CRM");
