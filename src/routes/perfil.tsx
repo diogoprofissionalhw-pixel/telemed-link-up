@@ -176,14 +176,7 @@ function DoctorRegistration({
 
   // Payment
   const [fee, setFee] = useState<number | "">("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [bankName, setBankName] = useState("");
-  const [bankAccountType, setBankAccountType] = useState("");
-  const [bankAgency, setBankAgency] = useState("");
-  const [bankAccount, setBankAccount] = useState("");
-  const [bankAccountDigit, setBankAccountDigit] = useState("");
-  const [pixKeyType, setPixKeyType] = useState("");
-  const [pixKey, setPixKey] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
 
   // Documents
   const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
@@ -240,14 +233,7 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setPaymentMethod(doc.payment_method ?? "");
-        setBankName(doc.bank_name ?? "");
-        setBankAccountType((doc as any).bank_account_type ?? "");
-        setBankAgency(doc.bank_agency ?? "");
-        setBankAccount(doc.bank_account ?? "");
-        setBankAccountDigit((doc as any).bank_account_digit ?? "");
-        setPixKeyType((doc as any).pix_key_type ?? "");
-        setPixKey(doc.pix_key ?? "");
+        setAccountHolderName((doc as any).account_holder_name ?? "");
         setDiplomaUrl(doc.diploma_url);
         setCrmDocUrl(doc.crm_document_url);
         setRgUrl((doc as any).rg_document_url ?? null);
@@ -336,12 +322,11 @@ function DoctorRegistration({
     { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)" },
     { ok: isValidPhone(phone), label: "Telefone válido" },
     { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta" },
-    { ok: !!paymentMethod, label: "Método de pagamento" },
     { ok: weekdays.length >= 1, label: "Dias da semana" },
     { ok: !!diplomaUrl, label: "Diploma enviado" },
     { ok: !!crmDocUrl, label: "Documento do CRM" },
     { ok: !!rgUrl, label: "Documento de identidade" },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, paymentMethod, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
+  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
 
   const completedCount = checklist.filter(c => c.ok).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
@@ -356,8 +341,7 @@ function DoctorRegistration({
           name, emailVal, location, city, state, headline, crm, crmUf, cpf,
           primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp,
           education, languages, weekdays, startTime, endTime, timezone,
-          fee, paymentMethod, bankName, bankAccountType, bankAgency, bankAccount,
-          bankAccountDigit, pixKeyType, pixKey,
+          fee, accountHolderName,
         }));
         setAutoSavedAt(new Date());
       } catch {}
@@ -365,8 +349,7 @@ function DoctorRegistration({
     return () => clearInterval(t);
   }, [loading, draftKey, name, emailVal, location, city, state, headline, crm, crmUf, cpf,
       primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp, education, languages,
-      weekdays, startTime, endTime, timezone, fee, paymentMethod, bankName, bankAccountType,
-      bankAgency, bankAccount, bankAccountDigit, pixKeyType, pixKey]);
+      weekdays, startTime, endTime, timezone, fee, accountHolderName]);
 
   /* ---------- Toggle helpers ---------- */
   const toggleSpec = (s: string) => {
@@ -390,7 +373,6 @@ function DoctorRegistration({
     if (bio.trim().length < 50) errs.push("Descrição");
     if (!isValidPhone(phone)) errs.push("Telefone");
     if (typeof fee !== "number" || fee < 50) errs.push("Taxa");
-    if (!paymentMethod) errs.push("Pagamento");
     if (weekdays.length < 1) errs.push("Disponibilidade");
     if (!diplomaUrl) errs.push("Diploma");
     if (!crmDocUrl) errs.push("Documento do CRM");
@@ -423,14 +405,7 @@ function DoctorRegistration({
         education: education || null,
         languages: languages || null,
         consultation_fee: fee,
-        payment_method: paymentMethod,
-        bank_name: bankName || null,
-        bank_account_type: bankAccountType || null,
-        bank_agency: bankAgency || null,
-        bank_account: bankAccount || null,
-        bank_account_digit: bankAccountDigit || null,
-        pix_key_type: pixKeyType || null,
-        pix_key: pixKey || null,
+        account_holder_name: accountHolderName.trim() || null,
         diploma_url: diplomaUrl,
         crm_document_url: crmDocUrl,
         rg_document_url: rgUrl,
@@ -784,61 +759,11 @@ function DoctorRegistration({
                       <Input type="number" min={50} max={1000} step="0.01" value={fee}
                         onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
                     </Field>
-                    <Field label="Método preferido" required>
-                      <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pix">PIX</SelectItem>
-                          <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
-                          <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <Field label="Nome do titular" required>
+                      <Input value={accountHolderName} maxLength={120}
+                        onChange={(e) => setAccountHolderName(e.target.value)} placeholder="Nome completo do titular da conta" />
                     </Field>
                   </div>
-
-                  {paymentMethod === "bank_transfer" && (
-                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Field label="Banco">
-                          <Select value={bankName} onValueChange={setBankName}>
-                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                            <SelectContent>{BANKS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </Field>
-                        <Field label="Tipo de conta">
-                          <Select value={bankAccountType} onValueChange={setBankAccountType}>
-                            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="checking">Corrente</SelectItem>
-                              <SelectItem value="savings">Poupança</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </Field>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        <Field label="Agência"><Input value={bankAgency} maxLength={5} onChange={(e) => setBankAgency(onlyDigits(e.target.value))} /></Field>
-                        <Field label="Conta"><Input value={bankAccount} maxLength={12} onChange={(e) => setBankAccount(onlyDigits(e.target.value))} /></Field>
-                        <Field label="Dígito"><Input value={bankAccountDigit} maxLength={2} onChange={(e) => setBankAccountDigit(e.target.value)} /></Field>
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentMethod === "pix" && (
-                    <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-4 space-y-3">
-                      <Field label="Tipo de chave">
-                        <Select value={pixKeyType} onValueChange={setPixKeyType}>
-                          <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cpf">CPF</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="phone">Telefone</SelectItem>
-                            <SelectItem value="random">Chave aleatória</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field label="Chave PIX"><Input value={pixKey} onChange={(e) => setPixKey(e.target.value)} /></Field>
-                    </div>
-                  )}
                 </FieldGroup>
               </Section>
 
