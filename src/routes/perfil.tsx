@@ -233,7 +233,7 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setAccountHolderName(doc.account_holder_name ?? "");
+        setAccountHolderName((doc as any).account_holder_name ?? "");
         setDiplomaUrl(doc.diploma_url);
         setCrmDocUrl(doc.crm_document_url);
         setRgUrl((doc as any).rg_document_url ?? null);
