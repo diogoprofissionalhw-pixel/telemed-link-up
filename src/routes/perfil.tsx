@@ -39,23 +39,54 @@ export const Route = createFileRoute("/perfil")({
 /* ================== CONSTANTS ================== */
 
 const SPECIALTIES = [
-  "Alergia e Imunologia","Anestesiologia","Angiologia","Cardiologia",
-  "Cirurgia Bariátrica","Cirurgia Cardiovascular","Cirurgia da Mão",
-  "Cirurgia de Cabeça e Pescoço","Cirurgia do Aparelho Digestivo",
-  "Cirurgia Geral","Cirurgia Oncológica","Cirurgia Pediátrica",
-  "Cirurgia Plástica","Cirurgia Torácica","Cirurgia Vascular",
-  "Clínica Médica","Coloproctologia","Dermatologia",
-  "Endocrinologia e Metabologia","Endoscopia Digestiva","Gastroenterologia",
-  "Geriatria","Ginecologia e Obstetrícia","Hematologia e Hemoterapia",
-  "Homeopatia","Infectologia","Mastologia","Medicina de Família e Comunidade",
-  "Medicina do Trabalho","Medicina do Tráfego","Medicina Esportiva",
-  "Medicina Física e Reabilitação","Medicina Intensiva","Medicina Legal e Perícia",
-  "Medicina Nuclear","Nefrologia","Neurocirurgia","Neurologia","Nutrologia",
-  "Oftalmologia","Oncologia Clínica","Ortopedia e Traumatologia",
-  "Otorrinolaringologia","Patologia","Patologia Clínica","Pediatria",
-  "Pneumologia","Psiquiatria","Radiologia e Diagnóstico por Imagem",
-  "Radioterapia","Reumatologia","Tocoginecologia","Urologia",
+  "Acupuntura","Alergia e Imunologia","Anestesiologia","Angiologia","Cardiologia",
+  "Cirurgia Cardiovascular","Cirurgia da Mão","Cirurgia de Cabeça e Pescoço",
+  "Cirurgia do Aparelho Digestivo","Cirurgia Geral","Cirurgia Oncológica",
+  "Cirurgia Pediátrica","Cirurgia Plástica","Cirurgia Torácica","Cirurgia Vascular",
+  "Clínica Médica","Coloproctologia","Dermatologia","Endocrinologia e Metabologia",
+  "Endoscopia","Gastroenterologia","Genética Médica","Geriatria",
+  "Ginecologia e Obstetrícia","Hematologia e Hemoterapia","Homeopatia",
+  "Infectologia","Mastologia","Medicina de Emergência",
+  "Medicina de Família e Comunidade","Medicina do Trabalho","Medicina do Tráfego",
+  "Medicina Esportiva","Medicina Física e Reabilitação","Medicina Intensiva",
+  "Medicina Legal e Perícia Médica","Medicina Nuclear","Medicina Preventiva e Social",
+  "Nefrologia","Neurocirurgia","Neurologia","Nutrologia","Oftalmologia",
+  "Oncologia Clínica","Ortopedia e Traumatologia","Otorrinolaringologia",
+  "Patologia","Patologia Clínica/Medicina Laboratorial","Pediatria","Pneumologia",
+  "Psiquiatria","Radiologia e Diagnóstico por Imagem","Radioterapia",
+  "Reumatologia","Urologia",
 ];
+
+const AREAS_OF_ACTUATION = [
+  "Administração em Saúde","Alergia e Imunologia Pediátrica",
+  "Angiorradiologia e Cirurgia Endovascular","Atendimento ao Queimado",
+  "Auditoria Médica","Cardiologia Pediátrica","Cirurgia Bariátrica",
+  "Cirurgia Crânio-Maxilo-Facial","Cirurgia do Trauma","Cirurgia Videolaparoscópica",
+  "Citopatologia","Densitometria Óssea","Dor","Ecocardiografia",
+  "Ecografia Vascular com Doppler","Eletrofisiologia Clínica Invasiva",
+  "Emergência Pediátrica","Endocrinologia Pediátrica","Endoscopia Digestiva",
+  "Endoscopia Ginecológica","Endoscopia Respiratória","Ergometria",
+  "Estimulação Cardíaca Eletrônica Implantável","Foniatria",
+  "Gastroenterologia Pediátrica","Hansenologia",
+  "Hematologia e Hemoterapia Pediátrica","Hemodinâmica e Cardiologia Intervencionista",
+  "Hepatologia","Infectologia Hospitalar","Infectologia Pediátrica","Mamografia",
+  "Medicina Aeroespacial","Medicina do Adolescente","Medicina do Sono",
+  "Medicina Fetal","Medicina Intensiva Pediátrica","Medicina Paliativa",
+  "Medicina Tropical","Nefrologia Pediátrica","Neonatologia",
+  "Neurofisiologia Clínica","Neurologia Pediátrica","Neurorradiologia",
+  "Nutrição Parenteral e Enteral","Nutrição Parenteral e Enteral Pediátrica",
+  "Nutrologia Pediátrica","Oncogenética","Oncologia Pediátrica",
+  "Pneumologia Pediátrica","Psicogeriatria","Psicoterapia",
+  "Psiquiatria da Infância e Adolescência","Psiquiatria Forense",
+  "Radiologia Intervencionista e Angiorradiologia","Reprodução Assistida",
+  "Reumatologia Pediátrica","Sexologia","Toxicologia Médica",
+  "Transplante de Medula Óssea","Ultrassonografia em Ginecologia e Obstetrícia",
+  "Ultrassonografia Geral",
+];
+
+const ADDITIONAL_OPTIONS = Array.from(
+  new Set<string>([...SPECIALTIES, ...AREAS_OF_ACTUATION])
+);
 
 const WEEKDAYS = [
   { v: 1, label: "Seg" },{ v: 2, label: "Ter" },{ v: 3, label: "Qua" },
@@ -614,11 +645,11 @@ function DoctorRegistration({
                       onChange={(e) => setYearsExp(e.target.value === "" ? "" : Math.max(0, Math.min(70, Number(e.target.value))))} />
                   </Field>
                   <div>
-                    <Label className="mb-2 block">Especialidades adicionais <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
+                    <Label className="mb-2 block">Especialidades adicionais e áreas de atuação <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
                     <div className="relative overflow-hidden transition-[max-height] duration-300"
-                      style={{ maxHeight: showAllSpecs ? "1500px" : "200px" }}>
+                      style={{ maxHeight: showAllSpecs ? "2500px" : "200px" }}>
                       <div className="flex flex-wrap gap-2">
-                        {SPECIALTIES.map(s => {
+                        {ADDITIONAL_OPTIONS.map(s => {
                           const on = extraSpecs.includes(s);
                           return (
                             <button type="button" key={s} onClick={() => toggleSpec(s)}
