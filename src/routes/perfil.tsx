@@ -176,7 +176,6 @@ function DoctorRegistration({
 
   // Payment
   const [fee, setFee] = useState<number | "">("");
-  const [accountHolderName, setAccountHolderName] = useState("");
 
   // Documents
   const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
@@ -233,7 +232,6 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setAccountHolderName((doc as any).account_holder_name ?? "");
         setDiplomaUrl(doc.diploma_url);
         setCrmDocUrl(doc.crm_document_url);
         setRgUrl((doc as any).rg_document_url ?? null);
@@ -341,7 +339,7 @@ function DoctorRegistration({
           name, emailVal, location, city, state, headline, crm, crmUf, cpf,
           primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp,
           education, languages, weekdays, startTime, endTime, timezone,
-          fee, accountHolderName,
+          fee,
         }));
         setAutoSavedAt(new Date());
       } catch {}
@@ -349,7 +347,7 @@ function DoctorRegistration({
     return () => clearInterval(t);
   }, [loading, draftKey, name, emailVal, location, city, state, headline, crm, crmUf, cpf,
       primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp, education, languages,
-      weekdays, startTime, endTime, timezone, fee, accountHolderName]);
+      weekdays, startTime, endTime, timezone, fee]);
 
   /* ---------- Toggle helpers ---------- */
   const toggleSpec = (s: string) => {
@@ -405,7 +403,6 @@ function DoctorRegistration({
         education: education || null,
         languages: languages || null,
         consultation_fee: fee,
-        account_holder_name: accountHolderName.trim() || null,
         diploma_url: diplomaUrl,
         crm_document_url: crmDocUrl,
         rg_document_url: rgUrl,
@@ -754,16 +751,10 @@ function DoctorRegistration({
 
               <Section step={11} of={14} title="Informações de Pagamento" subtitle="Como você quer receber">
                 <FieldGroup>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Taxa de Consulta/Plantão (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
-                      <Input type="number" min={50} max={1000} step="0.01" value={fee}
-                        onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
-                    </Field>
-                    <Field label="Nome do titular" required>
-                      <Input value={accountHolderName} maxLength={120}
-                        onChange={(e) => setAccountHolderName(e.target.value)} placeholder="Nome completo do titular da conta" />
-                    </Field>
-                  </div>
+                  <Field label="Taxa de Consulta (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
+                    <Input type="number" min={50} max={1000} step="0.01" value={fee}
+                      onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
+                  </Field>
                 </FieldGroup>
               </Section>
 
