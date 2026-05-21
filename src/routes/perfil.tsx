@@ -927,7 +927,7 @@ function DoctorRegistration({
 
         {/* SIDEBAR */}
         {showForm && (
-          <aside className="lg:sticky lg:top-24 lg:self-start space-y-4">
+          <aside className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto space-y-4 pr-1">
             <SummaryCard avatarUrl={avatarUrl} name={name} headline={headline} extras={extraSpecs} progressPct={progressPct} />
             <ChecklistCard items={checklist} progressPct={progressPct} />
           </aside>
