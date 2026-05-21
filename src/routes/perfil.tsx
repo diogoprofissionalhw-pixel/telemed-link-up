@@ -176,14 +176,7 @@ function DoctorRegistration({
 
   // Payment
   const [fee, setFee] = useState<number | "">("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("");
-  const [bankName, setBankName] = useState("");
-  const [bankAccountType, setBankAccountType] = useState("");
-  const [bankAgency, setBankAgency] = useState("");
-  const [bankAccount, setBankAccount] = useState("");
-  const [bankAccountDigit, setBankAccountDigit] = useState("");
-  const [pixKeyType, setPixKeyType] = useState("");
-  const [pixKey, setPixKey] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
 
   // Documents
   const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
