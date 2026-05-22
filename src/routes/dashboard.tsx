@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter, Inbox, CalendarCheck, Briefcase, Sparkles, ShieldCheck, ShieldQuestion, Send } from "lucide-react";
+import { Calendar, Clock, Building2, Stethoscope, Plus, CheckCircle2, XCircle, Hourglass, MessageSquare, User as UserIcon, Star, UserCog, Sun, Moon, DollarSign, Search, TrendingUp, Filter, Inbox, CalendarCheck, Briefcase, Sparkles, ShieldCheck, ShieldQuestion, ShieldAlert, BadgeCheck, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -212,9 +212,16 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allRequests, setAllRequests] = useState<Array<{ created_at: string; status: string }>>([]);
   const [ratings, setRatings] = useState<Array<{ stars: number }>>([]);
+  const [crmStatus, setCrmStatus] = useState<string>("pending");
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [declineId, setDeclineId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.from("doctors").select("crm_status").eq("id", userId).maybeSingle()
+      .then(({ data }) => setCrmStatus((data?.crm_status as string) ?? "pending"));
+  }, [userId]);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -302,6 +309,32 @@ function DoctorPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-10">
+      {crmStatus !== "verified" && (
+        <Link
+          to="/perfil"
+          className="group relative block overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md">
+                <ShieldAlert className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-amber-900 sm:text-base">
+                  Seu perfil ainda não é verificado
+                </p>
+                <p className="mt-0.5 text-xs text-amber-900/80 sm:text-sm">
+                  Clique aqui para validar seu CRM e aumentar suas chances de contratação.
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-transform group-hover:scale-105 sm:text-sm">
+              <BadgeCheck className="h-4 w-4" /> Validar CRM agora
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* TOP: Resumo (esquerda) + Gráfico (direita) */}
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-1">

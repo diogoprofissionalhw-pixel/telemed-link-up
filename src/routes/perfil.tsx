@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { Progress } from "@/components/ui/progress";
 import {
@@ -201,6 +202,8 @@ function DoctorRegistration({
   const [isPremium, setIsPremium] = useState(false);
   const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
   const [premiumLoading, setPremiumLoading] = useState(false);
+
+  const [benefitsOpen, setBenefitsOpen] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -564,6 +567,24 @@ function DoctorRegistration({
                 </div>
               )}
 
+              {crmStatus !== "verified" && (
+                <CrmCtaBanner
+                  onClick={() => setBenefitsOpen(true)}
+                />
+              )}
+
+              <CrmBenefitsDialog
+                open={benefitsOpen}
+                onOpenChange={setBenefitsOpen}
+                onValidate={() => {
+                  setBenefitsOpen(false);
+                  setTimeout(() => {
+                    document.getElementById("crm-validation-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }, 150);
+                }}
+              />
+
+
               <Section step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
                 <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
                 <FieldGroup>
@@ -866,7 +887,7 @@ function DoctorRegistration({
                     </Button>
                   )}
 
-                  <div className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                  <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="max-w-md">
                         <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
@@ -1254,3 +1275,78 @@ function ChecklistCard({ items, progressPct }: { items: { ok: boolean; label: st
     </div>
   );
 }
+
+/* ================== CRM CTA + BENEFITS DIALOG ================== */
+
+function CrmCtaBanner({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group relative w-full overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 p-[1.5px] shadow-lg shadow-emerald-500/20 transition-all hover:shadow-emerald-500/40 hover:-translate-y-0.5"
+    >
+      <span className="flex w-full items-center justify-between gap-4 rounded-[14px] bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 px-5 py-4 text-left">
+        <span className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-white/15 ring-2 ring-white/30">
+            <BadgeCheck className="h-5 w-5 text-white" />
+          </span>
+          <span className="flex flex-col">
+            <span className="text-sm font-bold text-white sm:text-base">
+              Validar meu CRM e ganhar Selo de Autenticidade
+            </span>
+            <span className="text-xs text-emerald-50/90">
+              Destaque nas buscas · Mais confiança · Selo oficial Connect-Med
+            </span>
+          </span>
+        </span>
+        <span className="hidden shrink-0 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm transition-transform group-hover:scale-105 sm:inline-flex">
+          Saiba mais →
+        </span>
+      </span>
+    </button>
+  );
+}
+
+function CrmBenefitsDialog({
+  open, onOpenChange, onValidate,
+}: { open: boolean; onOpenChange: (v: boolean) => void; onValidate: () => void }) {
+  const benefits = [
+    { icon: Star, title: "Destaque nas buscas", desc: "Perfis verificados aparecem com prioridade no diretório /medicos." },
+    { icon: ShieldCheck, title: "Aumento de confiança", desc: "Redes preferem contratar médicos com identidade e CRM confirmados." },
+    { icon: BadgeCheck, title: "Selo oficial Connect-Med", desc: "Badge verde permanente exibido ao lado do seu nome em todos os perfis." },
+  ];
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-lg">
+            <BadgeCheck className="h-5 w-5 text-emerald-600" /> Selo de Autenticidade Connect-Med
+          </DialogTitle>
+          <DialogDescription>
+            Validação única do seu CRM junto ao conselho. Pagamento de <span className="font-semibold text-emerald-700">R$ 150,00</span> (mock).
+          </DialogDescription>
+        </DialogHeader>
+        <ul className="mt-2 space-y-3">
+          {benefits.map((b) => (
+            <li key={b.title} className="flex items-start gap-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3">
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-emerald-600 text-white">
+                <b.icon className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-emerald-900">{b.title}</p>
+                <p className="text-xs text-emerald-900/80">{b.desc}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Agora não</Button>
+          <Button onClick={onValidate} className="gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700">
+            <BadgeCheck className="h-4 w-4" /> Validar agora
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
