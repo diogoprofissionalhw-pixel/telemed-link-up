@@ -212,9 +212,16 @@ function DoctorPanel({ userId }: { userId: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allRequests, setAllRequests] = useState<Array<{ created_at: string; status: string }>>([]);
   const [ratings, setRatings] = useState<Array<{ stars: number }>>([]);
+  const [crmStatus, setCrmStatus] = useState<string>("pending");
   const [loading, setLoading] = useState(true);
   const [chatReq, setChatReq] = useState<ShiftRequest | null>(null);
   const [declineId, setDeclineId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.from("doctors").select("crm_status").eq("id", userId).maybeSingle()
+      .then(({ data }) => setCrmStatus((data?.crm_status as string) ?? "pending"));
+  }, [userId]);
+
 
   const load = useCallback(async () => {
     setLoading(true);
