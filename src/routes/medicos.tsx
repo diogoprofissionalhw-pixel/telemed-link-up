@@ -273,12 +273,13 @@ interface PanelProps {
   minRate: number; setMinRate: (n: number) => void;
   maxRate: number; setMaxRate: (n: number) => void;
   minStars: number; setMinStars: (n: number) => void;
+  onlyVerified: boolean; setOnlyVerified: (v: boolean) => void;
   clear: () => void;
   allSpecialties: string[];
   allLocations: string[];
 }
 
-function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations }: PanelProps) {
+function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, onlyVerified, setOnlyVerified, clear, allSpecialties, allLocations }: PanelProps) {
   const [specQ, setSpecQ] = useState("");
   const [locQ, setLocQ] = useState("");
   const filteredSpecs = useMemo(() => {
