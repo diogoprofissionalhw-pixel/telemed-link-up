@@ -293,6 +293,13 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
 
   return (
     <div className="space-y-6">
+      <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
+        <Checkbox checked={onlyVerified} onCheckedChange={(v) => setOnlyVerified(!!v)} className="mt-0.5" />
+        <span className="text-sm">
+          <span className="flex items-center gap-1 font-medium text-emerald-900"><BadgeCheck className="h-3.5 w-3.5" /> Apenas médicos verificados</span>
+          <span className="block text-[11px] text-emerald-900/70">Exibe somente perfis com Informações Verificadas por CRM.</span>
+        </span>
+      </label>
       <div>
         <label className="mb-2 block text-sm font-medium">Busca</label>
         <div className="relative">
