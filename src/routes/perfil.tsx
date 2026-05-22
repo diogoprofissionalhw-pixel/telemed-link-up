@@ -203,6 +203,8 @@ function DoctorRegistration({
   const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
   const [premiumLoading, setPremiumLoading] = useState(false);
 
+  const [benefitsOpen, setBenefitsOpen] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
