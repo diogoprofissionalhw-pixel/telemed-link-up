@@ -386,14 +386,55 @@ function SignUpWizard() {
 
       {step === 2 && state.accountType === "network" && (
         <div className="space-y-4">
-          <Field label="Nome da rede" htmlFor="network_name">
-            <Input id="network_name" value={state.network_name}
-              onChange={(e) => set("network_name", e.target.value)} />
-          </Field>
           <Field label="CNPJ" htmlFor="cnpj"
             error={state.cnpj && !isValidCNPJ(state.cnpj) ? "CNPJ inválido" : undefined}>
-            <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
-              value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
+            <div className="flex gap-2">
+              <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
+                value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
+              <Button type="button" variant="outline" className="gap-1.5 shrink-0"
+                onClick={handleLookupCnpj}
+                disabled={cnpjLookup || !isValidCNPJ(state.cnpj) || !!cnpjData}>
+                {cnpjLookup ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                {cnpjData ? "Validado" : "Validar"}
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Validamos seu CNPJ na Receita Federal (BrasilAPI) antes de liberar o cadastro.
+            </p>
+          </Field>
+
+          {cnpjError && (
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
+              <span className="text-destructive">{cnpjError}</span>
+            </div>
+          )}
+
+          {cnpjData && (
+            <div className="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
+              <div className="flex items-center gap-2 font-semibold text-emerald-700">
+                <ShieldCheck className="h-4 w-4" /> CNPJ ATIVO na Receita Federal
+              </div>
+              <div className="grid gap-1 text-foreground/90">
+                <div><span className="text-muted-foreground">Razão social: </span>{cnpjData.razao_social}</div>
+                {cnpjData.nome_fantasia && (
+                  <div><span className="text-muted-foreground">Nome fantasia: </span>{cnpjData.nome_fantasia}</div>
+                )}
+                <div><span className="text-muted-foreground">Atividade ({cnpjData.cnae_codigo}): </span>{cnpjData.cnae_descricao}</div>
+                <div><span className="text-muted-foreground">Endereço: </span>{formatAddress(cnpjData)}</div>
+              </div>
+              {!cnpjData.is_health && (
+                <p className="text-xs text-amber-700">
+                  ⚠ O CNAE principal não é da área da saúde. O cadastro pode continuar, mas sua rede pode passar por análise extra.
+                </p>
+              )}
+            </div>
+          )}
+
+          <Field label="Nome da rede (como aparece na plataforma)" htmlFor="network_name">
+            <Input id="network_name" value={state.network_name}
+              onChange={(e) => set("network_name", e.target.value)}
+              placeholder="Ex.: Rede Saúde São Paulo" />
           </Field>
         </div>
       )}
