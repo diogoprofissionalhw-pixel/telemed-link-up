@@ -158,10 +158,48 @@ function SignUpWizard() {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<SignupState>(initialState);
   const [submitting, setSubmitting] = useState(false);
+  const [cnpjData, setCnpjData] = useState<CNPJData | null>(null);
+  const [cnpjLookup, setCnpjLookup] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   const totalSteps = 3;
   const set = <K extends keyof SignupState>(k: K, v: SignupState[K]) =>
     setState((s) => ({ ...s, [k]: v }));
+
+  // Reset validação se trocou o CNPJ
+  useEffect(() => {
+    if (cnpjData && onlyDigits(state.cnpj) !== cnpjData.cnpj) {
+      setCnpjData(null);
+      setCnpjError(null);
+    }
+  }, [state.cnpj, cnpjData]);
+
+  const handleLookupCnpj = async () => {
+    setCnpjError(null);
+    if (!isValidCNPJ(state.cnpj)) {
+      setCnpjError("CNPJ inválido. Confira os dígitos.");
+      return;
+    }
+    setCnpjLookup(true);
+    try {
+      const data = await lookupCNPJ(state.cnpj);
+      if (data.situacao !== "ATIVA") {
+        setCnpjError(`Situação cadastral: ${data.situacao || "desconhecida"}. Só CNPJs ATIVOS são aceitos.`);
+        setCnpjData(null);
+        return;
+      }
+      setCnpjData(data);
+      if (!state.network_name.trim()) {
+        set("network_name", data.nome_fantasia || data.razao_social);
+      }
+      toast.success("CNPJ validado!");
+    } catch (e: any) {
+      setCnpjError(e?.message ?? "Falha ao consultar CNPJ.");
+      setCnpjData(null);
+    } finally {
+      setCnpjLookup(false);
+    }
+  };
 
   const stepValidation = useMemo(() => {
     if (step === 0) return null;
@@ -181,13 +219,14 @@ function SignUpWizard() {
         if (state.city.trim().length < 2) return "Informe a cidade.";
         if (!UF_LIST.includes(state.state as any)) return "Selecione o estado.";
       } else {
-        if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
         if (!isValidCNPJ(state.cnpj)) return "CNPJ inválido.";
+        if (!cnpjData) return "Valide o CNPJ na Receita Federal antes de continuar.";
+        if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
       }
       return null;
     }
     return null;
-  }, [step, state]);
+  }, [step, state, cnpjData]);
 
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
