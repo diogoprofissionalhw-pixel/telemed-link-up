@@ -268,7 +268,15 @@ function SignUpWizard() {
         id: userId,
         network_name: state.network_name.trim(),
         cnpj: onlyDigits(state.cnpj),
-      });
+        legal_name: cnpjData?.razao_social ?? null,
+        address: cnpjData ? formatAddress(cnpjData) : null,
+        city: cnpjData?.municipio ?? null,
+        state: cnpjData?.uf ?? null,
+        cnae_code: cnpjData?.cnae_codigo ?? null,
+        cnpj_activity: cnpjData?.cnae_descricao ?? null,
+        is_verified: !!cnpjData,
+        cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
+      } as any);
       if (netErr) { setSubmitting(false); return toast.error(netErr.message); }
     }
     setSubmitting(false);
