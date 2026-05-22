@@ -220,7 +220,6 @@ function SignUpWizard() {
         if (!UF_LIST.includes(state.state as any)) return "Selecione o estado.";
       } else {
         if (!isValidCNPJ(state.cnpj)) return "CNPJ inválido.";
-        if (!cnpjData) return "Valide o CNPJ na Receita Federal antes de continuar.";
         if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
       }
       return null;
