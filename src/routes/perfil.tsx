@@ -565,6 +565,24 @@ function DoctorRegistration({
                 </div>
               )}
 
+              {crmStatus !== "verified" && (
+                <CrmCtaBanner
+                  onClick={() => setBenefitsOpen(true)}
+                />
+              )}
+
+              <CrmBenefitsDialog
+                open={benefitsOpen}
+                onOpenChange={setBenefitsOpen}
+                onValidate={() => {
+                  setBenefitsOpen(false);
+                  setTimeout(() => {
+                    document.getElementById("crm-validation-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }, 150);
+                }}
+              />
+
+
               <Section step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
                 <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
                 <FieldGroup>
