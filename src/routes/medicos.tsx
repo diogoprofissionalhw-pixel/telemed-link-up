@@ -52,6 +52,7 @@ interface PublicDoctor {
   consultation_fee: number | null;
   crm_status: string;
   identity_verified: boolean;
+  is_premium: boolean;
   years_experience: number | null;
   avg_stars: number;
   reviews_count: number;
