@@ -373,7 +373,7 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
 function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }) {
   const loc = [d.city, d.state].filter(Boolean).join(", ");
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
-  const crmLabel = d.crm_status === "verified" ? "CRM Validado" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
+  const crmLabel = d.crm_status === "verified" ? "Informações Verificadas por CRM" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
   return (
     <div
       className={`relative rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
