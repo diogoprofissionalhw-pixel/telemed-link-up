@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Stethoscope, Building2, Check, ArrowRight, Loader2 } from "lucide-react";
+import { Stethoscope, Building2, Check, ArrowRight, Loader2, ShieldCheck, Search, AlertTriangle } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import {
   maskCPF, maskCNPJ, maskCRM, maskPhone, onlyDigits,
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
+import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
 
 type Mode = "signin" | "signup";
 type AccountType = "doctor" | "network";
@@ -157,10 +158,48 @@ function SignUpWizard() {
   const [step, setStep] = useState(0);
   const [state, setState] = useState<SignupState>(initialState);
   const [submitting, setSubmitting] = useState(false);
+  const [cnpjData, setCnpjData] = useState<CNPJData | null>(null);
+  const [cnpjLookup, setCnpjLookup] = useState(false);
+  const [cnpjError, setCnpjError] = useState<string | null>(null);
 
   const totalSteps = 3;
   const set = <K extends keyof SignupState>(k: K, v: SignupState[K]) =>
     setState((s) => ({ ...s, [k]: v }));
+
+  // Reset validação se trocou o CNPJ
+  useEffect(() => {
+    if (cnpjData && onlyDigits(state.cnpj) !== cnpjData.cnpj) {
+      setCnpjData(null);
+      setCnpjError(null);
+    }
+  }, [state.cnpj, cnpjData]);
+
+  const handleLookupCnpj = async () => {
+    setCnpjError(null);
+    if (!isValidCNPJ(state.cnpj)) {
+      setCnpjError("CNPJ inválido. Confira os dígitos.");
+      return;
+    }
+    setCnpjLookup(true);
+    try {
+      const data = await lookupCNPJ(state.cnpj);
+      if (data.situacao !== "ATIVA") {
+        setCnpjError(`Situação cadastral: ${data.situacao || "desconhecida"}. Só CNPJs ATIVOS são aceitos.`);
+        setCnpjData(null);
+        return;
+      }
+      setCnpjData(data);
+      if (!state.network_name.trim()) {
+        set("network_name", data.nome_fantasia || data.razao_social);
+      }
+      toast.success("CNPJ validado!");
+    } catch (e: any) {
+      setCnpjError(e?.message ?? "Falha ao consultar CNPJ.");
+      setCnpjData(null);
+    } finally {
+      setCnpjLookup(false);
+    }
+  };
 
   const stepValidation = useMemo(() => {
     if (step === 0) return null;
@@ -180,13 +219,14 @@ function SignUpWizard() {
         if (state.city.trim().length < 2) return "Informe a cidade.";
         if (!UF_LIST.includes(state.state as any)) return "Selecione o estado.";
       } else {
-        if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
         if (!isValidCNPJ(state.cnpj)) return "CNPJ inválido.";
+        if (!cnpjData) return "Valide o CNPJ na Receita Federal antes de continuar.";
+        if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
       }
       return null;
     }
     return null;
-  }, [step, state]);
+  }, [step, state, cnpjData]);
 
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
@@ -228,7 +268,15 @@ function SignUpWizard() {
         id: userId,
         network_name: state.network_name.trim(),
         cnpj: onlyDigits(state.cnpj),
-      });
+        legal_name: cnpjData?.razao_social ?? null,
+        address: cnpjData ? formatAddress(cnpjData) : null,
+        city: cnpjData?.municipio ?? null,
+        state: cnpjData?.uf ?? null,
+        cnae_code: cnpjData?.cnae_codigo ?? null,
+        cnpj_activity: cnpjData?.cnae_descricao ?? null,
+        is_verified: !!cnpjData,
+        cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
+      } as any);
       if (netErr) { setSubmitting(false); return toast.error(netErr.message); }
     }
     setSubmitting(false);
@@ -338,14 +386,55 @@ function SignUpWizard() {
 
       {step === 2 && state.accountType === "network" && (
         <div className="space-y-4">
-          <Field label="Nome da rede" htmlFor="network_name">
-            <Input id="network_name" value={state.network_name}
-              onChange={(e) => set("network_name", e.target.value)} />
-          </Field>
           <Field label="CNPJ" htmlFor="cnpj"
             error={state.cnpj && !isValidCNPJ(state.cnpj) ? "CNPJ inválido" : undefined}>
-            <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
-              value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
+            <div className="flex gap-2">
+              <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
+                value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
+              <Button type="button" variant="outline" className="gap-1.5 shrink-0"
+                onClick={handleLookupCnpj}
+                disabled={cnpjLookup || !isValidCNPJ(state.cnpj) || !!cnpjData}>
+                {cnpjLookup ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                {cnpjData ? "Validado" : "Validar"}
+              </Button>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Validamos seu CNPJ na Receita Federal (BrasilAPI) antes de liberar o cadastro.
+            </p>
+          </Field>
+
+          {cnpjError && (
+            <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
+              <span className="text-destructive">{cnpjError}</span>
+            </div>
+          )}
+
+          {cnpjData && (
+            <div className="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm">
+              <div className="flex items-center gap-2 font-semibold text-emerald-700">
+                <ShieldCheck className="h-4 w-4" /> CNPJ ATIVO na Receita Federal
+              </div>
+              <div className="grid gap-1 text-foreground/90">
+                <div><span className="text-muted-foreground">Razão social: </span>{cnpjData.razao_social}</div>
+                {cnpjData.nome_fantasia && (
+                  <div><span className="text-muted-foreground">Nome fantasia: </span>{cnpjData.nome_fantasia}</div>
+                )}
+                <div><span className="text-muted-foreground">Atividade ({cnpjData.cnae_codigo}): </span>{cnpjData.cnae_descricao}</div>
+                <div><span className="text-muted-foreground">Endereço: </span>{formatAddress(cnpjData)}</div>
+              </div>
+              {!cnpjData.is_health && (
+                <p className="text-xs text-amber-700">
+                  ⚠ O CNAE principal não é da área da saúde. O cadastro pode continuar, mas sua rede pode passar por análise extra.
+                </p>
+              )}
+            </div>
+          )}
+
+          <Field label="Nome da rede (como aparece na plataforma)" htmlFor="network_name">
+            <Input id="network_name" value={state.network_name}
+              onChange={(e) => set("network_name", e.target.value)}
+              placeholder="Ex.: Rede Saúde São Paulo" />
           </Field>
         </div>
       )}

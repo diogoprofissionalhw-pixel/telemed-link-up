@@ -449,34 +449,49 @@ export type Database = {
       }
       networks: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          city: string | null
+          cnae_code: string | null
           cnpj: string
           cnpj_activity: string | null
           cnpj_verified_at: string | null
           created_at: string
           id: string
           is_verified: boolean
+          legal_name: string | null
           network_name: string
+          state: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          city?: string | null
+          cnae_code?: string | null
           cnpj: string
           cnpj_activity?: string | null
           cnpj_verified_at?: string | null
           created_at?: string
           id: string
           is_verified?: boolean
+          legal_name?: string | null
           network_name: string
+          state?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          city?: string | null
+          cnae_code?: string | null
           cnpj?: string
           cnpj_activity?: string | null
           cnpj_verified_at?: string | null
           created_at?: string
           id?: string
           is_verified?: boolean
+          legal_name?: string | null
           network_name?: string
+          state?: string | null
         }
         Relationships: [
           {
