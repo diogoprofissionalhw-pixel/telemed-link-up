@@ -17,6 +17,7 @@ import {
   maskCPF, maskCNPJ, maskCRM, maskPhone, onlyDigits,
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
+import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
 
 type Mode = "signin" | "signup";
 type AccountType = "doctor" | "network";
