@@ -34,6 +34,8 @@ function NetworkProfilePage() {
   const [isVerified, setIsVerified] = useState(false);
   const [cnpjActivity, setCnpjActivity] = useState<string | null>(null);
   const [verifiedAt, setVerifiedAt] = useState<string | null>(null);
+  const [qualificationStatus, setQualificationStatus] = useState<string | null>(null);
+  const [qualifiedAt, setQualifiedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && profile && profile.account_type !== "network") {
@@ -51,6 +53,8 @@ function NetworkProfilePage() {
         setIsVerified(!!(data as any).is_verified);
         setCnpjActivity((data as any).cnpj_activity ?? null);
         setVerifiedAt((data as any).cnpj_verified_at ?? null);
+        setQualificationStatus((data as any).qualification_status ?? null);
+        setQualifiedAt((data as any).qualified_at ?? null);
       }
       setLoading(false);
     })();
