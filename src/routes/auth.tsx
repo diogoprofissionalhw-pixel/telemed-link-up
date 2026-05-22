@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Stethoscope, Building2, Check, ArrowRight, Loader2 } from "lucide-react";
+import { Stethoscope, Building2, Check, ArrowRight, Loader2, ShieldCheck, Search, AlertTriangle } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { z } from "zod";
 import { toast } from "sonner";
