@@ -52,6 +52,7 @@ interface PublicDoctor {
   consultation_fee: number | null;
   crm_status: string;
   identity_verified: boolean;
+  is_premium: boolean;
   years_experience: number | null;
   avg_stars: number;
   reviews_count: number;
@@ -81,7 +82,7 @@ function DoctorsPage() {
       const [{ data: docs }, { data: ratings }, { data: reqs }] = await Promise.all([
         supabase
           .from("doctors")
-          .select("id, public_id, specialty, specialties, crm_status, identity_verified, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
+          .select("id, public_id, specialty, specialties, crm_status, identity_verified, is_premium, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status"),
       ]);
@@ -112,6 +113,7 @@ function DoctorsPage() {
           consultation_fee: d.consultation_fee,
           crm_status: d.crm_status,
           identity_verified: !!d.identity_verified,
+          is_premium: !!d.is_premium,
           years_experience: d.years_experience,
           avg_stars: r ? r.sum / r.count : 0,
           reviews_count: r?.count ?? 0,
@@ -152,6 +154,9 @@ function DoctorsPage() {
       if (fee < minRate || fee > maxRate) return false;
       if (minStars > 0 && d.avg_stars < minStars) return false;
       return true;
+    }).sort((a, b) => {
+      if (a.is_premium !== b.is_premium) return a.is_premium ? -1 : 1;
+      return b.avg_stars - a.avg_stars;
     });
   }, [doctors, query, specs, locs, minRate, maxRate, minStars]);
 
@@ -360,9 +365,19 @@ function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
   const crmLabel = d.crm_status === "verified" ? "CRM Validado" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
   return (
-    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ boxShadow: "var(--shadow-card)" }}>
+    <div
+      className={`relative rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+        d.is_premium ? "border-amber-300 ring-2 ring-amber-200/60" : ""
+      }`}
+      style={{ boxShadow: d.is_premium ? "0 8px 28px -8px rgba(245, 158, 11, 0.35)" : "var(--shadow-card)" }}
+    >
+      {d.is_premium && (
+        <div className="absolute -top-2 left-4 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-md">
+          <Star className="h-3 w-3 fill-current" /> Premium
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <Avatar className="h-16 w-16 shrink-0 border-2 border-border">
+        <Avatar className={`h-16 w-16 shrink-0 border-2 ${d.is_premium ? "border-amber-300" : "border-border"}`}>
           <AvatarFallback className="bg-accent text-primary">
             <Stethoscope className="h-7 w-7" />
           </AvatarFallback>

@@ -255,6 +255,7 @@ export type Database = {
           id_document_url: string | null
           identity_verified: boolean
           identity_verified_at: string | null
+          is_premium: boolean
           languages: string | null
           lattes_url: string | null
           linkedin_url: string | null
@@ -263,6 +264,8 @@ export type Database = {
           phone: string | null
           pix_key: string | null
           pix_key_type: string | null
+          premium_since: string | null
+          premium_until: string | null
           public_id: string | null
           rg_document_url: string | null
           selfie_url: string | null
@@ -300,6 +303,7 @@ export type Database = {
           id_document_url?: string | null
           identity_verified?: boolean
           identity_verified_at?: string | null
+          is_premium?: boolean
           languages?: string | null
           lattes_url?: string | null
           linkedin_url?: string | null
@@ -308,6 +312,8 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          premium_since?: string | null
+          premium_until?: string | null
           public_id?: string | null
           rg_document_url?: string | null
           selfie_url?: string | null
@@ -345,6 +351,7 @@ export type Database = {
           id_document_url?: string | null
           identity_verified?: boolean
           identity_verified_at?: string | null
+          is_premium?: boolean
           languages?: string | null
           lattes_url?: string | null
           linkedin_url?: string | null
@@ -353,6 +360,8 @@ export type Database = {
           phone?: string | null
           pix_key?: string | null
           pix_key_type?: string | null
+          premium_since?: string | null
+          premium_until?: string | null
           public_id?: string | null
           rg_document_url?: string | null
           selfie_url?: string | null

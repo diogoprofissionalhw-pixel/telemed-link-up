@@ -196,6 +196,11 @@ function DoctorRegistration({
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [verifyingIdentity, setVerifyingIdentity] = useState(false);
 
+  // Premium seal (mock)
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
@@ -245,6 +250,8 @@ function DoctorRegistration({
         setIdentityVerifiedAt((doc as any).identity_verified_at ?? null);
         setIdDocumentUrl((doc as any).id_document_url ?? null);
         setSelfieUrl((doc as any).selfie_url ?? null);
+        setIsPremium(!!(doc as any).is_premium);
+        setPremiumUntil((doc as any).premium_until ?? null);
         if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
@@ -306,6 +313,36 @@ function DoctorRegistration({
     setIdentityVerified(true);
     setIdentityVerifiedAt(verifiedAtIso);
     toast.success("Identidade verificada com sucesso!");
+  };
+
+  const activatePremium = async () => {
+    setPremiumLoading(true);
+    await new Promise((r) => setTimeout(r, 1200)); // mock pagamento
+    const now = new Date();
+    const until = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const { error } = await supabase.from("doctors").update({
+      is_premium: true,
+      premium_since: now.toISOString(),
+      premium_until: until.toISOString(),
+    } as any).eq("id", userId);
+    setPremiumLoading(false);
+    if (error) return toast.error(error.message);
+    setIsPremium(true);
+    setPremiumUntil(until.toISOString());
+    toast.success("Selo Premium ativado por 30 dias!");
+  };
+
+  const cancelPremium = async () => {
+    setPremiumLoading(true);
+    const { error } = await supabase.from("doctors").update({
+      is_premium: false,
+      premium_until: null,
+    } as any).eq("id", userId);
+    setPremiumLoading(false);
+    if (error) return toast.error(error.message);
+    setIsPremium(false);
+    setPremiumUntil(null);
+    toast.success("Selo Premium cancelado.");
   };
 
   /* ---------- Validation / progress ---------- */
@@ -821,6 +858,56 @@ function DoctorRegistration({
                   </div>
                 </FieldGroup>
               </Section>
+
+              <Section step={14} of={14} title="Selo Premium" subtitle="Destaque seu perfil no diretório /medicos e seja visto primeiro pelas redes">
+                <FieldGroup>
+                  <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
+                    <div className="max-w-md">
+                      <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                        <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Selo Premium Connect-Med
+                      </p>
+                      <p className="mt-1 text-xs text-amber-800/80">
+                        Médicos com selo Premium aparecem no topo do diretório com borda dourada e badge de destaque.
+                        Apenas <span className="font-semibold">R$ 49,90/mês</span> · ativação imediata.
+                      </p>
+                      {isPremium && premiumUntil && (
+                        <p className="mt-2 text-xs font-medium text-emerald-700">
+                          Ativo até {new Date(premiumUntil).toLocaleDateString("pt-BR")}
+                        </p>
+                      )}
+                    </div>
+                    {isPremium ? (
+                      <Badge className="gap-1 bg-amber-500 text-white hover:bg-amber-500">
+                        <Star className="h-3.5 w-3.5 fill-current" /> Premium Ativo
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="bg-gray-200 text-gray-700">
+                        Inativo
+                      </Badge>
+                    )}
+                  </div>
+
+                  {isPremium ? (
+                    <Button type="button" variant="outline" onClick={cancelPremium} disabled={premiumLoading}
+                      className="gap-1.5">
+                      {premiumLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                      Cancelar Selo Premium
+                    </Button>
+                  ) : (
+                    <Button type="button" onClick={activatePremium} disabled={premiumLoading}
+                      className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
+                      {premiumLoading
+                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                        : <><Star className="h-4 w-4 fill-current" /> Ativar Selo Premium · R$ 49,90/mês</>}
+                    </Button>
+                  )}
+                  <p className="text-[11px] text-gray-500">
+                    Esta é uma simulação de pagamento (mock). A integração real com Stripe pode ser ativada quando você desejar.
+                  </p>
+                </FieldGroup>
+              </Section>
+
+
 
 
 
