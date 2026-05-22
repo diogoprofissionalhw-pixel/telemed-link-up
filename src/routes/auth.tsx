@@ -153,6 +153,30 @@ const initialState: SignupState = {
   network_name: "", cnpj: "",
 };
 
+async function runAutoQualification(userId: string, cnpj: string, preloaded: CNPJData | null) {
+  try {
+    const data = preloaded ?? (await lookupCNPJ(cnpj));
+    const isQualified = data.situacao === "ATIVA" && data.is_health;
+    await supabase.from("networks").update({
+      legal_name: data.razao_social,
+      address: formatAddress(data),
+      city: data.municipio,
+      state: data.uf,
+      cnae_code: data.cnae_codigo,
+      cnpj_activity: data.cnae_descricao,
+      is_verified: data.situacao === "ATIVA",
+      cnpj_verified_at: new Date().toISOString(),
+      qualification_status: isQualified ? "qualified" : "unqualified",
+      qualified_at: new Date().toISOString(),
+    } as any).eq("id", userId);
+  } catch {
+    await supabase.from("networks").update({
+      qualification_status: "unqualified",
+      qualified_at: new Date().toISOString(),
+    } as any).eq("id", userId);
+  }
+}
+
 function SignUpWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
