@@ -495,9 +495,33 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
 
   useEffect(() => {
-    supabase.from("networks").select("is_verified").eq("id", userId).maybeSingle()
-      .then(({ data }) => setNetworkVerified(!!(data as any)?.is_verified));
+    supabase.from("networks").select("is_verified, qualification_status").eq("id", userId).maybeSingle()
+      .then(({ data }) => {
+        setNetworkVerified(!!(data as any)?.is_verified);
+        const pending = (() => { try { return localStorage.getItem("network_qualification_pending"); } catch { return null; } })();
+        if (!pending || !data) return;
+        const status = (data as any).qualification_status as string | undefined;
+        // Aguarda a validação assíncrona terminar
+        if (!status || status === "pending") {
+          setTimeout(() => {
+            supabase.from("networks").select("qualification_status").eq("id", userId).maybeSingle()
+              .then(({ data: d2 }) => showQualificationToast((d2 as any)?.qualification_status));
+          }, 1500);
+          return;
+        }
+        showQualificationToast(status);
+      });
   }, [userId]);
+
+  function showQualificationToast(status: string | undefined) {
+    try { localStorage.removeItem("network_qualification_pending"); } catch {}
+    if (status === "qualified") {
+      toast.success("Sua rede foi validada com sucesso e está Qualificada!", { duration: 6000 });
+    } else if (status === "unqualified") {
+      toast.warning("Atenção: suas informações não foram qualificadas para o setor de saúde. Seu acesso pode ser restrito.", { duration: 8000 });
+    }
+  }
+
 
   const load = useCallback(async () => {
     setLoading(true);
