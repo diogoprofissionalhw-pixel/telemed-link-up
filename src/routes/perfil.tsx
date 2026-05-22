@@ -315,6 +315,36 @@ function DoctorRegistration({
     toast.success("Identidade verificada com sucesso!");
   };
 
+  const activatePremium = async () => {
+    setPremiumLoading(true);
+    await new Promise((r) => setTimeout(r, 1200)); // mock pagamento
+    const now = new Date();
+    const until = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const { error } = await supabase.from("doctors").update({
+      is_premium: true,
+      premium_since: now.toISOString(),
+      premium_until: until.toISOString(),
+    } as any).eq("id", userId);
+    setPremiumLoading(false);
+    if (error) return toast.error(error.message);
+    setIsPremium(true);
+    setPremiumUntil(until.toISOString());
+    toast.success("Selo Premium ativado por 30 dias!");
+  };
+
+  const cancelPremium = async () => {
+    setPremiumLoading(true);
+    const { error } = await supabase.from("doctors").update({
+      is_premium: false,
+      premium_until: null,
+    } as any).eq("id", userId);
+    setPremiumLoading(false);
+    if (error) return toast.error(error.message);
+    setIsPremium(false);
+    setPremiumUntil(null);
+    toast.success("Selo Premium cancelado.");
+  };
+
   /* ---------- Validation / progress ---------- */
   const checklist = useMemo(() => [
     { ok: !!avatarUrl, label: "Foto de perfil" },
