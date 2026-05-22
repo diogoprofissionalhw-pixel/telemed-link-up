@@ -250,6 +250,8 @@ function DoctorRegistration({
         setIdentityVerifiedAt((doc as any).identity_verified_at ?? null);
         setIdDocumentUrl((doc as any).id_document_url ?? null);
         setSelfieUrl((doc as any).selfie_url ?? null);
+        setIsPremium(!!(doc as any).is_premium);
+        setPremiumUntil((doc as any).premium_until ?? null);
         if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
