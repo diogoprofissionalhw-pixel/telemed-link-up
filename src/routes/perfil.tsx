@@ -316,6 +316,23 @@ function DoctorRegistration({
     toast.success("Identidade verificada com sucesso!");
   };
 
+  /* ---------- CRM verification with payment (mock R$ 150 single payment) ---------- */
+  const verifyCrmWithPayment = async () => {
+    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
+      return toast.error("Informe um número de CRM e UF válidos antes de validar.");
+    }
+    setVerifyingCrm(true);
+    // Mock: processamento do pagamento + consulta ao CFM
+    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await supabase.from("doctors").update({
+      crm_status: "verified",
+    } as any).eq("id", userId);
+    setVerifyingCrm(false);
+    if (error) return toast.error(error.message);
+    setCrmStatus("verified");
+    toast.success("Pagamento aprovado! Selo de Informações Verificadas por CRM ativado.");
+  };
+
   const activatePremium = async () => {
     setPremiumLoading(true);
     await new Promise((r) => setTimeout(r, 1200)); // mock pagamento
