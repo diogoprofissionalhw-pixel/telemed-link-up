@@ -195,6 +195,7 @@ function DoctorRegistration({
   const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+  const [verifyingCrm, setVerifyingCrm] = useState(false);
 
   // Premium seal (mock)
   const [isPremium, setIsPremium] = useState(false);
@@ -313,6 +314,23 @@ function DoctorRegistration({
     setIdentityVerified(true);
     setIdentityVerifiedAt(verifiedAtIso);
     toast.success("Identidade verificada com sucesso!");
+  };
+
+  /* ---------- CRM verification with payment (mock R$ 150 single payment) ---------- */
+  const verifyCrmWithPayment = async () => {
+    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
+      return toast.error("Informe um número de CRM e UF válidos antes de validar.");
+    }
+    setVerifyingCrm(true);
+    // Mock: processamento do pagamento + consulta ao CFM
+    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await supabase.from("doctors").update({
+      crm_status: "verified",
+    } as any).eq("id", userId);
+    setVerifyingCrm(false);
+    if (error) return toast.error(error.message);
+    setCrmStatus("verified");
+    toast.success("Pagamento aprovado! Selo de Informações Verificadas por CRM ativado.");
   };
 
   const activatePremium = async () => {
@@ -848,12 +866,41 @@ function DoctorRegistration({
                     </Button>
                   )}
 
-                  <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3 text-xs text-emerald-900">
-                    <p className="font-semibold flex items-center gap-1.5"><BadgeCheck className="h-3.5 w-3.5" /> Selo de CRM</p>
-                    <p className="mt-1">
-                      {crmStatus === "verified" && "CRM Validado — selo verde ativo no diretório."}
-                      {crmStatus === "pending" && "Registro em análise — será exibido como “Registro Provisório (P)” até a integração com a API do CFM concluir."}
-                      {crmStatus === "invalid" && "CRM inválido — revise o número e a UF para validação automática."}
+                  <div className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="max-w-md">
+                        <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
+                          <BadgeCheck className="h-4 w-4" /> Selo de Informações Verificadas por CRM
+                        </p>
+                        <p className="mt-1 text-xs text-emerald-900/80">
+                          Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho e ativamos o selo verde permanente no diretório <span className="font-semibold">/medicos</span>.
+                        </p>
+                      </div>
+                      {crmStatus === "verified" ? (
+                        <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
+                          <BadgeCheck className="h-3.5 w-3.5" /> Verificado
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                          {crmStatus === "invalid" ? "CRM inválido" : "Não verificado"}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {crmStatus !== "verified" && (
+                      <Button
+                        type="button"
+                        onClick={verifyCrmWithPayment}
+                        disabled={verifyingCrm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                        className="mt-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        {verifyingCrm
+                          ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                          : <><BadgeCheck className="h-4 w-4" /> Validar CRM · R$ 150,00</>}
+                      </Button>
+                    )}
+                    <p className="mt-2 text-[11px] text-emerald-900/60">
+                      Pagamento único (simulação). Em produção a cobrança seguirá via gateway (Stripe).
                     </p>
                   </div>
                 </FieldGroup>

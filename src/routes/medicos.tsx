@@ -71,6 +71,7 @@ function DoctorsPage() {
   const [minRate, setMinRate] = useState(0);
   const [maxRate, setMaxRate] = useState(1000);
   const [minStars, setMinStars] = useState(0);
+  const [onlyVerified, setOnlyVerified] = useState(false);
   const [open, setOpen] = useState(false);
 
   // Verification status of the logged-in network (if any)
@@ -153,14 +154,15 @@ function DoctorsPage() {
       const fee = d.consultation_fee ?? 0;
       if (fee < minRate || fee > maxRate) return false;
       if (minStars > 0 && d.avg_stars < minStars) return false;
+      if (onlyVerified && d.crm_status !== "verified") return false;
       return true;
     }).sort((a, b) => {
       if (a.is_premium !== b.is_premium) return a.is_premium ? -1 : 1;
       return b.avg_stars - a.avg_stars;
     });
-  }, [doctors, query, specs, locs, minRate, maxRate, minStars]);
+  }, [doctors, query, specs, locs, minRate, maxRate, minStars, onlyVerified]);
 
-  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); setMinStars(0); };
+  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); setMinStars(0); setOnlyVerified(false); };
 
   const handleViewProfile = (d: PublicDoctor) => {
     if (!user) {
@@ -181,7 +183,7 @@ function DoctorsPage() {
     toast.success(`Acesso liberado a ${d.first_name} ${formatPublicId(d.public_id)}`);
   };
 
-  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations };
+  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, onlyVerified, setOnlyVerified, clear, allSpecialties, allLocations };
 
   return (
     <div className="min-h-screen bg-background">
@@ -271,12 +273,13 @@ interface PanelProps {
   minRate: number; setMinRate: (n: number) => void;
   maxRate: number; setMaxRate: (n: number) => void;
   minStars: number; setMinStars: (n: number) => void;
+  onlyVerified: boolean; setOnlyVerified: (v: boolean) => void;
   clear: () => void;
   allSpecialties: string[];
   allLocations: string[];
 }
 
-function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations }: PanelProps) {
+function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, onlyVerified, setOnlyVerified, clear, allSpecialties, allLocations }: PanelProps) {
   const [specQ, setSpecQ] = useState("");
   const [locQ, setLocQ] = useState("");
   const filteredSpecs = useMemo(() => {
@@ -290,6 +293,13 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
 
   return (
     <div className="space-y-6">
+      <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50/60 p-3">
+        <Checkbox checked={onlyVerified} onCheckedChange={(v) => setOnlyVerified(!!v)} className="mt-0.5" />
+        <span className="text-sm">
+          <span className="flex items-center gap-1 font-medium text-emerald-900"><BadgeCheck className="h-3.5 w-3.5" /> Apenas médicos verificados</span>
+          <span className="block text-[11px] text-emerald-900/70">Exibe somente perfis com Informações Verificadas por CRM.</span>
+        </span>
+      </label>
       <div>
         <label className="mb-2 block text-sm font-medium">Busca</label>
         <div className="relative">
@@ -363,7 +373,7 @@ function FilterPanel({ query, setQuery, specs, toggleSpec, locs, toggleLoc, minR
 function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }) {
   const loc = [d.city, d.state].filter(Boolean).join(", ");
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
-  const crmLabel = d.crm_status === "verified" ? "CRM Validado" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
+  const crmLabel = d.crm_status === "verified" ? "Informações Verificadas por CRM" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
   return (
     <div
       className={`relative rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
