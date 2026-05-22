@@ -397,6 +397,22 @@ function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }
             <div className="min-w-0">
               <h3 className="font-semibold flex flex-wrap items-center gap-1.5">
                 Dr(a). {d.first_name}
+                {d.crm_status === "verified" && (
+                  <span
+                    title="Informações Verificadas por CRM"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-sm ring-2 ring-white"
+                  >
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                  </span>
+                )}
+                {d.is_premium && (
+                  <span
+                    title="Médico Premium"
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-amber-300 to-yellow-500 text-white shadow-sm ring-2 ring-white"
+                  >
+                    <Star className="h-3 w-3 fill-current" />
+                  </span>
+                )}
                 <span className="text-xs font-mono text-muted-foreground">— ID {formatPublicId(d.public_id)}</span>
               </h3>
               <p className="text-sm text-muted-foreground">{d.specialty}</p>
