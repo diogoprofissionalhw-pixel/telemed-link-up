@@ -275,8 +275,14 @@ function SignUpWizard() {
         cnpj_activity: cnpjData?.cnae_descricao ?? null,
         is_verified: !!cnpjData,
         cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
+        qualification_status: "pending",
       } as any);
       if (netErr) { setSubmitting(false); return toast.error(netErr.message); }
+
+      // Validação automática pós-cadastro (assíncrona, fire-and-forget).
+      // O dashboard lê esse flag no primeiro acesso para exibir o veredito.
+      try { localStorage.setItem("network_qualification_pending", "1"); } catch {}
+      void runAutoQualification(userId, state.cnpj, cnpjData);
     }
     setSubmitting(false);
     toast.success("Conta criada com sucesso!");
