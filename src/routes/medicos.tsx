@@ -365,9 +365,19 @@ function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
   const crmLabel = d.crm_status === "verified" ? "CRM Validado" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
   return (
-    <div className="rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg" style={{ boxShadow: "var(--shadow-card)" }}>
+    <div
+      className={`relative rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
+        d.is_premium ? "border-amber-300 ring-2 ring-amber-200/60" : ""
+      }`}
+      style={{ boxShadow: d.is_premium ? "0 8px 28px -8px rgba(245, 158, 11, 0.35)" : "var(--shadow-card)" }}
+    >
+      {d.is_premium && (
+        <div className="absolute -top-2 left-4 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-md">
+          <Star className="h-3 w-3 fill-current" /> Premium
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <Avatar className="h-16 w-16 shrink-0 border-2 border-border">
+        <Avatar className={`h-16 w-16 shrink-0 border-2 ${d.is_premium ? "border-amber-300" : "border-border"}`}>
           <AvatarFallback className="bg-accent text-primary">
             <Stethoscope className="h-7 w-7" />
           </AvatarFallback>
