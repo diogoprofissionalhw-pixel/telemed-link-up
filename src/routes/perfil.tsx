@@ -195,6 +195,7 @@ function DoctorRegistration({
   const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+  const [verifyingCrm, setVerifyingCrm] = useState(false);
 
   // Premium seal (mock)
   const [isPremium, setIsPremium] = useState(false);
