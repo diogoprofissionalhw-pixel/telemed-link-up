@@ -154,14 +154,15 @@ function DoctorsPage() {
       const fee = d.consultation_fee ?? 0;
       if (fee < minRate || fee > maxRate) return false;
       if (minStars > 0 && d.avg_stars < minStars) return false;
+      if (onlyVerified && d.crm_status !== "verified") return false;
       return true;
     }).sort((a, b) => {
       if (a.is_premium !== b.is_premium) return a.is_premium ? -1 : 1;
       return b.avg_stars - a.avg_stars;
     });
-  }, [doctors, query, specs, locs, minRate, maxRate, minStars]);
+  }, [doctors, query, specs, locs, minRate, maxRate, minStars, onlyVerified]);
 
-  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); setMinStars(0); };
+  const clear = () => { setQuery(""); setSpecs([]); setLocs([]); setMinRate(0); setMaxRate(1000); setMinStars(0); setOnlyVerified(false); };
 
   const handleViewProfile = (d: PublicDoctor) => {
     if (!user) {
