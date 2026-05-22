@@ -428,7 +428,7 @@ function SignUpWizard() {
               </Button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Validamos seu CNPJ na Receita Federal (BrasilAPI) antes de liberar o cadastro.
+              Sua rede será validada automaticamente na Receita Federal (BrasilAPI) logo após criar a conta. Você pode pré-visualizar agora se quiser.
             </p>
           </Field>
 
