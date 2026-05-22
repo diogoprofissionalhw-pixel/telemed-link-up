@@ -82,7 +82,7 @@ function DoctorsPage() {
       const [{ data: docs }, { data: ratings }, { data: reqs }] = await Promise.all([
         supabase
           .from("doctors")
-          .select("id, public_id, specialty, specialties, crm_status, identity_verified, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
+          .select("id, public_id, specialty, specialties, crm_status, identity_verified, is_premium, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status"),
       ]);
