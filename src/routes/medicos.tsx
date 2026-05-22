@@ -71,6 +71,7 @@ function DoctorsPage() {
   const [minRate, setMinRate] = useState(0);
   const [maxRate, setMaxRate] = useState(1000);
   const [minStars, setMinStars] = useState(0);
+  const [onlyVerified, setOnlyVerified] = useState(false);
   const [open, setOpen] = useState(false);
 
   // Verification status of the logged-in network (if any)
