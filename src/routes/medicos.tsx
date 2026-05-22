@@ -113,6 +113,7 @@ function DoctorsPage() {
           consultation_fee: d.consultation_fee,
           crm_status: d.crm_status,
           identity_verified: !!d.identity_verified,
+          is_premium: !!d.is_premium,
           years_experience: d.years_experience,
           avg_stars: r ? r.sum / r.count : 0,
           reviews_count: r?.count ?? 0,
