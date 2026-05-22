@@ -183,7 +183,7 @@ function DoctorsPage() {
     toast.success(`Acesso liberado a ${d.first_name} ${formatPublicId(d.public_id)}`);
   };
 
-  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, clear, allSpecialties, allLocations };
+  const panelProps = { query, setQuery, specs, toggleSpec: (s: string) => setSpecs(toggle(specs, s)), locs, toggleLoc: (l: string) => setLocs(toggle(locs, l)), minRate, setMinRate, maxRate, setMaxRate, minStars, setMinStars, onlyVerified, setOnlyVerified, clear, allSpecialties, allLocations };
 
   return (
     <div className="min-h-screen bg-background">
