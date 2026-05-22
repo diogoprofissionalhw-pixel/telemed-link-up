@@ -374,12 +374,17 @@ function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }
   const loc = [d.city, d.state].filter(Boolean).join(", ");
   const tags = Array.from(new Set([d.specialty, ...d.specialties].filter(Boolean))).slice(0, 4);
   const crmLabel = d.crm_status === "verified" ? "Informações Verificadas por CRM" : d.crm_status === "pending" ? "Registro Provisório" : "CRM em análise";
+  const isVerified = d.crm_status === "verified";
   return (
     <div
       className={`relative rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg ${
-        d.is_premium ? "border-amber-300 ring-2 ring-amber-200/60" : ""
+        d.is_premium
+          ? "border-amber-300 ring-2 ring-amber-200/60"
+          : isVerified
+            ? "border-sky-200 ring-1 ring-sky-100"
+            : ""
       }`}
-      style={{ boxShadow: d.is_premium ? "0 8px 28px -8px rgba(245, 158, 11, 0.35)" : "var(--shadow-card)" }}
+      style={{ boxShadow: d.is_premium ? "0 8px 28px -8px rgba(245, 158, 11, 0.35)" : isVerified ? "0 6px 22px -10px rgba(59, 130, 246, 0.25)" : "var(--shadow-card)" }}
     >
       {d.is_premium && (
         <div className="absolute -top-2 left-4 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-md">
