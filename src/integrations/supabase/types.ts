@@ -470,6 +470,8 @@ export type Database = {
           is_verified: boolean
           legal_name: string | null
           network_name: string
+          qualification_status: string
+          qualified_at: string | null
           state: string | null
         }
         Insert: {
@@ -485,6 +487,8 @@ export type Database = {
           is_verified?: boolean
           legal_name?: string | null
           network_name: string
+          qualification_status?: string
+          qualified_at?: string | null
           state?: string | null
         }
         Update: {
@@ -500,6 +504,8 @@ export type Database = {
           is_verified?: boolean
           legal_name?: string | null
           network_name?: string
+          qualification_status?: string
+          qualified_at?: string | null
           state?: string | null
         }
         Relationships: [

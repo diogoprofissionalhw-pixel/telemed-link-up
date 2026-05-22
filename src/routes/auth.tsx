@@ -153,6 +153,30 @@ const initialState: SignupState = {
   network_name: "", cnpj: "",
 };
 
+async function runAutoQualification(userId: string, cnpj: string, preloaded: CNPJData | null) {
+  try {
+    const data = preloaded ?? (await lookupCNPJ(cnpj));
+    const isQualified = data.situacao === "ATIVA" && data.is_health;
+    await supabase.from("networks").update({
+      legal_name: data.razao_social,
+      address: formatAddress(data),
+      city: data.municipio,
+      state: data.uf,
+      cnae_code: data.cnae_codigo,
+      cnpj_activity: data.cnae_descricao,
+      is_verified: data.situacao === "ATIVA",
+      cnpj_verified_at: new Date().toISOString(),
+      qualification_status: isQualified ? "qualified" : "unqualified",
+      qualified_at: new Date().toISOString(),
+    } as any).eq("id", userId);
+  } catch {
+    await supabase.from("networks").update({
+      qualification_status: "unqualified",
+      qualified_at: new Date().toISOString(),
+    } as any).eq("id", userId);
+  }
+}
+
 function SignUpWizard() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -220,7 +244,6 @@ function SignUpWizard() {
         if (!UF_LIST.includes(state.state as any)) return "Selecione o estado.";
       } else {
         if (!isValidCNPJ(state.cnpj)) return "CNPJ inválido.";
-        if (!cnpjData) return "Valide o CNPJ na Receita Federal antes de continuar.";
         if (state.network_name.trim().length < 2) return "Informe o nome da rede.";
       }
       return null;
@@ -276,8 +299,14 @@ function SignUpWizard() {
         cnpj_activity: cnpjData?.cnae_descricao ?? null,
         is_verified: !!cnpjData,
         cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
+        qualification_status: "pending",
       } as any);
       if (netErr) { setSubmitting(false); return toast.error(netErr.message); }
+
+      // Validação automática pós-cadastro (assíncrona, fire-and-forget).
+      // O dashboard lê esse flag no primeiro acesso para exibir o veredito.
+      try { localStorage.setItem("network_qualification_pending", "1"); } catch {}
+      void runAutoQualification(userId, state.cnpj, cnpjData);
     }
     setSubmitting(false);
     toast.success("Conta criada com sucesso!");
@@ -399,7 +428,7 @@ function SignUpWizard() {
               </Button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Validamos seu CNPJ na Receita Federal (BrasilAPI) antes de liberar o cadastro.
+              Sua rede será validada automaticamente na Receita Federal (BrasilAPI) logo após criar a conta. Você pode pré-visualizar agora se quiser.
             </p>
           </Field>
 

@@ -34,6 +34,8 @@ function NetworkProfilePage() {
   const [isVerified, setIsVerified] = useState(false);
   const [cnpjActivity, setCnpjActivity] = useState<string | null>(null);
   const [verifiedAt, setVerifiedAt] = useState<string | null>(null);
+  const [qualificationStatus, setQualificationStatus] = useState<string | null>(null);
+  const [qualifiedAt, setQualifiedAt] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && profile && profile.account_type !== "network") {
@@ -51,6 +53,8 @@ function NetworkProfilePage() {
         setIsVerified(!!(data as any).is_verified);
         setCnpjActivity((data as any).cnpj_activity ?? null);
         setVerifiedAt((data as any).cnpj_verified_at ?? null);
+        setQualificationStatus((data as any).qualification_status ?? null);
+        setQualifiedAt((data as any).qualified_at ?? null);
       }
       setLoading(false);
     })();
@@ -109,6 +113,38 @@ function NetworkProfilePage() {
           </h1>
           <BackButton to="/dashboard" label="Voltar ao dashboard" />
         </div>
+
+        {/* Qualification status (validação automática pós-cadastro) */}
+        <section className="mb-6 rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <BadgeCheck className="h-5 w-5 text-primary" /> Qualificação da Rede
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Resultado da validação automática feita logo após o cadastro, com base na Receita Federal (BrasilAPI) e no CNAE.
+              </p>
+            </div>
+            {qualificationStatus === "qualified" ? (
+              <Badge variant="secondary" className="gap-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+                <BadgeCheck className="h-4 w-4" /> Rede Qualificada
+              </Badge>
+            ) : qualificationStatus === "unqualified" ? (
+              <Badge variant="secondary" className="bg-destructive/10 text-destructive hover:bg-destructive/10">
+                Informações Não Qualificadas
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                Validação pendente
+              </Badge>
+            )}
+          </div>
+          {qualifiedAt && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Validado em {new Date(qualifiedAt).toLocaleString("pt-BR")}
+            </p>
+          )}
+        </section>
 
         {/* Verification status */}
         <section className="mb-6 rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
