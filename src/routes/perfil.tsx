@@ -887,7 +887,7 @@ function DoctorRegistration({
                     </Button>
                   )}
 
-                  <div className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                  <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="max-w-md">
                         <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
