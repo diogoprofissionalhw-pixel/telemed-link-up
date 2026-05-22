@@ -154,6 +154,9 @@ function DoctorsPage() {
       if (fee < minRate || fee > maxRate) return false;
       if (minStars > 0 && d.avg_stars < minStars) return false;
       return true;
+    }).sort((a, b) => {
+      if (a.is_premium !== b.is_premium) return a.is_premium ? -1 : 1;
+      return b.avg_stars - a.avg_stars;
     });
   }, [doctors, query, specs, locs, minRate, maxRate, minStars]);
 
