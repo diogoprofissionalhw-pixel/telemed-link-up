@@ -196,6 +196,11 @@ function DoctorRegistration({
   const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
   const [verifyingIdentity, setVerifyingIdentity] = useState(false);
 
+  // Premium seal (mock)
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [autoSavedAt, setAutoSavedAt] = useState<Date | null>(null);
