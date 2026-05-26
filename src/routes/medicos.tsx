@@ -167,8 +167,7 @@ function DoctorsPage() {
 
   const handleViewProfile = (d: PublicDoctor) => {
     if (!user) {
-      toast.info("Cadastre sua rede para ver perfis completos.");
-      navigate({ to: "/auth", search: { mode: "signup" } });
+      setSubOpen(true);
       return;
     }
     if (profile?.account_type === "doctor") {
