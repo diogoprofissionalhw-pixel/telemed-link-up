@@ -478,3 +478,128 @@ function ShadowDoctorCard({ d, onView }: { d: PublicDoctor; onView: () => void }
     </div>
   );
 }
+
+interface SubscriptionDialogProps {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onFree: () => void;
+  onPaid: (plan: "mensal" | "anual") => void;
+}
+
+function SubscriptionDialog({ open, onOpenChange, onFree, onPaid }: SubscriptionDialogProps) {
+  const plans = [
+    {
+      id: "free" as const,
+      name: "Grátis",
+      price: "R$ 0",
+      period: "para sempre",
+      icon: Sparkles,
+      accent: "border-border",
+      cta: "Cadastrar grátis",
+      ctaVariant: "outline" as const,
+      highlight: false,
+      features: [
+        "Acesso ao diretório de médicos",
+        "Visualização limitada de perfis",
+        "Cadastro imediato",
+      ],
+      onClick: onFree,
+    },
+    {
+      id: "mensal" as const,
+      name: "Mensal",
+      price: "R$ 149",
+      period: "/mês",
+      icon: BadgeCheck,
+      accent: "border-primary ring-2 ring-primary/20",
+      cta: "Assinar mensal",
+      ctaVariant: "default" as const,
+      highlight: true,
+      features: [
+        "Perfis completos e currículos",
+        "Mensagens diretas com médicos",
+        "Filtros avançados de busca",
+        "Suporte prioritário",
+      ],
+      onClick: () => onPaid("mensal"),
+    },
+    {
+      id: "anual" as const,
+      name: "Anual",
+      price: "R$ 1.290",
+      period: "/ano",
+      icon: Crown,
+      accent: "border-amber-300 ring-2 ring-amber-200/60",
+      cta: "Assinar anual",
+      ctaVariant: "default" as const,
+      highlight: false,
+      features: [
+        "Tudo do plano Mensal",
+        "Economia de ~28% no ano",
+        "Selo de rede parceira",
+        "Relatórios de contratação",
+      ],
+      onClick: () => onPaid("anual"),
+    },
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5 text-primary" /> Escolha um plano para ver o perfil
+          </DialogTitle>
+          <DialogDescription>
+            Para acessar perfis completos de médicos, escolha um plano abaixo. Você pode começar grátis e fazer upgrade quando quiser.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="mt-2 grid gap-4 sm:grid-cols-3">
+          {plans.map((p) => {
+            const Icon = p.icon;
+            return (
+              <div
+                key={p.id}
+                className={`relative flex flex-col rounded-2xl border bg-card p-5 ${p.accent}`}
+              >
+                {p.highlight && (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground">
+                    Mais popular
+                  </span>
+                )}
+                <div className="flex items-center gap-2">
+                  <Icon className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">{p.name}</h3>
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-2xl font-bold">{p.price}</span>
+                  <span className="text-xs text-muted-foreground">{p.period}</span>
+                </div>
+                <ul className="mt-4 flex-1 space-y-2 text-sm">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  variant={p.ctaVariant}
+                  className="mt-5 w-full"
+                  onClick={p.onClick}
+                >
+                  {p.cta}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Os planos pagos estão em fase final de integração. O cadastro será liberado após a confirmação do pagamento.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+}
