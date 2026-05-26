@@ -247,6 +247,13 @@ function DoctorsPage() {
         </section>
       </main>
 
+      <SubscriptionDialog
+        open={subOpen}
+        onOpenChange={setSubOpen}
+        onFree={() => { setSubOpen(false); navigate({ to: "/auth", search: { mode: "signup" } }); }}
+        onPaid={(plan) => toast.info(`Pagamento ${plan} em breve. Conclua o pagamento para liberar o cadastro.`)}
+      />
+
       <Dialog open={gateOpen} onOpenChange={setGateOpen}>
         <DialogContent>
           <DialogHeader>
