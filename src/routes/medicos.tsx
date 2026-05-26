@@ -77,6 +77,7 @@ function DoctorsPage() {
   // Verification status of the logged-in network (if any)
   const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
   const [gateOpen, setGateOpen] = useState(false);
+  const [subOpen, setSubOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
