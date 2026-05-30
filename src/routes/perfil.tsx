@@ -7,6 +7,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
+import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -594,14 +595,23 @@ function DoctorRegistration({
                   <Field label="Email" required>
                     <Input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} />
                   </Field>
-                  <Field label="Localização">
-                    <Input value={location} onChange={(e) => {
-                      setLocation(e.target.value);
-                      const parts = e.target.value.split(",").map(p => p.trim());
-                      setCity(parts[0] ?? "");
-                      const uf = (parts[1] ?? "").toUpperCase();
-                      if (UF_LIST.includes(uf as any)) setState(uf);
-                    }} placeholder="Cidade, UF, País" />
+                  <Field label="Estado (UF)">
+                    <Select value={state} onValueChange={(v) => {
+                      setState(v);
+                      setCity("");
+                      setLocation([, v, "Brasil"].filter(Boolean).join(", "));
+                    }}>
+                      <SelectTrigger><SelectValue placeholder="Selecione a UF" /></SelectTrigger>
+                      <SelectContent className="max-h-72">
+                        {UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field label="Município">
+                    <MunicipioSelect uf={state} value={city} onChange={(v) => {
+                      setCity(v);
+                      setLocation([v, state, "Brasil"].filter(Boolean).join(", "));
+                    }} />
                   </Field>
                   <Field label="Headline Profissional" hint={`${headline.length}/120`}>
                     <Input value={headline} onChange={(e) => setHeadline(e.target.value.slice(0, 120))}

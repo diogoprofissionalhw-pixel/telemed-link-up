@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SiteHeader } from "@/components/site-header";
+import { MunicipioSelect } from "@/components/municipio-select";
 import {
   UF_LIST, isValidCPF, isValidCNPJ, isValidCRM, isValidEmail, isValidPhone,
   maskCPF, maskCNPJ, maskCRM, maskPhone, onlyDigits,
@@ -394,15 +395,15 @@ function SignUpWizard() {
                 value={state.cpf} onChange={(e) => set("cpf", maskCPF(e.target.value))} />
             </Field>
           </div>
-          <div className="col-span-2">
-            <Field label="Cidade" htmlFor="city">
-              <Input id="city" value={state.city}
-                onChange={(e) => set("city", e.target.value)} />
-            </Field>
-          </div>
           <div>
             <Label>Estado</Label>
-            <UFSelect value={state.state} onChange={(v) => set("state", v)} />
+            <UFSelect value={state.state} onChange={(v) => { set("state", v); set("city", ""); }} />
+          </div>
+          <div className="col-span-2">
+            <Field label="Município" htmlFor="city">
+              <MunicipioSelect id="city" uf={state.state} value={state.city}
+                onChange={(v) => set("city", v)} />
+            </Field>
           </div>
           <div className="col-span-3">
             <Field label="País" htmlFor="country">
