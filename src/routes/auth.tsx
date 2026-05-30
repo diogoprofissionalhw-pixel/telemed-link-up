@@ -394,15 +394,15 @@ function SignUpWizard() {
                 value={state.cpf} onChange={(e) => set("cpf", maskCPF(e.target.value))} />
             </Field>
           </div>
-          <div className="col-span-2">
-            <Field label="Cidade" htmlFor="city">
-              <Input id="city" value={state.city}
-                onChange={(e) => set("city", e.target.value)} />
-            </Field>
-          </div>
           <div>
             <Label>Estado</Label>
-            <UFSelect value={state.state} onChange={(v) => set("state", v)} />
+            <UFSelect value={state.state} onChange={(v) => { set("state", v); set("city", ""); }} />
+          </div>
+          <div className="col-span-2">
+            <Field label="Município" htmlFor="city">
+              <MunicipioSelect id="city" uf={state.state} value={state.city}
+                onChange={(v) => set("city", v)} />
+            </Field>
           </div>
           <div className="col-span-3">
             <Field label="País" htmlFor="country">
