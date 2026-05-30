@@ -107,7 +107,7 @@ function DoctorsPage() {
         return {
           id: d.id,
           public_id: d.public_id ?? "----",
-          first_name: getFirstName(d.profiles?.full_name),
+          first_name: getFirstName(d.full_name),
           specialty: d.specialty,
           specialties: d.specialties ?? [],
           city: d.city,
