@@ -82,9 +82,9 @@ function DoctorsPage() {
   useEffect(() => {
     (async () => {
       const [{ data: docs }, { data: ratings }, { data: reqs }] = await Promise.all([
-        supabase
-          .from("doctors")
-          .select("id, public_id, specialty, specialties, crm_status, identity_verified, is_premium, years_experience, city, state, consultation_fee, profiles!inner(full_name)"),
+        (supabase as any)
+          .from("doctors_public")
+          .select("id, public_id, specialty, specialties, crm_status, identity_verified, is_premium, years_experience, city, state, consultation_fee, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status"),
       ]);
@@ -107,7 +107,7 @@ function DoctorsPage() {
         return {
           id: d.id,
           public_id: d.public_id ?? "----",
-          first_name: getFirstName(d.profiles?.full_name),
+          first_name: getFirstName(d.full_name),
           specialty: d.specialty,
           specialties: d.specialties ?? [],
           city: d.city,
