@@ -1,13 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase,
+  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
-import network9TLogo from "@/assets/network-9t-logo.jpeg";
 import networkBuilding from "@/assets/network-building.avif";
 
 export const Route = createFileRoute("/")({
@@ -299,11 +302,38 @@ function ExploreDoctors() {
 }
 
 /* ====================== Explore Networks ====================== */
-const NETWORKS = [
-  { id: 1, name: "9T Saúde", area: "Telemedicina Ocupacional", city: "São Paulo, SP", openings: 12, logo: network9TLogo, featured: true },
-];
+type PublicNetwork = {
+  id: string;
+  network_name: string;
+  city: string | null;
+  state: string | null;
+  avatar_url: string | null;
+  is_verified: boolean;
+  cnpj_activity: string | null;
+  created_at: string;
+};
 
 function ExploreNetworks() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [networks, setNetworks] = useState<PublicNetwork[]>([]);
+  const [selected, setSelected] = useState<PublicNetwork | null>(null);
+  const [signupOpen, setSignupOpen] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("networks_public")
+      .select("id, network_name, city, state, avatar_url, is_verified, cnpj_activity, created_at")
+      .order("is_verified", { ascending: false })
+      .order("created_at", { ascending: false })
+      .then(({ data }) => setNetworks((data as PublicNetwork[] | null) ?? []));
+  }, []);
+
+  const handleClick = (n: PublicNetwork) => {
+    if (user) setSelected(n);
+    else setSignupOpen(true);
+  };
+
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
@@ -336,31 +366,117 @@ function ExploreNetworks() {
             </div>
           </div>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {NETWORKS.map((n) => (
-              <div
-                key={n.id}
-                className="flex items-center gap-4 rounded-2xl border bg-background p-4 transition-all hover:-translate-y-0.5"
-                style={{ boxShadow: "var(--shadow-card)" }}
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
-                  {n.logo ? (
-                    <img src={n.logo} alt={`Logo ${n.name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-contain p-1.5" />
-                  ) : (
-                    <Building2 className="h-6 w-6 text-primary-foreground" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <h3 className="truncate text-sm font-semibold">{n.name}</h3>
-                  <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {n.city}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {networks.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-muted-foreground">
+              Nenhuma rede cadastrada ainda.
+            </p>
+          ) : (
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {networks.map((n) => {
+                const local = [n.city, n.state].filter(Boolean).join(", ");
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => handleClick(n)}
+                    className="flex items-center gap-4 rounded-2xl border bg-background p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
+                    style={{ boxShadow: "var(--shadow-card)" }}
+                  >
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
+                      {n.avatar_url ? (
+                        <img src={n.avatar_url} alt={`Logo ${n.network_name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      ) : (
+                        <Building2 className="h-6 w-6 text-primary-foreground" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold flex items-center gap-1">
+                        {n.network_name}
+                        {n.is_verified && <BadgeCheck className="h-3.5 w-3.5 text-primary" />}
+                      </h3>
+                      {local && (
+                        <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <MapPin className="h-3 w-3" /> {local}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Diálogo de detalhes (usuário logado) */}
+      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <DialogContent>
+          {selected && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
+                    {selected.avatar_url ? (
+                      <img src={selected.avatar_url} alt={`Logo ${selected.network_name}`} className="h-full w-full object-cover" />
+                    ) : (
+                      <Building2 className="h-6 w-6 text-primary-foreground" />
+                    )}
+                  </div>
+                  <div>
+                    <DialogTitle className="flex items-center gap-2">
+                      {selected.network_name}
+                      {selected.is_verified && <BadgeCheck className="h-4 w-4 text-primary" />}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {selected.is_verified ? "Rede verificada" : "Verificação pendente"}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="space-y-2 text-sm">
+                {(selected.city || selected.state) && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    {[selected.city, selected.state].filter(Boolean).join(", ")}
+                  </div>
+                )}
+                {selected.cnpj_activity && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Briefcase className="h-4 w-4" /> {selected.cnpj_activity}
+                  </div>
+                )}
+                <p className="pt-2 text-xs text-muted-foreground">
+                  Para entrar em contato ou ver mais detalhes, acesse seu painel.
+                </p>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
+                <Button onClick={() => navigate({ to: "/dashboard" })}>Ir para o painel</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de cadastro (visitante) */}
+      <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cadastre-se para ver esta rede</DialogTitle>
+            <DialogDescription>
+              Crie sua conta gratuita no Connect-Med para visualizar informações das redes parceiras e se conectar com elas.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => { setSignupOpen(false); navigate({ to: "/auth", search: { mode: "login" } }); }}>
+              Já tenho conta
+            </Button>
+            <Button onClick={() => { setSignupOpen(false); navigate({ to: "/auth", search: { mode: "signup" } }); }}>
+              Cadastrar agora <ArrowRight className="ml-1 h-4 w-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

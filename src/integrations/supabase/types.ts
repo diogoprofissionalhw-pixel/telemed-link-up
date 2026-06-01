@@ -699,6 +699,13 @@ export type Database = {
             referencedRelation: "networks"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "shift_requests_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_blocks: {
@@ -791,6 +798,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "doctors_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      networks_public: {
+        Row: {
+          avatar_url: string | null
+          city: string | null
+          cnpj_activity: string | null
+          created_at: string | null
+          id: string | null
+          is_verified: boolean | null
+          network_name: string | null
+          state: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          city?: string | null
+          cnpj_activity?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          network_name?: string | null
+          state?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          city?: string | null
+          cnpj_activity?: string | null
+          created_at?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          network_name?: string | null
+          state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "networks_id_fkey"
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "profiles"
