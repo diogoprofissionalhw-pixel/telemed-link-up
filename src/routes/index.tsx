@@ -313,12 +313,51 @@ type PublicNetwork = {
   created_at: string;
 };
 
+type Plan = {
+  id: "free" | "pro" | "premium";
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  highlighted?: boolean;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "free",
+    name: "Gratuito",
+    price: "R$ 0",
+    period: "/mês",
+    description: "Para começar a explorar a plataforma.",
+    features: ["Cadastro gratuito", "Visualizar redes parceiras", "Perfil básico"],
+  },
+  {
+    id: "pro",
+    name: "Profissional",
+    price: "R$ 49",
+    period: "/mês",
+    description: "Mais visibilidade e contato direto com redes.",
+    features: ["Tudo do Gratuito", "Contato direto com redes", "Destaque no perfil", "Suporte prioritário"],
+    highlighted: true,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: "R$ 129",
+    period: "/mês",
+    description: "Recursos avançados para redes e médicos.",
+    features: ["Tudo do Profissional", "Analytics avançado", "Chat ilimitado", "Suporte dedicado 24/7"],
+  },
+];
+
 function ExploreNetworks() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
   const [selected, setSelected] = useState<PublicNetwork | null>(null);
-  const [signupOpen, setSignupOpen] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<Plan | null>(null);
 
   useEffect(() => {
     supabase
@@ -331,7 +370,16 @@ function ExploreNetworks() {
 
   const handleClick = (n: PublicNetwork) => {
     if (user) setSelected(n);
-    else setSignupOpen(true);
+    else setPlansOpen(true);
+  };
+
+  const handleSelectPlan = (plan: Plan) => {
+    setPlansOpen(false);
+    if (plan.id === "free") {
+      navigate({ to: "/auth", search: { mode: "signup" } });
+    } else {
+      setPaymentPlan(plan);
+    }
   };
 
   return (
