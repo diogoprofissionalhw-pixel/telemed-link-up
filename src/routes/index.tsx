@@ -456,57 +456,8 @@ function ExploreNetworks() {
         </div>
       </div>
 
-      {/* Diálogo de detalhes (usuário logado) */}
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent>
-          {selected && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
-                    {selected.avatar_url ? (
-                      <img src={selected.avatar_url} alt={`Logo ${selected.network_name}`} className="h-full w-full object-cover" />
-                    ) : (
-                      <Building2 className="h-6 w-6 text-primary-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <DialogTitle className="flex items-center gap-2">
-                      {selected.network_name}
-                      {selected.is_verified && <BadgeCheck className="h-4 w-4 text-primary" />}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {selected.is_verified ? "Rede verificada" : "Verificação pendente"}
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-              <div className="space-y-2 text-sm">
-                {(selected.city || selected.state) && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {[selected.city, selected.state].filter(Boolean).join(", ")}
-                  </div>
-                )}
-                {selected.cnpj_activity && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Briefcase className="h-4 w-4" /> {selected.cnpj_activity}
-                  </div>
-                )}
-                <p className="pt-2 text-xs text-muted-foreground">
-                  Para entrar em contato ou ver mais detalhes, acesse seu painel.
-                </p>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
-                <Button onClick={() => navigate({ to: "/dashboard" })}>Ir para o painel</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Diálogo de planos (visitante) */}
+
       <Dialog open={plansOpen} onOpenChange={setPlansOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
