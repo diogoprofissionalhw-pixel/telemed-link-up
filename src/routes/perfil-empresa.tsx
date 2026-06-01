@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2, BadgeCheck, ShieldCheck, Building2, Save } from "lucide-react";
+import { Loader2, BadgeCheck, ShieldCheck, Building2, Save, Linkedin, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { isValidCNPJ, maskCNPJ, onlyDigits } from "@/lib/validators";
+
 
 export const Route = createFileRoute("/perfil-empresa")({
   head: () => ({
@@ -36,6 +38,10 @@ function NetworkProfilePage() {
   const [verifiedAt, setVerifiedAt] = useState<string | null>(null);
   const [qualificationStatus, setQualificationStatus] = useState<string | null>(null);
   const [qualifiedAt, setQualifiedAt] = useState<string | null>(null);
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
+  const [description, setDescription] = useState("");
+
 
   useEffect(() => {
     if (!authLoading && profile && profile.account_type !== "network") {
