@@ -133,7 +133,7 @@ function SolicitarPage() {
         const ag = ratingMap.get(d.id);
         return {
           id: d.id,
-          full_name: d.profiles?.full_name ?? "Médico",
+          full_name: d.full_name ?? "Médico",
           specialty: d.specialty,
           specialties: d.specialties ?? [],
           crm: d.crm,
