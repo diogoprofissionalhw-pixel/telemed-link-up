@@ -1127,6 +1127,7 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
   userId: string; url: string | null; fallback: string; onChange: (url: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const upload = async (file: File) => {
     if (!file.type.startsWith("image/")) return toast.error("Selecione uma imagem");
@@ -1148,14 +1149,24 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
         <AvatarFallback className="bg-emerald-50 text-emerald-700 text-xl font-semibold">{fallback}</AvatarFallback>
       </Avatar>
       <div>
-        <Button type="button" variant="outline" size="sm" disabled={busy}
-          onClick={() => inputRef.current?.click()}
-          className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-          {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Camera className="mr-1 h-4 w-4" />}
-          {url ? "Alterar foto" : "Adicionar foto"}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" disabled={busy}
+            onClick={() => inputRef.current?.click()}
+            className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+            {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Upload className="mr-1 h-4 w-4" />}
+            {url ? "Alterar foto" : "Enviar foto"}
+          </Button>
+          <Button type="button" variant="outline" size="sm" disabled={busy}
+            onClick={() => cameraRef.current?.click()}
+            className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+            <Camera className="mr-1 h-4 w-4" />
+            Tirar foto
+          </Button>
+        </div>
         <p className="mt-1 text-xs text-gray-500">JPG ou PNG, até 5MB</p>
         <input ref={inputRef} type="file" accept="image/*" hidden
+          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+        <input ref={cameraRef} type="file" accept="image/*" capture="user" hidden
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
       </div>
     </div>
