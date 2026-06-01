@@ -54,8 +54,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
     (async () => {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
-          .from("doctors")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country, profiles!inner(full_name)")
+          .from("doctors_public")
+          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, city, state, country, full_name")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -65,7 +65,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           .order("created_at", { ascending: false }),
       ]);
       if (d) {
-        const profileData = (d as any).profiles;
         setDoctor({
           id: (d as any).id,
           specialty: (d as any).specialty,
@@ -78,12 +77,10 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           languages: (d as any).languages,
           avatar_url: (d as any).avatar_url ?? null,
           cv_pdf_url: (d as any).cv_pdf_url ?? null,
-          cpf: (d as any).cpf ?? null,
-          email: (d as any).email ?? null,
           city: (d as any).city ?? null,
           state: (d as any).state ?? null,
           country: (d as any).country ?? null,
-          full_name: profileData?.full_name ?? "Médico",
+          full_name: (d as any).full_name ?? "Médico",
         });
       }
       setRatings((r ?? []) as RatingItem[]);
