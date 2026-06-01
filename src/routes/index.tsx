@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase, BadgeCheck,
+  Mail, MapPin, Users, Briefcase, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
