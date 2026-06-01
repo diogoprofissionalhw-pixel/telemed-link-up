@@ -99,21 +99,7 @@ function NetworkProfilePage() {
     toast.success("Dados salvos.");
   };
 
-  }, [user]);
 
-  const handleSave = async () => {
-    if (!user) return;
-    if (networkName.trim().length < 2) return toast.error("Informe o nome da rede.");
-    if (!isValidCNPJ(cnpj)) return toast.error("CNPJ inválido.");
-    setSaving(true);
-    const { error } = await supabase.from("networks").update({
-      network_name: networkName.trim(),
-      cnpj: onlyDigits(cnpj),
-    }).eq("id", user.id);
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Dados salvos.");
-  };
 
   const handleVerifyCnpj = async () => {
     if (!user) return;
