@@ -590,7 +590,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       return {
         id: d.id, specialty: d.specialty, crm: d.crm, crm_uf: d.crm_uf,
         avatar_url: d.avatar_url ?? null, city: d.city ?? null, state: d.state ?? null,
-        full_name: d.profiles?.full_name ?? "Médico",
+        full_name: d.full_name ?? "Médico",
         avg_stars: ag ? ag.sum / ag.n : 0,
         rating_count: ag?.n ?? 0,
       };
