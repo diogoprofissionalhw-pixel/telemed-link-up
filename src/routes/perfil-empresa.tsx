@@ -228,6 +228,47 @@ function NetworkProfilePage() {
                 value={cnpj} onChange={(e) => setCnpj(maskCNPJ(e.target.value))} />
               {cnpj && !isValidCNPJ(cnpj) && <p className="mt-1 text-xs text-destructive">CNPJ inválido</p>}
             </div>
+            <div>
+              <Label htmlFor="linkedin_url" className="flex items-center gap-1.5">
+                <Linkedin className="h-3.5 w-3.5" /> LinkedIn da empresa
+              </Label>
+              <Input
+                id="linkedin_url"
+                type="url"
+                placeholder="https://www.linkedin.com/company/sua-empresa"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                maxLength={300}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Visível para médicos e visitantes — ajuda a comprovar a existência da empresa.
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="website_url" className="flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5" /> Site institucional
+              </Label>
+              <Input
+                id="website_url"
+                type="url"
+                placeholder="https://suaempresa.com.br"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                maxLength={300}
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Sobre a rede (público)</Label>
+              <Textarea
+                id="description"
+                placeholder="Conte brevemente o que a sua rede faz, especialidades atendidas, diferenciais..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={500}
+                rows={4}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">{description.length}/500 caracteres</p>
+            </div>
             <Button onClick={handleSave} disabled={saving} className="gap-1.5">
               {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</> : <><Save className="h-4 w-4" /> Salvar</>}
             </Button>
