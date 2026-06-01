@@ -61,9 +61,44 @@ function NetworkProfilePage() {
         setVerifiedAt((data as any).cnpj_verified_at ?? null);
         setQualificationStatus((data as any).qualification_status ?? null);
         setQualifiedAt((data as any).qualified_at ?? null);
+        setLinkedinUrl((data as any).linkedin_url ?? "");
+        setWebsiteUrl((data as any).website_url ?? "");
+        setDescription((data as any).description ?? "");
       }
       setLoading(false);
     })();
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    if (networkName.trim().length < 2) return toast.error("Informe o nome da rede.");
+    if (!isValidCNPJ(cnpj)) return toast.error("CNPJ inválido.");
+
+    const linkedinTrim = linkedinUrl.trim();
+    if (linkedinTrim && !/^https:\/\/(www\.)?linkedin\.com\//i.test(linkedinTrim)) {
+      return toast.error("URL do LinkedIn inválida. Use https://www.linkedin.com/...");
+    }
+    const websiteTrim = websiteUrl.trim();
+    if (websiteTrim && !/^https?:\/\//i.test(websiteTrim)) {
+      return toast.error("URL do site inválida. Comece com https://");
+    }
+    if (description.length > 500) {
+      return toast.error("A descrição deve ter no máximo 500 caracteres.");
+    }
+
+    setSaving(true);
+    const { error } = await supabase.from("networks").update({
+      network_name: networkName.trim(),
+      cnpj: onlyDigits(cnpj),
+      linkedin_url: linkedinTrim || null,
+      website_url: websiteTrim || null,
+      description: description.trim() || null,
+    } as any).eq("id", user.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Dados salvos.");
+  };
+
   }, [user]);
 
   const handleSave = async () => {
