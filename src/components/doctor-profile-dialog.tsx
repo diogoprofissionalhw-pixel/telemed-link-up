@@ -151,8 +151,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={MapPin} label="Localização">
                 {[doctor.city, doctor.state, doctor.country].filter(Boolean).join(" • ") || "—"}
               </CvRow>
-              <CvRow icon={Mail} label="E-mail">{doctor.email || "—"}</CvRow>
-              <CvRow icon={IdCard} label="CPF">{doctor.cpf || "—"}</CvRow>
               <CvRow icon={Award} label="Experiência">
                 {doctor.years_experience ? `${doctor.years_experience} anos` : "—"}
               </CvRow>
