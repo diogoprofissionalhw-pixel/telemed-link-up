@@ -355,7 +355,6 @@ function ExploreNetworks() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
-  const [selected, setSelected] = useState<PublicNetwork | null>(null);
   const [plansOpen, setPlansOpen] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<Plan | null>(null);
 
@@ -369,7 +368,7 @@ function ExploreNetworks() {
   }, []);
 
   const handleClick = (n: PublicNetwork) => {
-    if (user) setSelected(n);
+    if (user) navigate({ to: "/rede/$networkId", params: { networkId: n.id } });
     else setPlansOpen(true);
   };
 
@@ -381,6 +380,7 @@ function ExploreNetworks() {
       setPaymentPlan(plan);
     }
   };
+
 
   return (
     <section className="bg-background">
