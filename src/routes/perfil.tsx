@@ -1127,8 +1127,13 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
   userId: string; url: string | null; fallback: string; onChange: (url: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
   const upload = async (file: File) => {
     if (!file.type.startsWith("image/")) return toast.error("Selecione uma imagem");
     if (file.size > 5 * 1024 * 1024) return toast.error("Imagem muito grande (máx 5MB)");
@@ -1142,6 +1147,72 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
     setBusy(false);
     toast.success("Foto atualizada!");
   };
+
+  const stopStream = () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+  };
+
+  const openCamera = async () => {
+    setCameraError(null);
+    setPreview(null);
+    setCameraOpen(true);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Câmera não suportada neste navegador.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 1280 } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      // Wait a tick for the video element to mount
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
+        }
+      }, 50);
+    } catch (e: any) {
+      setCameraError(e?.message ?? "Não foi possível acessar a câmera. Verifique as permissões do navegador.");
+    }
+  };
+
+  const closeCamera = () => {
+    stopStream();
+    setCameraOpen(false);
+    setPreview(null);
+    setCameraError(null);
+  };
+
+  const capture = () => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth) return;
+    const canvas = document.createElement("canvas");
+    const size = Math.min(video.videoWidth, video.videoHeight);
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const sx = (video.videoWidth - size) / 2;
+    const sy = (video.videoHeight - size) / 2;
+    ctx.drawImage(video, sx, sy, size, size, 0, 0, size, size);
+    setPreview(canvas.toDataURL("image/jpeg", 0.92));
+  };
+
+  const confirmCapture = async () => {
+    if (!preview) return;
+    const res = await fetch(preview);
+    const blob = await res.blob();
+    const file = new File([blob], `selfie-${Date.now()}.jpg`, { type: "image/jpeg" });
+    stopStream();
+    setCameraOpen(false);
+    setPreview(null);
+    await upload(file);
+  };
+
+  useEffect(() => () => stopStream(), []);
+
   return (
     <div className="flex items-center gap-4">
       <Avatar className="h-24 w-24 ring-2 ring-emerald-100">
@@ -1157,7 +1228,7 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
             {url ? "Alterar foto" : "Enviar foto"}
           </Button>
           <Button type="button" variant="outline" size="sm" disabled={busy}
-            onClick={() => cameraRef.current?.click()}
+            onClick={openCamera}
             className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
             <Camera className="mr-1 h-4 w-4" />
             Tirar foto
@@ -1166,9 +1237,46 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
         <p className="mt-1 text-xs text-gray-500">JPG ou PNG, até 5MB</p>
         <input ref={inputRef} type="file" accept="image/*" hidden
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-        <input ref={cameraRef} type="file" accept="image/*" capture="user" hidden
-          onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
       </div>
+
+      <Dialog open={cameraOpen} onOpenChange={(open) => { if (!open) closeCamera(); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Tirar foto de perfil</DialogTitle>
+            <DialogDescription>
+              Posicione seu rosto dentro do quadro e clique em capturar.
+            </DialogDescription>
+          </DialogHeader>
+          {cameraError ? (
+            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{cameraError}</div>
+          ) : (
+            <div className="relative overflow-hidden rounded-lg bg-black aspect-square">
+              {preview ? (
+                <img src={preview} alt="Pré-visualização" className="h-full w-full object-cover" />
+              ) : (
+                <video ref={videoRef} playsInline muted className="h-full w-full object-cover scale-x-[-1]" />
+              )}
+            </div>
+          )}
+          <DialogFooter className="flex-row justify-between gap-2 sm:justify-between">
+            <Button type="button" variant="outline" onClick={closeCamera}>Cancelar</Button>
+            {preview ? (
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => setPreview(null)}>Refazer</Button>
+                <Button type="button" disabled={busy} onClick={confirmCapture} className="bg-emerald-600 hover:bg-emerald-700">
+                  {busy ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Check className="mr-1 h-4 w-4" />}
+                  Usar foto
+                </Button>
+              </div>
+            ) : (
+              <Button type="button" onClick={capture} disabled={!!cameraError} className="bg-emerald-600 hover:bg-emerald-700">
+                <Camera className="mr-1 h-4 w-4" />
+                Capturar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
