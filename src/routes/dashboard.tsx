@@ -1149,7 +1149,7 @@ function NewRequestDialog({
       void net;
 
       const [{ data: docs }, { data: ratings }, { data: shifts }, { data: avails }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, profiles!inner(full_name)"),
+        supabase.from("doctors_public").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status, shift_date, start_time, end_time").in("status", ["accepted", "completed", "pending"]),
         supabase.from("doctor_availabilities").select("doctor_id, available_date, start_time, end_time"),
