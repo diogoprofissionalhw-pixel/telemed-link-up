@@ -20,12 +20,12 @@ import {
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
-    mode: (s.mode === "signup" ? "signup" : "signin") as Mode,
+    mode: (s.mode === "signup" ? "signup" : s.mode === "forgot" ? "forgot" : "signin") as Mode,
   }),
   head: () => ({
     meta: [
