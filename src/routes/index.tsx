@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase, BadgeCheck,
+  Mail, MapPin, Users, Briefcase, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -141,10 +141,11 @@ function Hero() {
                 <div><p className="text-xs text-muted-foreground">Duração</p><p className="font-semibold">12 horas</p></div>
                 <div><p className="text-xs text-muted-foreground">Plantão</p><p className="font-semibold">Clínica geral</p></div>
               </div>
-              <div className="mt-5 flex gap-2">
-                <Button className="flex-1 bg-success text-success-foreground hover:bg-success/90 transition-transform hover:scale-[1.02]">Aceitar</Button>
-                <Button variant="outline" className="flex-1 transition-transform hover:scale-[1.02]">Recusar</Button>
+              <div className="mt-5 flex gap-2" aria-hidden="true">
+                <Button type="button" disabled tabIndex={-1} className="flex-1 bg-success text-success-foreground hover:bg-success/90 disabled:opacity-100 disabled:cursor-default">Aceitar</Button>
+                <Button type="button" disabled tabIndex={-1} variant="outline" className="flex-1 disabled:opacity-100 disabled:cursor-default">Recusar</Button>
               </div>
+              <p className="mt-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Exemplo ilustrativo</p>
             </div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
               <Users className="h-4 w-4 text-primary" /> Conectando profissionais
@@ -415,9 +416,22 @@ function ExploreNetworks() {
           </div>
 
           {networks.length === 0 ? (
-            <p className="mt-10 text-center text-sm text-muted-foreground">
-              Nenhuma rede cadastrada ainda.
-            </p>
+            <div className="mt-10 rounded-2xl border border-dashed bg-background/60 p-8 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent">
+                <Building2 className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">Seja uma das primeiras redes</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                Ainda não temos redes cadastradas por aqui. Cadastre sua rede de telemedicina e comece a contratar médicos qualificados em minutos.
+              </p>
+              <div className="mt-5">
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  <Button size="lg" className="gap-2">
+                    Cadastrar minha rede <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
           ) : (
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {networks.map((n) => {
@@ -608,9 +622,9 @@ function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Legal</h3>
           <ul className="mt-3 space-y-2 text-sm text-background/70">
-            <li><a href="#" className="hover:text-background">Termos de Uso</a></li>
-            <li><a href="#" className="hover:text-background">Política de Privacidade</a></li>
-            <li><a href="#" className="hover:text-background">LGPD</a></li>
+            <li><Link to="/termos" className="hover:text-background">Termos de Uso</Link></li>
+            <li><Link to="/privacidade" className="hover:text-background">Política de Privacidade</Link></li>
+            <li><Link to="/lgpd" className="hover:text-background">LGPD</Link></li>
           </ul>
         </div>
         <div>
@@ -619,11 +633,6 @@ function Footer() {
             <li className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>connectmed10@gmail.com</span></li>
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>João Pessoa, PB — Brasil</span></li>
           </ul>
-          <div className="mt-4 flex gap-3">
-            <a href="#" aria-label="LinkedIn" className="rounded-md border border-background/20 p-2 text-background/70 transition-colors hover:bg-background/10 hover:text-background"><Linkedin className="h-4 w-4" /></a>
-            <a href="#" aria-label="Instagram" className="rounded-md border border-background/20 p-2 text-background/70 transition-colors hover:bg-background/10 hover:text-background"><Instagram className="h-4 w-4" /></a>
-            <a href="#" aria-label="Facebook" className="rounded-md border border-background/20 p-2 text-background/70 transition-colors hover:bg-background/10 hover:text-background"><Facebook className="h-4 w-4" /></a>
-          </div>
         </div>
       </div>
       <div className="border-t border-background/10 py-5 text-center text-xs text-background/60">

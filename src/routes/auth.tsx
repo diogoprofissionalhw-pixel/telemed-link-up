@@ -20,12 +20,12 @@ import {
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
 
-type Mode = "signin" | "signup";
+type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
-    mode: (s.mode === "signup" ? "signup" : "signin") as Mode,
+    mode: (s.mode === "signup" ? "signup" : s.mode === "forgot" ? "forgot" : "signin") as Mode,
   }),
   head: () => ({
     meta: [
@@ -66,30 +66,42 @@ function AuthPage() {
           <BackButton to="/" label="Voltar ao início" />
         </div>
         <div className="rounded-2xl border bg-card p-6 sm:p-8" style={{ boxShadow: "var(--shadow-card)" }}>
-          <h1 className="text-2xl font-bold">Acessar Connect-Med</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Entre ou crie sua conta para continuar.</p>
+          <h1 className="text-2xl font-bold">
+            {tab === "forgot" ? "Recuperar senha" : "Acessar Connect-Med"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {tab === "forgot"
+              ? "Informe seu e-mail e enviaremos um link para você redefinir a senha."
+              : "Entre ou crie sua conta para continuar."}
+          </p>
 
-          <Tabs value={tab} onValueChange={(v) => setTab(v as Mode)} className="mt-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-            </TabsList>
+          {tab === "forgot" ? (
+            <div className="mt-6">
+              <ForgotPasswordForm onBack={() => setTab("signin")} />
+            </div>
+          ) : (
+            <Tabs value={tab} onValueChange={(v) => setTab(v as Mode)} className="mt-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="signin">Entrar</TabsTrigger>
+                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="signin" className="mt-6">
-              <SignInForm />
-            </TabsContent>
+              <TabsContent value="signin" className="mt-6">
+                <SignInForm onForgot={() => setTab("forgot")} />
+              </TabsContent>
 
-            <TabsContent value="signup" className="mt-6">
-              <SignUpWizard />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="signup" className="mt-6">
+                <SignUpWizard />
+              </TabsContent>
+            </Tabs>
+          )}
         </div>
       </main>
     </div>
   );
 }
 
-function SignInForm() {
+function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
 
@@ -116,12 +128,75 @@ function SignInForm() {
         <Input id="email-in" name="email" type="email" required autoComplete="email" />
       </div>
       <div>
-        <Label htmlFor="pass-in">Senha</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="pass-in">Senha</Label>
+          <button
+            type="button"
+            onClick={onForgot}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            Esqueci minha senha
+          </button>
+        </div>
         <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
       </div>
       <Button type="submit" className="w-full transition-all" disabled={submitting}>
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Entrando...</> : "Entrar"}
       </Button>
+    </form>
+  );
+}
+
+function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+  const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "").trim();
+    const parsed = z.string().email("Email inválido").max(255).safeParse(email);
+    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(parsed.data, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) return toast.error(error.message);
+    setSent(true);
+    toast.success("Enviamos um link de recuperação para seu e-mail.");
+  };
+
+  if (sent) {
+    return (
+      <div className="space-y-4 text-sm">
+        <p className="text-muted-foreground">
+          Se o e-mail estiver cadastrado, em instantes você receberá um link para redefinir sua senha.
+          Verifique também a caixa de spam.
+        </p>
+        <Button type="button" variant="outline" className="w-full" onClick={onBack}>
+          Voltar para o login
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="email-forgot">Email</Label>
+        <Input id="email-forgot" name="email" type="email" required autoComplete="email" />
+      </div>
+      <Button type="submit" className="w-full" disabled={submitting}>
+        {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</> : "Enviar link de recuperação"}
+      </Button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="block w-full text-center text-sm text-muted-foreground hover:text-foreground"
+      >
+        Voltar para o login
+      </button>
     </form>
   );
 }
