@@ -571,7 +571,7 @@ function NetworkPanel({ userId }: { userId: string }) {
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(200),
+      supabase.from("doctors_public").select("id, specialty, crm, crm_uf, avatar_url, city, state, full_name").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
       supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
