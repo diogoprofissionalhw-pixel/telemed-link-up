@@ -9,15 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as SolicitacoesRouteImport } from './routes/solicitacoes'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PerfilEmpresaRouteImport } from './routes/perfil-empresa'
 import { Route as PerfilRouteImport } from './routes/perfil'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MedicosRouteImport } from './routes/medicos'
+import { Route as LgpdRouteImport } from './routes/lgpd'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContratacoesRouteImport } from './routes/contratacoes'
@@ -28,6 +32,11 @@ import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
   path: '/solicitar',
@@ -43,6 +52,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RelatoriosRoute = RelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
@@ -51,6 +65,11 @@ const RelatoriosRoute = RelatoriosRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilEmpresaRoute = PerfilEmpresaRouteImport.update({
@@ -71,6 +90,11 @@ const MensagensRoute = MensagensRouteImport.update({
 const MedicosRoute = MedicosRouteImport.update({
   id: '/medicos',
   path: '/medicos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LgpdRoute = LgpdRouteImport.update({
+  id: '/lgpd',
+  path: '/lgpd',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoricoRoute = HistoricoRouteImport.update({
@@ -128,15 +152,19 @@ export interface FileRoutesByFullPath {
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
+  '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
   '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/termos': typeof TermosRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesByTo {
@@ -148,15 +176,19 @@ export interface FileRoutesByTo {
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
+  '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
   '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/termos': typeof TermosRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesById {
@@ -169,15 +201,19 @@ export interface FileRoutesById {
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
   '/historico': typeof HistoricoRoute
+  '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
   '/mensagens': typeof MensagensRoute
   '/perfil': typeof PerfilRoute
   '/perfil-empresa': typeof PerfilEmpresaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/profile': typeof ProfileRoute
   '/relatorios': typeof RelatoriosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/termos': typeof TermosRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRouteTypes {
@@ -191,15 +227,19 @@ export interface FileRouteTypes {
     | '/contratacoes'
     | '/dashboard'
     | '/historico'
+    | '/lgpd'
     | '/medicos'
     | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
+    | '/privacidade'
     | '/profile'
     | '/relatorios'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/termos'
     | '/rede/$networkId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -211,15 +251,19 @@ export interface FileRouteTypes {
     | '/contratacoes'
     | '/dashboard'
     | '/historico'
+    | '/lgpd'
     | '/medicos'
     | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
+    | '/privacidade'
     | '/profile'
     | '/relatorios'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/termos'
     | '/rede/$networkId'
   id:
     | '__root__'
@@ -231,15 +275,19 @@ export interface FileRouteTypes {
     | '/contratacoes'
     | '/dashboard'
     | '/historico'
+    | '/lgpd'
     | '/medicos'
     | '/mensagens'
     | '/perfil'
     | '/perfil-empresa'
+    | '/privacidade'
     | '/profile'
     | '/relatorios'
+    | '/reset-password'
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/termos'
     | '/rede/$networkId'
   fileRoutesById: FileRoutesById
 }
@@ -252,20 +300,31 @@ export interface RootRouteChildren {
   ContratacoesRoute: typeof ContratacoesRoute
   DashboardRoute: typeof DashboardRoute
   HistoricoRoute: typeof HistoricoRoute
+  LgpdRoute: typeof LgpdRoute
   MedicosRoute: typeof MedicosRoute
   MensagensRoute: typeof MensagensRoute
   PerfilRoute: typeof PerfilRoute
   PerfilEmpresaRoute: typeof PerfilEmpresaRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   ProfileRoute: typeof ProfileRoute
   RelatoriosRoute: typeof RelatoriosRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SolicitacoesRoute: typeof SolicitacoesRoute
   SolicitarRoute: typeof SolicitarRoute
+  TermosRoute: typeof TermosRoute
   RedeNetworkIdRoute: typeof RedeNetworkIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/solicitar': {
       id: '/solicitar'
       path: '/solicitar'
@@ -287,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/relatorios': {
       id: '/relatorios'
       path: '/relatorios'
@@ -299,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil-empresa': {
@@ -327,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/medicos'
       fullPath: '/medicos'
       preLoaderRoute: typeof MedicosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lgpd': {
+      id: '/lgpd'
+      path: '/lgpd'
+      fullPath: '/lgpd'
+      preLoaderRoute: typeof LgpdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/historico': {
@@ -404,15 +484,19 @@ const rootRouteChildren: RootRouteChildren = {
   ContratacoesRoute: ContratacoesRoute,
   DashboardRoute: DashboardRoute,
   HistoricoRoute: HistoricoRoute,
+  LgpdRoute: LgpdRoute,
   MedicosRoute: MedicosRoute,
   MensagensRoute: MensagensRoute,
   PerfilRoute: PerfilRoute,
   PerfilEmpresaRoute: PerfilEmpresaRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   ProfileRoute: ProfileRoute,
   RelatoriosRoute: RelatoriosRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SolicitacoesRoute: SolicitacoesRoute,
   SolicitarRoute: SolicitarRoute,
+  TermosRoute: TermosRoute,
   RedeNetworkIdRoute: RedeNetworkIdRoute,
 }
 export const routeTree = rootRouteImport
