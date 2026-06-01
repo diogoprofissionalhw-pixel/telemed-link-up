@@ -616,8 +616,8 @@ function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Contato</h3>
           <ul className="mt-3 space-y-2 text-sm text-background/70">
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> connectmed10@gmail.com</li>
-            <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> João Pessoa, PB — Brasil</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>connectmed10@gmail.com</span></li>
+            <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>João Pessoa, PB — Brasil</span></li>
           </ul>
           <div className="mt-4 flex gap-3">
             <a href="#" aria-label="LinkedIn" className="rounded-md border border-background/20 p-2 text-background/70 transition-colors hover:bg-background/10 hover:text-background"><Linkedin className="h-4 w-4" /></a>
