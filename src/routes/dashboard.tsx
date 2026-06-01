@@ -571,7 +571,7 @@ function NetworkPanel({ userId }: { userId: string }) {
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.from("doctors").select("id, specialty, crm, crm_uf, avatar_url, city, state, profiles!inner(full_name)").limit(200),
+      supabase.from("doctors_public").select("id, specialty, crm, crm_uf, avatar_url, city, state, full_name").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
       supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
@@ -590,7 +590,7 @@ function NetworkPanel({ userId }: { userId: string }) {
       return {
         id: d.id, specialty: d.specialty, crm: d.crm, crm_uf: d.crm_uf,
         avatar_url: d.avatar_url ?? null, city: d.city ?? null, state: d.state ?? null,
-        full_name: d.profiles?.full_name ?? "Médico",
+        full_name: d.full_name ?? "Médico",
         avg_stars: ag ? ag.sum / ag.n : 0,
         rating_count: ag?.n ?? 0,
       };
@@ -1149,7 +1149,7 @@ function NewRequestDialog({
       void net;
 
       const [{ data: docs }, { data: ratings }, { data: shifts }, { data: avails }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, profiles!inner(full_name)"),
+        supabase.from("doctors_public").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status, shift_date, start_time, end_time").in("status", ["accepted", "completed", "pending"]),
         supabase.from("doctor_availabilities").select("doctor_id, available_date, start_time, end_time"),
@@ -1182,7 +1182,7 @@ function NewRequestDialog({
           city: d.city ?? null,
           state: d.state ?? null,
           years_experience: d.years_experience ?? null,
-          full_name: d.profiles?.full_name ?? "Médico",
+          full_name: d.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
           accepted_count: acceptedMap.get(d.id) ?? 0,

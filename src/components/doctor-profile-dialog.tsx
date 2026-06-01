@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Mail, IdCard, Eye, MessageCircle } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Eye, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -23,8 +23,6 @@ interface DoctorFull {
   full_name: string;
   avatar_url: string | null;
   cv_pdf_url: string | null;
-  cpf: string | null;
-  email: string | null;
   city: string | null;
   state: string | null;
   country: string | null;
@@ -56,8 +54,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
     (async () => {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
-          .from("doctors")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, cpf, email, city, state, country, profiles!inner(full_name)")
+          .from("doctors_public")
+          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, city, state, country, full_name")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -67,7 +65,14 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           .order("created_at", { ascending: false }),
       ]);
       if (d) {
-        const profileData = (d as any).profiles;
+        let cvUrl: string | null = (d as any).cv_pdf_url ?? null;
+        if (cvUrl) {
+          const marker = "/storage/v1/object/public/cvs/";
+          const idx = cvUrl.indexOf(marker);
+          const path = idx >= 0 ? cvUrl.slice(idx + marker.length) : cvUrl;
+          const { data: signed } = await supabase.storage.from("cvs").createSignedUrl(path, 3600);
+          cvUrl = signed?.signedUrl ?? null;
+        }
         setDoctor({
           id: (d as any).id,
           specialty: (d as any).specialty,
@@ -79,13 +84,11 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           certifications: (d as any).certifications,
           languages: (d as any).languages,
           avatar_url: (d as any).avatar_url ?? null,
-          cv_pdf_url: (d as any).cv_pdf_url ?? null,
-          cpf: (d as any).cpf ?? null,
-          email: (d as any).email ?? null,
+          cv_pdf_url: cvUrl,
           city: (d as any).city ?? null,
           state: (d as any).state ?? null,
           country: (d as any).country ?? null,
-          full_name: profileData?.full_name ?? "Médico",
+          full_name: (d as any).full_name ?? "Médico",
         });
       }
       setRatings((r ?? []) as RatingItem[]);
@@ -156,8 +159,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={MapPin} label="Localização">
                 {[doctor.city, doctor.state, doctor.country].filter(Boolean).join(" • ") || "—"}
               </CvRow>
-              <CvRow icon={Mail} label="E-mail">{doctor.email || "—"}</CvRow>
-              <CvRow icon={IdCard} label="CPF">{doctor.cpf || "—"}</CvRow>
               <CvRow icon={Award} label="Experiência">
                 {doctor.years_experience ? `${doctor.years_experience} anos` : "—"}
               </CvRow>
