@@ -313,12 +313,51 @@ type PublicNetwork = {
   created_at: string;
 };
 
+type Plan = {
+  id: "free" | "pro" | "premium";
+  name: string;
+  price: string;
+  period: string;
+  description: string;
+  features: string[];
+  highlighted?: boolean;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "free",
+    name: "Gratuito",
+    price: "R$ 0",
+    period: "/mês",
+    description: "Para começar a explorar a plataforma.",
+    features: ["Cadastro gratuito", "Visualizar redes parceiras", "Perfil básico"],
+  },
+  {
+    id: "pro",
+    name: "Profissional",
+    price: "R$ 49",
+    period: "/mês",
+    description: "Mais visibilidade e contato direto com redes.",
+    features: ["Tudo do Gratuito", "Contato direto com redes", "Destaque no perfil", "Suporte prioritário"],
+    highlighted: true,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    price: "R$ 129",
+    period: "/mês",
+    description: "Recursos avançados para redes e médicos.",
+    features: ["Tudo do Profissional", "Analytics avançado", "Chat ilimitado", "Suporte dedicado 24/7"],
+  },
+];
+
 function ExploreNetworks() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
   const [selected, setSelected] = useState<PublicNetwork | null>(null);
-  const [signupOpen, setSignupOpen] = useState(false);
+  const [plansOpen, setPlansOpen] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState<Plan | null>(null);
 
   useEffect(() => {
     supabase
@@ -331,7 +370,16 @@ function ExploreNetworks() {
 
   const handleClick = (n: PublicNetwork) => {
     if (user) setSelected(n);
-    else setSignupOpen(true);
+    else setPlansOpen(true);
+  };
+
+  const handleSelectPlan = (plan: Plan) => {
+    setPlansOpen(false);
+    if (plan.id === "free") {
+      navigate({ to: "/auth", search: { mode: "signup" } });
+    } else {
+      setPaymentPlan(plan);
+    }
   };
 
   return (
@@ -458,23 +506,100 @@ function ExploreNetworks() {
         </DialogContent>
       </Dialog>
 
-      {/* Diálogo de cadastro (visitante) */}
-      <Dialog open={signupOpen} onOpenChange={setSignupOpen}>
-        <DialogContent>
+      {/* Diálogo de planos (visitante) */}
+      <Dialog open={plansOpen} onOpenChange={setPlansOpen}>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Cadastre-se para ver esta rede</DialogTitle>
+            <DialogTitle>Escolha seu plano</DialogTitle>
             <DialogDescription>
-              Crie sua conta gratuita no Connect-Med para visualizar informações das redes parceiras e se conectar com elas.
+              Selecione um plano para acessar as informações das redes parceiras.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setSignupOpen(false); navigate({ to: "/auth", search: { mode: "login" } }); }}>
-              Já tenho conta
-            </Button>
-            <Button onClick={() => { setSignupOpen(false); navigate({ to: "/auth", search: { mode: "signup" } }); }}>
-              Cadastrar agora <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          </DialogFooter>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.id}
+                className={`flex flex-col rounded-2xl border p-5 ${plan.highlighted ? "border-primary shadow-lg" : "bg-card"}`}
+              >
+                {plan.highlighted && (
+                  <span className="mb-2 self-start rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                    MAIS POPULAR
+                  </span>
+                )}
+                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-bold">{plan.price}</span>
+                  <span className="text-xs text-muted-foreground">{plan.period}</span>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">{plan.description}</p>
+                <ul className="mt-4 flex-1 space-y-2 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className="mt-5 w-full"
+                  variant={plan.highlighted ? "default" : "outline"}
+                  onClick={() => handleSelectPlan(plan)}
+                >
+                  {plan.id === "free" ? "Cadastrar grátis" : "Assinar"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo de pagamento (mock) */}
+      <Dialog open={!!paymentPlan} onOpenChange={(o) => !o && setPaymentPlan(null)}>
+        <DialogContent>
+          {paymentPlan && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Pagamento — Plano {paymentPlan.name}</DialogTitle>
+                <DialogDescription>
+                  {paymentPlan.price}{paymentPlan.period} · Preencha seus dados de pagamento.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                className="space-y-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setPaymentPlan(null);
+                  navigate({ to: "/auth", search: { mode: "signup" } });
+                }}
+              >
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Nome no cartão</label>
+                  <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Como aparece no cartão" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Número do cartão</label>
+                  <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="0000 0000 0000 0000" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Validade</label>
+                    <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="MM/AA" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">CVV</label>
+                    <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="000" />
+                  </div>
+                </div>
+                <DialogFooter className="gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setPaymentPlan(null)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    Pagar {paymentPlan.price}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </section>
