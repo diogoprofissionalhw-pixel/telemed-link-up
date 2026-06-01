@@ -109,7 +109,7 @@ function SolicitarPage() {
   useEffect(() => {
     (async () => {
       const [{ data: docs }, { data: ratings }, { data: shifts }] = await Promise.all([
-        supabase.from("doctors").select("id, specialty, specialties, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, consultation_fee, bio, languages, profiles!inner(full_name)"),
+        supabase.from("doctors_public").select("id, specialty, specialties, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, consultation_fee, bio, languages, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status").in("status", ["accepted", "completed", "pending"]),
       ]);
