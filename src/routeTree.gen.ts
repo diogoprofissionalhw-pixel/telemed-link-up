@@ -26,6 +26,7 @@ import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 
 const SolicitarRoute = SolicitarRouteImport.update({
   id: '/solicitar',
@@ -112,6 +113,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RedeNetworkIdRoute = RedeNetworkIdRouteImport.update({
+  id: '/rede/$networkId',
+  path: '/rede/$networkId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
+  '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/rede/$networkId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/rede/$networkId'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/solicitacoes'
     | '/solicitar'
+    | '/rede/$networkId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SolicitacoesRoute: typeof SolicitacoesRoute
   SolicitarRoute: typeof SolicitarRoute
+  RedeNetworkIdRoute: typeof RedeNetworkIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rede/$networkId': {
+      id: '/rede/$networkId'
+      path: '/rede/$networkId'
+      fullPath: '/rede/$networkId'
+      preLoaderRoute: typeof RedeNetworkIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -393,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SolicitacoesRoute: SolicitacoesRoute,
   SolicitarRoute: SolicitarRoute,
+  RedeNetworkIdRoute: RedeNetworkIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

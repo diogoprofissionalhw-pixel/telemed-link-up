@@ -355,7 +355,6 @@ function ExploreNetworks() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
-  const [selected, setSelected] = useState<PublicNetwork | null>(null);
   const [plansOpen, setPlansOpen] = useState(false);
   const [paymentPlan, setPaymentPlan] = useState<Plan | null>(null);
 
@@ -369,7 +368,7 @@ function ExploreNetworks() {
   }, []);
 
   const handleClick = (n: PublicNetwork) => {
-    if (user) setSelected(n);
+    if (user) navigate({ to: "/rede/$networkId", params: { networkId: n.id } });
     else setPlansOpen(true);
   };
 
@@ -381,6 +380,7 @@ function ExploreNetworks() {
       setPaymentPlan(plan);
     }
   };
+
 
   return (
     <section className="bg-background">
@@ -456,57 +456,8 @@ function ExploreNetworks() {
         </div>
       </div>
 
-      {/* Diálogo de detalhes (usuário logado) */}
-      <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <DialogContent>
-          {selected && (
-            <>
-              <DialogHeader>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
-                    {selected.avatar_url ? (
-                      <img src={selected.avatar_url} alt={`Logo ${selected.network_name}`} className="h-full w-full object-cover" />
-                    ) : (
-                      <Building2 className="h-6 w-6 text-primary-foreground" />
-                    )}
-                  </div>
-                  <div>
-                    <DialogTitle className="flex items-center gap-2">
-                      {selected.network_name}
-                      {selected.is_verified && <BadgeCheck className="h-4 w-4 text-primary" />}
-                    </DialogTitle>
-                    <DialogDescription>
-                      {selected.is_verified ? "Rede verificada" : "Verificação pendente"}
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-              <div className="space-y-2 text-sm">
-                {(selected.city || selected.state) && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {[selected.city, selected.state].filter(Boolean).join(", ")}
-                  </div>
-                )}
-                {selected.cnpj_activity && (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Briefcase className="h-4 w-4" /> {selected.cnpj_activity}
-                  </div>
-                )}
-                <p className="pt-2 text-xs text-muted-foreground">
-                  Para entrar em contato ou ver mais detalhes, acesse seu painel.
-                </p>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button>
-                <Button onClick={() => navigate({ to: "/dashboard" })}>Ir para o painel</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Diálogo de planos (visitante) */}
+
       <Dialog open={plansOpen} onOpenChange={setPlansOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -665,8 +616,8 @@ function Footer() {
         <div>
           <h3 className="text-sm font-semibold">Contato</h3>
           <ul className="mt-3 space-y-2 text-sm text-background/70">
-            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> connectmed10@gmail.com</li>
-            <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /> João Pessoa, PB — Brasil</li>
+            <li className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>connectmed10@gmail.com</span></li>
+            <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>João Pessoa, PB — Brasil</span></li>
           </ul>
           <div className="mt-4 flex gap-3">
             <a href="#" aria-label="LinkedIn" className="rounded-md border border-background/20 p-2 text-background/70 transition-colors hover:bg-background/10 hover:text-background"><Linkedin className="h-4 w-4" /></a>

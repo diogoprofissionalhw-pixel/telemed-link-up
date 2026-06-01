@@ -1,77 +1,67 @@
-# Plano: Shadow Profiles, Validação de CNPJ e Selos de Confiança
+# Plano: Página de detalhes da rede + LinkedIn
 
-## 1. Migração do banco de dados
+## 1. Banco de dados (migração)
 
-Adicionar campos para suportar a nova lógica de privacidade e verificação:
+Adicionar campos públicos ao perfil da rede:
 
-**Tabela `networks`:**
-- `is_verified` (boolean, default false) — rede verificada via CNPJ
-- `cnpj_verified_at` (timestamptz) — quando foi verificada
-- `cnpj_activity` (text) — atividade econômica simulada
+- `networks.linkedin_url` (text, nullable) — link do LinkedIn da empresa
+- `networks.website_url` (text, nullable) — site institucional (opcional, complementa autoridade)
+- `networks.description` (text, nullable) — breve descrição pública da rede
 
-**Tabela `doctors`:**
-- `public_id` (text, unique) — ID curto público tipo "8821" (gerado automaticamente via sequence)
-- `identity_verified` (boolean, default false) — KYC concluído
-- `identity_verified_at` (timestamptz)
-- `selfie_url` (text) — selfie para KYC
-- `approval_rate` (numeric) — calculado a partir de shift_requests aceitos vs total
+Atualizar a view `networks_public` para incluir esses três campos novos, mantendo restrita a leitura por `anon` apenas às colunas seguras (sem CNPJ, sem endereço completo, sem dados sensíveis).
 
-**RLS / Views:**
-- Criar view `doctors_public` que expõe apenas: `public_id`, primeiro nome, especialidade, cidade/UF, valor consulta, avg_stars, anos exp, crm_status (sem CRM number, sem CRM uf, sem nome completo, sem bio completa).
-- Política: anon e authenticated podem `SELECT` da view.
-- Restringir SELECT direto da tabela `doctors` apenas para: o próprio médico, ou redes verificadas (`is_verified = true`).
-- Função `has_verified_network(uid)` security definer para checar.
+Colunas expostas na view pública (consumidas por médicos logados e visitantes):
+`id, network_name, city, state, avatar_url, is_verified, cnpj_activity, linkedin_url, website_url, description`.
 
-## 2. Página `/medicos` (Diretório público — Shadow Profiles)
+CNPJ continua **fora** da view pública — apenas a própria rede vê o próprio CNPJ.
 
-- Consultar a view `doctors_public` em vez de `doctors`.
-- Card mostra: "Dr. {primeiroNome} — ID #{public_id}", especialidade, cidade/UF (sem rua), valor, estrelas, anos exp, selos (CRM validado, Identidade verificada).
-- Ocultar: sobrenome completo, CRM, bio, e-mail, telefone.
-- Manter filtros: Especialidade, Localização (cidade/UF), Valor (range), Avaliação mínima (novo — slider 0-5 estrelas).
-- Botão "Ver Perfil":
-  - Deslogado → redireciona para `/auth?mode=signup` com toast "Cadastre sua rede para ver perfis completos".
-  - Logado como médico → vai direto ao perfil.
-  - Logado como rede **não verificada** → abre modal explicando que precisa validar CNPJ, com botão "Validar agora" indo para `/perfil-empresa`.
-  - Logado como rede **verificada** → vai ao perfil completo.
+## 2. Edição: `/perfil-empresa`
 
-## 3. Cadastro e validação de CNPJ
+Adicionar três campos novos no formulário da rede:
 
-**Em `/auth` (signup de rede):**
-- Campo CNPJ obrigatório com máscara `00.000.000/0000-00`.
-- Validação: dígitos verificadores + formato.
+- **LinkedIn da empresa** — input com validação simples (precisa começar com `https://www.linkedin.com/` ou `https://linkedin.com/`)
+- **Site institucional** — input URL (opcional)
+- **Sobre a rede** — textarea curta (até 500 caracteres) com descrição pública
 
-**Em `/perfil-empresa`:**
-- Seção "Verificação de CNPJ" com botão "Verificar agora".
-- Função local que simula chamada à Receita: aguarda 1.5s, retorna `is_verified = true` + atividade econômica "Atividades de atendimento hospitalar" (mock).
-- Badge verde "Rede Verificada" quando concluído.
-- Bloqueia chats e perfis completos enquanto não verificado (banner no dashboard da rede).
+Salvar via `update` na tabela `networks` (RLS já permite a rede atualizar a si mesma).
 
-## 4. Perfil do Médico
+## 3. Nova rota pública: `/rede/$networkId`
 
-**Edição (`/perfil`):**
-- Já existem seções para experiências, formação, certificações. Adicionar:
-  - Campo "Valor da Consulta" se ainda não destacado.
-  - Seção "Verificação de Identidade (KYC)" — upload de documento (frente/verso) + selfie, status pendente/verificado. Por enquanto: marcar como verificado ao enviar (placeholder).
+Criar `src/routes/rede.$networkId.tsx`:
 
-**Selos:**
-- `BadgeCheck` verde quando `crm_status === 'verified'` (texto: "CRM Validado" ou "Registro Provisório" se houver flag).
-- `ShieldCheck` azul quando `identity_verified === true` ("Identidade Verificada").
-- Exibir nos cards públicos e no perfil completo.
+- `loader` busca a rede em `networks_public` por id.
+- Header com avatar, nome, cidade/UF, badge "Rede Verificada" se `is_verified`.
+- Seção "Sobre" com `description`.
+- Seção "Atividade" com `cnpj_activity` (atividade econômica genérica, já pública).
+- Botões/links:
+  - **LinkedIn** (abre em nova aba, `rel="noopener noreferrer"`) — só aparece se preenchido
+  - **Site** (abre em nova aba) — só aparece se preenchido
+- Botão "Voltar" usando `BackButton` apontando para `/` (ou `/dashboard` se logado).
+- Se a rede não for encontrada → `notFoundComponent`.
+- `errorComponent` padrão.
+- `head()` dinâmico com título "{network_name} — Connect-Med".
 
-## 5. Componente compartilhado
+Esta rota é **pública** (qualquer visitante e qualquer médico logado pode ver), mas só mostra dados seguros da view.
 
-- `DoctorPublicCard` reutilizável para `/medicos` e dashboard da rede (quando não verificada, mostra a versão shadow).
-- Helper `getFirstName(fullName)` em `src/lib/utils.ts`.
-- Helper `formatPublicId(id)` → `#${publicId}`.
+## 4. Landing: seção "Conheça nossas redes"
 
-## 6. Métricas de autoridade
+Em `src/routes/index.tsx`, alterar o comportamento do clique em uma rede:
 
-- No card público: substituir "Localização precisa" e "CRM" por "Anos de experiência" + "Taxa de aprovação" (calculada: aceitos / total recebidos).
-- Adicionar coluna calculada ou computar no client a partir de `shift_requests`.
+- **Visitante (não logado)** → continua abrindo o diálogo de planos (comportamento atual mantido).
+- **Médico logado** (`profile.account_type === "doctor"`) → navega para `/rede/{id}` (página pública da rede).
+- **Rede logada** → também navega para `/rede/{id}` (visualização pública, sem dados sensíveis).
 
-## Detalhes técnicos
+Remover o diálogo de "detalhes mínimos" inline para usuários logados — agora todos os logados vão para a página dedicada, que tem mais informação (incl. LinkedIn).
 
-- A view `doctors_public` usa `security_invoker=on` e a tabela base `doctors` ganha policy SELECT mais restritiva (`auth.uid() = id OR has_verified_network(auth.uid())`).
-- `public_id` gerado via sequence iniciando em 1000 + trigger BEFORE INSERT.
-- A simulação de Receita roda no client (sem API externa); apenas grava `is_verified = true` + `cnpj_activity` no Supabase via update direto (RLS já permite update da própria rede).
-- Mantém visual atual (mesmas cores, mesmos componentes shadcn, layout idêntico de cards).
+## 5. Segurança
+
+- Nenhum dado sensível novo é exposto: CNPJ, endereço completo, e-mail, telefone continuam fora da view pública.
+- LinkedIn/site/descrição são informações que a própria rede preenche voluntariamente para divulgação.
+- Links externos sempre com `target="_blank"` e `rel="noopener noreferrer"`.
+- Validação client-side da URL do LinkedIn para evitar links arbitrários (defesa em profundidade — RLS já restringe quem grava).
+
+## Resumo de arquivos
+
+- **Migração**: ALTER TABLE `networks` + recriar view `networks_public`.
+- **Editar**: `src/routes/perfil-empresa.tsx` (3 campos novos), `src/routes/index.tsx` (redirect logado → `/rede/$id`), `src/integrations/supabase/types.ts` (regenerado automaticamente).
+- **Criar**: `src/routes/rede.$networkId.tsx`.
