@@ -1,13 +1,16 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase,
+  Mail, MapPin, Linkedin, Instagram, Facebook, Users, Briefcase, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
-import network9TLogo from "@/assets/network-9t-logo.jpeg";
 import networkBuilding from "@/assets/network-building.avif";
 
 export const Route = createFileRoute("/")({
