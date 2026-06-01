@@ -65,6 +65,14 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           .order("created_at", { ascending: false }),
       ]);
       if (d) {
+        let cvUrl: string | null = (d as any).cv_pdf_url ?? null;
+        if (cvUrl) {
+          const marker = "/storage/v1/object/public/cvs/";
+          const idx = cvUrl.indexOf(marker);
+          const path = idx >= 0 ? cvUrl.slice(idx + marker.length) : cvUrl;
+          const { data: signed } = await supabase.storage.from("cvs").createSignedUrl(path, 3600);
+          cvUrl = signed?.signedUrl ?? null;
+        }
         setDoctor({
           id: (d as any).id,
           specialty: (d as any).specialty,
@@ -76,7 +84,7 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           certifications: (d as any).certifications,
           languages: (d as any).languages,
           avatar_url: (d as any).avatar_url ?? null,
-          cv_pdf_url: (d as any).cv_pdf_url ?? null,
+          cv_pdf_url: cvUrl,
           city: (d as any).city ?? null,
           state: (d as any).state ?? null,
           country: (d as any).country ?? null,
