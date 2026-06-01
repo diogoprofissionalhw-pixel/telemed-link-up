@@ -466,13 +466,16 @@ export type Database = {
           cnpj_activity: string | null
           cnpj_verified_at: string | null
           created_at: string
+          description: string | null
           id: string
           is_verified: boolean
           legal_name: string | null
+          linkedin_url: string | null
           network_name: string
           qualification_status: string
           qualified_at: string | null
           state: string | null
+          website_url: string | null
         }
         Insert: {
           address?: string | null
@@ -483,13 +486,16 @@ export type Database = {
           cnpj_activity?: string | null
           cnpj_verified_at?: string | null
           created_at?: string
+          description?: string | null
           id: string
           is_verified?: boolean
           legal_name?: string | null
+          linkedin_url?: string | null
           network_name: string
           qualification_status?: string
           qualified_at?: string | null
           state?: string | null
+          website_url?: string | null
         }
         Update: {
           address?: string | null
@@ -500,13 +506,16 @@ export type Database = {
           cnpj_activity?: string | null
           cnpj_verified_at?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           is_verified?: boolean
           legal_name?: string | null
+          linkedin_url?: string | null
           network_name?: string
           qualification_status?: string
           qualified_at?: string | null
           state?: string | null
+          website_url?: string | null
         }
         Relationships: [
           {
@@ -811,30 +820,39 @@ export type Database = {
           city: string | null
           cnpj_activity: string | null
           created_at: string | null
+          description: string | null
           id: string | null
           is_verified: boolean | null
+          linkedin_url: string | null
           network_name: string | null
           state: string | null
+          website_url: string | null
         }
         Insert: {
           avatar_url?: string | null
           city?: string | null
           cnpj_activity?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string | null
           is_verified?: boolean | null
+          linkedin_url?: string | null
           network_name?: string | null
           state?: string | null
+          website_url?: string | null
         }
         Update: {
           avatar_url?: string | null
           city?: string | null
           cnpj_activity?: string | null
           created_at?: string | null
+          description?: string | null
           id?: string | null
           is_verified?: boolean | null
+          linkedin_url?: string | null
           network_name?: string | null
           state?: string | null
+          website_url?: string | null
         }
         Relationships: [
           {
