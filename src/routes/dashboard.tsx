@@ -1182,7 +1182,7 @@ function NewRequestDialog({
           city: d.city ?? null,
           state: d.state ?? null,
           years_experience: d.years_experience ?? null,
-          full_name: d.profiles?.full_name ?? "Médico",
+          full_name: d.full_name ?? "Médico",
           avg_stars: ag ? ag.sum / ag.n : 0,
           rating_count: ag?.n ?? 0,
           accepted_count: acceptedMap.get(d.id) ?? 0,
