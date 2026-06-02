@@ -383,6 +383,13 @@ function SignUpWizard() {
 
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
+    if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
+    if (state.accountType === "doctor" && !crmData) {
+      return toast.error("Valide seu CRM antes de criar a conta.");
+    }
+    if (state.accountType === "network" && !cnpjData) {
+      return toast.error("Valide seu CNPJ antes de criar a conta.");
+    }
     setSubmitting(true);
 
     // Build user_metadata with everything the DB trigger needs to create the
@@ -394,8 +401,8 @@ function SignUpWizard() {
     };
     if (state.accountType === "doctor") {
       Object.assign(meta, {
-        crm: onlyDigits(state.crm),
-        crm_uf: state.crm_uf.toUpperCase(),
+        crm: crmData!.crm,
+        crm_uf: crmData!.uf,
         specialty: state.specialty.trim(),
         cpf: onlyDigits(state.cpf),
         city: state.city.trim(),
@@ -406,17 +413,18 @@ function SignUpWizard() {
       Object.assign(meta, {
         network_name: state.network_name.trim(),
         cnpj: onlyDigits(state.cnpj),
-        legal_name: cnpjData?.razao_social ?? null,
-        address: cnpjData ? formatAddress(cnpjData) : null,
-        city: cnpjData?.municipio ?? null,
-        state: cnpjData?.uf ?? null,
-        cnae_code: cnpjData?.cnae_codigo ?? null,
-        cnpj_activity: cnpjData?.cnae_descricao ?? null,
-        is_verified: !!cnpjData,
-        cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
-        qualification_status: "pending",
+        legal_name: cnpjData!.razao_social,
+        address: formatAddress(cnpjData!),
+        city: cnpjData!.municipio,
+        state: cnpjData!.uf,
+        cnae_code: cnpjData!.cnae_codigo,
+        cnpj_activity: cnpjData!.cnae_descricao,
+        is_verified: true,
+        cnpj_verified_at: new Date().toISOString(),
+        qualification_status: cnpjData!.is_health ? "qualified" : "pending",
       });
     }
+
 
     const { error } = await supabase.auth.signUp({
       email: state.email,
