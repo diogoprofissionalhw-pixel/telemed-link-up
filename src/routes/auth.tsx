@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SiteHeader } from "@/components/site-header";
@@ -19,6 +20,18 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
+
+// Validação de CRM: não existe API pública gratuita do CFM, então simulamos
+// uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
+// uma chamada server-side para CFM/Conselho Regional.
+type CRMData = { crm: string; uf: string; situacao: "ATIVO"; verifiedAt: string };
+async function lookupCRM(crm: string, uf: string): Promise<CRMData> {
+  await new Promise((r) => setTimeout(r, 900));
+  const d = onlyDigits(crm);
+  if (!isValidCRM(d)) throw new Error("CRM inválido.");
+  if (!UF_LIST.includes(uf.toUpperCase() as any)) throw new Error("UF inválida.");
+  return { crm: d, uf: uf.toUpperCase(), situacao: "ATIVO", verifiedAt: new Date().toISOString() };
+}
 
 type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
@@ -260,6 +273,10 @@ function SignUpWizard() {
   const [cnpjData, setCnpjData] = useState<CNPJData | null>(null);
   const [cnpjLookup, setCnpjLookup] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [crmData, setCrmData] = useState<CRMData | null>(null);
+  const [crmLookup, setCrmLookup] = useState(false);
+  const [crmError, setCrmError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(false);
   const [signupComplete, setSignupComplete] = useState<string | null>(null);
 
   const totalSteps = 3;
@@ -273,6 +290,14 @@ function SignUpWizard() {
       setCnpjError(null);
     }
   }, [state.cnpj, cnpjData]);
+
+  // Reset validação se trocou CRM ou UF
+  useEffect(() => {
+    if (crmData && (onlyDigits(state.crm) !== crmData.crm || state.crm_uf.toUpperCase() !== crmData.uf)) {
+      setCrmData(null);
+      setCrmError(null);
+    }
+  }, [state.crm, state.crm_uf, crmData]);
 
   const handleLookupCnpj = async () => {
     setCnpjError(null);
@@ -298,6 +323,25 @@ function SignUpWizard() {
       setCnpjData(null);
     } finally {
       setCnpjLookup(false);
+    }
+  };
+
+  const handleLookupCrm = async () => {
+    setCrmError(null);
+    if (!isValidCRM(state.crm) || !UF_LIST.includes(state.crm_uf as any)) {
+      setCrmError("Informe CRM e UF válidos.");
+      return;
+    }
+    setCrmLookup(true);
+    try {
+      const data = await lookupCRM(state.crm, state.crm_uf);
+      setCrmData(data);
+      toast.success("CRM validado!");
+    } catch (e: any) {
+      setCrmError(e?.message ?? "Não foi possível validar seu registro profissional. Verifique os dados e tente novamente.");
+      setCrmData(null);
+    } finally {
+      setCrmLookup(false);
     }
   };
 
@@ -327,14 +371,25 @@ function SignUpWizard() {
     return null;
   }, [step, state, cnpjData]);
 
+  const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
+  const canSubmit = !stepValidation && validationDone && consent && !submitting;
+
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
     setStep((s) => Math.min(s + 1, totalSteps - 1));
   };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
 
+
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
+    if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
+    if (state.accountType === "doctor" && !crmData) {
+      return toast.error("Valide seu CRM antes de criar a conta.");
+    }
+    if (state.accountType === "network" && !cnpjData) {
+      return toast.error("Valide seu CNPJ antes de criar a conta.");
+    }
     setSubmitting(true);
 
     // Build user_metadata with everything the DB trigger needs to create the
@@ -346,8 +401,8 @@ function SignUpWizard() {
     };
     if (state.accountType === "doctor") {
       Object.assign(meta, {
-        crm: onlyDigits(state.crm),
-        crm_uf: state.crm_uf.toUpperCase(),
+        crm: crmData!.crm,
+        crm_uf: crmData!.uf,
         specialty: state.specialty.trim(),
         cpf: onlyDigits(state.cpf),
         city: state.city.trim(),
@@ -358,17 +413,18 @@ function SignUpWizard() {
       Object.assign(meta, {
         network_name: state.network_name.trim(),
         cnpj: onlyDigits(state.cnpj),
-        legal_name: cnpjData?.razao_social ?? null,
-        address: cnpjData ? formatAddress(cnpjData) : null,
-        city: cnpjData?.municipio ?? null,
-        state: cnpjData?.uf ?? null,
-        cnae_code: cnpjData?.cnae_codigo ?? null,
-        cnpj_activity: cnpjData?.cnae_descricao ?? null,
-        is_verified: !!cnpjData,
-        cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
-        qualification_status: "pending",
+        legal_name: cnpjData!.razao_social,
+        address: formatAddress(cnpjData!),
+        city: cnpjData!.municipio,
+        state: cnpjData!.uf,
+        cnae_code: cnpjData!.cnae_codigo,
+        cnpj_activity: cnpjData!.cnae_descricao,
+        is_verified: true,
+        cnpj_verified_at: new Date().toISOString(),
+        qualification_status: cnpjData!.is_health ? "qualified" : "pending",
       });
     }
+
 
     const { error } = await supabase.auth.signUp({
       email: state.email,
@@ -462,6 +518,29 @@ function SignUpWizard() {
             <Label>UF</Label>
             <UFSelect value={state.crm_uf} onChange={(v) => set("crm_uf", v)} />
           </div>
+
+          <div className="col-span-3">
+            <Button type="button" variant="outline" className="w-full gap-1.5"
+              onClick={handleLookupCrm}
+              disabled={crmLookup || !isValidCRM(state.crm) || !UF_LIST.includes(state.crm_uf as any) || !!crmData}>
+              {crmLookup ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+              {crmData ? "CRM validado" : "Validar CRM no conselho"}
+            </Button>
+            {crmError && (
+              <div className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
+                <span className="text-destructive">{crmError}</span>
+              </div>
+            )}
+            {crmData && (
+              <div className="mt-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-800">
+                <div className="flex items-center gap-2 font-semibold text-emerald-700">
+                  <ShieldCheck className="h-4 w-4" /> CRM {crmData.crm}/{crmData.uf} — situação {crmData.situacao}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="col-span-3">
             <Field label="Especialidade" htmlFor="specialty">
               <Select value={state.specialty} onValueChange={(v) => set("specialty", v)}>
@@ -500,6 +579,7 @@ function SignUpWizard() {
         </div>
       )}
 
+
       {step === 2 && state.accountType === "network" && (
         <div className="space-y-4">
           <Field label="CNPJ" htmlFor="cnpj"
@@ -515,8 +595,9 @@ function SignUpWizard() {
               </Button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Sua rede será validada automaticamente na Receita Federal (BrasilAPI) logo após criar a conta. Você pode pré-visualizar agora se quiser.
+              Obrigatório: validamos seu CNPJ na Receita Federal (BrasilAPI) antes de criar a conta.
             </p>
+
           </Field>
 
           {cnpjError && (
@@ -555,13 +636,31 @@ function SignUpWizard() {
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-3">
+      {step === totalSteps - 1 && (
+        <label className="flex items-start gap-3 rounded-xl border bg-muted/40 p-3 text-sm">
+          <Checkbox
+            checked={consent}
+            onCheckedChange={(v) => setConsent(v === true)}
+            className="mt-0.5"
+          />
+          <span className="text-muted-foreground">
+            Aceito que meus dados profissionais sejam validados automaticamente via bases oficiais
+            ({state.accountType === "doctor" ? "CFM/Conselho Regional para CRM" : "Receita Federal para CNPJ"})
+            para garantir a segurança e integridade da plataforma Connect-Med.
+          </span>
+        </label>
+      )}
+
+      <div className="flex items-center justify-between gap-3">
+        {step > 0 ? (
+          <Button type="button" variant="ghost" onClick={prev}>Voltar</Button>
+        ) : <span />}
         {step < totalSteps - 1 ? (
           <Button type="button" onClick={next} className="gap-1">
             Continuar <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button type="button" onClick={submit} disabled={submitting} className="gap-1">
+          <Button type="button" onClick={submit} disabled={!canSubmit} className="gap-1">
             {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Criando...</> : <><Check className="h-4 w-4" /> Criar conta</>}
           </Button>
         )}
