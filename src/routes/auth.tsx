@@ -518,6 +518,29 @@ function SignUpWizard() {
             <Label>UF</Label>
             <UFSelect value={state.crm_uf} onChange={(v) => set("crm_uf", v)} />
           </div>
+
+          <div className="col-span-3">
+            <Button type="button" variant="outline" className="w-full gap-1.5"
+              onClick={handleLookupCrm}
+              disabled={crmLookup || !isValidCRM(state.crm) || !UF_LIST.includes(state.crm_uf as any) || !!crmData}>
+              {crmLookup ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+              {crmData ? "CRM validado" : "Validar CRM no conselho"}
+            </Button>
+            {crmError && (
+              <div className="mt-2 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive shrink-0" />
+                <span className="text-destructive">{crmError}</span>
+              </div>
+            )}
+            {crmData && (
+              <div className="mt-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-800">
+                <div className="flex items-center gap-2 font-semibold text-emerald-700">
+                  <ShieldCheck className="h-4 w-4" /> CRM {crmData.crm}/{crmData.uf} — situação {crmData.situacao}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="col-span-3">
             <Field label="Especialidade" htmlFor="specialty">
               <Select value={state.specialty} onValueChange={(v) => set("specialty", v)}>
@@ -555,6 +578,7 @@ function SignUpWizard() {
           </div>
         </div>
       )}
+
 
       {step === 2 && state.accountType === "network" && (
         <div className="space-y-4">
