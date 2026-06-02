@@ -345,6 +345,8 @@ function SignUpWizard() {
     }
   };
 
+  const isBypassEmail = BYPASS_EMAILS.includes(state.email.trim().toLowerCase());
+
   const stepValidation = useMemo(() => {
     if (step === 0) return null;
     if (step === 1) {
@@ -355,6 +357,7 @@ function SignUpWizard() {
       return null;
     }
     if (step === 2) {
+      if (isBypassEmail) return null; // contas internas de teste
       if (state.accountType === "doctor") {
         if (!isValidCRM(state.crm)) return "CRM inválido (4 a 7 dígitos).";
         if (!UF_LIST.includes(state.crm_uf as any)) return "Selecione a UF do CRM.";
@@ -369,9 +372,11 @@ function SignUpWizard() {
       return null;
     }
     return null;
-  }, [step, state, cnpjData]);
+  }, [step, state, cnpjData, isBypassEmail]);
 
-  const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
+  const validationDone = isBypassEmail
+    ? true
+    : state.accountType === "doctor" ? !!crmData : !!cnpjData;
   const isValidating = cnpjLookup || crmLookup;
   const canSubmit = !stepValidation && validationDone && consent && !submitting && !isValidating;
 
