@@ -23,6 +23,8 @@ import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MedicosRouteImport } from './routes/medicos'
 import { Route as LgpdRouteImport } from './routes/lgpd'
 import { Route as HistoricoRouteImport } from './routes/historico'
+import { Route as ExplorarRedesRouteImport } from './routes/explorar-redes'
+import { Route as ExplorarMedicosRouteImport } from './routes/explorar-medicos'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ContratacoesRouteImport } from './routes/contratacoes'
 import { Route as ConsultasRouteImport } from './routes/consultas'
@@ -102,6 +104,16 @@ const HistoricoRoute = HistoricoRouteImport.update({
   path: '/historico',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExplorarRedesRoute = ExplorarRedesRouteImport.update({
+  id: '/explorar-redes',
+  path: '/explorar-redes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExplorarMedicosRoute = ExplorarMedicosRouteImport.update({
+  id: '/explorar-medicos',
+  path: '/explorar-medicos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -151,6 +163,8 @@ export interface FileRoutesByFullPath {
   '/consultas': typeof ConsultasRoute
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
+  '/explorar-medicos': typeof ExplorarMedicosRoute
+  '/explorar-redes': typeof ExplorarRedesRoute
   '/historico': typeof HistoricoRoute
   '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
@@ -175,6 +189,8 @@ export interface FileRoutesByTo {
   '/consultas': typeof ConsultasRoute
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
+  '/explorar-medicos': typeof ExplorarMedicosRoute
+  '/explorar-redes': typeof ExplorarRedesRoute
   '/historico': typeof HistoricoRoute
   '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
@@ -200,6 +216,8 @@ export interface FileRoutesById {
   '/consultas': typeof ConsultasRoute
   '/contratacoes': typeof ContratacoesRoute
   '/dashboard': typeof DashboardRoute
+  '/explorar-medicos': typeof ExplorarMedicosRoute
+  '/explorar-redes': typeof ExplorarRedesRoute
   '/historico': typeof HistoricoRoute
   '/lgpd': typeof LgpdRoute
   '/medicos': typeof MedicosRoute
@@ -226,6 +244,8 @@ export interface FileRouteTypes {
     | '/consultas'
     | '/contratacoes'
     | '/dashboard'
+    | '/explorar-medicos'
+    | '/explorar-redes'
     | '/historico'
     | '/lgpd'
     | '/medicos'
@@ -250,6 +270,8 @@ export interface FileRouteTypes {
     | '/consultas'
     | '/contratacoes'
     | '/dashboard'
+    | '/explorar-medicos'
+    | '/explorar-redes'
     | '/historico'
     | '/lgpd'
     | '/medicos'
@@ -274,6 +296,8 @@ export interface FileRouteTypes {
     | '/consultas'
     | '/contratacoes'
     | '/dashboard'
+    | '/explorar-medicos'
+    | '/explorar-redes'
     | '/historico'
     | '/lgpd'
     | '/medicos'
@@ -299,6 +323,8 @@ export interface RootRouteChildren {
   ConsultasRoute: typeof ConsultasRoute
   ContratacoesRoute: typeof ContratacoesRoute
   DashboardRoute: typeof DashboardRoute
+  ExplorarMedicosRoute: typeof ExplorarMedicosRoute
+  ExplorarRedesRoute: typeof ExplorarRedesRoute
   HistoricoRoute: typeof HistoricoRoute
   LgpdRoute: typeof LgpdRoute
   MedicosRoute: typeof MedicosRoute
@@ -416,6 +442,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HistoricoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explorar-redes': {
+      id: '/explorar-redes'
+      path: '/explorar-redes'
+      fullPath: '/explorar-redes'
+      preLoaderRoute: typeof ExplorarRedesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/explorar-medicos': {
+      id: '/explorar-medicos'
+      path: '/explorar-medicos'
+      fullPath: '/explorar-medicos'
+      preLoaderRoute: typeof ExplorarMedicosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -483,6 +523,8 @@ const rootRouteChildren: RootRouteChildren = {
   ConsultasRoute: ConsultasRoute,
   ContratacoesRoute: ContratacoesRoute,
   DashboardRoute: DashboardRoute,
+  ExplorarMedicosRoute: ExplorarMedicosRoute,
+  ExplorarRedesRoute: ExplorarRedesRoute,
   HistoricoRoute: HistoricoRoute,
   LgpdRoute: LgpdRoute,
   MedicosRoute: MedicosRoute,

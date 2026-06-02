@@ -1,17 +1,14 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Stethoscope, Building2, Calendar, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Users, Briefcase, BadgeCheck,
+  Stethoscope, Building2, CheckCircle2, ArrowRight, ShieldCheck, Clock,
+  Mail, MapPin, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
 import networkBuilding from "@/assets/network-building.avif";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,18 +27,6 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-/* ====================== Mock data ====================== */
-const DOCTORS = [
-  { id: 1, name: "Dr. Carlos Silva", specialty: "Médico Clínico Geral", location: "São Paulo, SP", rating: 4.9, reviews: 127, responseTime: "Responde em minutos", hourlyRate: 150, specialties: ["Clínica Geral", "Telemedicina", "Diagnóstico Clínico"], avatar: "👨‍⚕️" },
-  { id: 2, name: "Dra. Marina Costa", specialty: "Cardiologista", location: "Rio de Janeiro, RJ", rating: 4.8, reviews: 95, responseTime: "Responde em 2 horas", hourlyRate: 200, specialties: ["Cardiologia", "Telemedicina", "Prevenção"], avatar: "👩‍⚕️" },
-  { id: 3, name: "Dr. Rafael Mendes", specialty: "Pediatra", location: "Belo Horizonte, MG", rating: 4.7, reviews: 64, responseTime: "Responde em 1 hora", hourlyRate: 180, specialties: ["Pediatria", "Telemedicina", "Neonatologia"], avatar: "👨‍⚕️" },
-  { id: 4, name: "Dra. Juliana Alves", specialty: "Psiquiatra", location: "São Paulo, SP", rating: 5.0, reviews: 152, responseTime: "Responde em minutos", hourlyRate: 250, specialties: ["Psiquiatria", "Telemedicina", "Saúde Mental"], avatar: "👩‍⚕️" },
-  { id: 5, name: "Dr. Pedro Rocha", specialty: "Médico de Família", location: "Curitiba, PR", rating: 4.6, reviews: 41, responseTime: "Responde em 3 horas", hourlyRate: 130, specialties: ["Medicina de Família", "Clínica Geral"], avatar: "👨‍⚕️" },
-  { id: 6, name: "Dra. Beatriz Lima", specialty: "Endocrinologista", location: "Porto Alegre, RS", rating: 4.9, reviews: 88, responseTime: "Responde em 1 hora", hourlyRate: 220, specialties: ["Endocrinologia", "Telemedicina"], avatar: "👩‍⚕️" },
-];
-
-const ALL_SPECIALTIES = ["Clínica Geral", "Cardiologia", "Pediatria", "Psiquiatria", "Medicina de Família", "Endocrinologia", "Telemedicina"];
-const ALL_LOCATIONS = ["São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", "Curitiba, PR", "Porto Alegre, RS"];
 
 /* ====================== Page ====================== */
 function LandingPage() {
@@ -258,179 +243,11 @@ function Benefits() {
   );
 }
 
-/* ====================== Shared plans + types ====================== */
-type PublicNetwork = {
-  id: string;
-  network_name: string;
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-  is_verified: boolean;
-  cnpj_activity: string | null;
-  created_at: string;
-};
 
-type PublicDoctor = {
-  id: string;
-  full_name: string;
-  specialty: string | null;
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-};
 
-type Plan = {
-  id: "free" | "pro" | "premium";
-  name: string;
-  monthly: number;
-  annual: number;
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-};
-
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Gratuito",
-    monthly: 0,
-    annual: 0,
-    description: "Para começar a explorar a plataforma.",
-    features: ["Cadastro gratuito", "Visualizar redes e médicos", "Perfil básico"],
-  },
-  {
-    id: "pro",
-    name: "Profissional",
-    monthly: 49,
-    annual: 470,
-    description: "Mais visibilidade e contato direto.",
-    features: ["Tudo do Gratuito", "Contato direto", "Destaque no perfil", "Suporte prioritário"],
-    highlighted: true,
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    monthly: 129,
-    annual: 1238,
-    description: "Recursos avançados para redes e médicos.",
-    features: ["Tudo do Profissional", "Analytics avançado", "Chat ilimitado", "Suporte dedicado 24/7"],
-  },
-];
-
-function formatBRL(v: number) {
-  return v === 0 ? "R$ 0" : `R$ ${v.toLocaleString("pt-BR")}`;
-}
-
-function PlansDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  title: string;
-  description: string;
-}) {
-  const navigate = useNavigate();
-  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
-
-  const goSignup = () => {
-    onOpenChange(false);
-    navigate({ to: "/auth", search: { mode: "signup" } });
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-
-        <div className="mx-auto inline-flex rounded-full border bg-muted p-1 text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => setBilling("monthly")}
-            className={`rounded-full px-4 py-1.5 transition ${billing === "monthly" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
-          >
-            Mensal
-          </button>
-          <button
-            type="button"
-            onClick={() => setBilling("annual")}
-            className={`rounded-full px-4 py-1.5 transition ${billing === "annual" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
-          >
-            Anual <span className="ml-1 text-[10px] text-primary">−20%</span>
-          </button>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          {PLANS.map((plan) => {
-            const value = billing === "monthly" ? plan.monthly : plan.annual;
-            const period = billing === "monthly" ? "/mês" : "/ano";
-            return (
-              <div
-                key={plan.id}
-                className={`flex flex-col rounded-2xl border p-5 ${plan.highlighted ? "border-primary shadow-lg" : "bg-card"}`}
-              >
-                {plan.highlighted && (
-                  <span className="mb-2 self-start rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                    MAIS POPULAR
-                  </span>
-                )}
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-2xl font-bold">{formatBRL(value)}</span>
-                  <span className="text-xs text-muted-foreground">{plan.id === "free" ? "" : period}</span>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">{plan.description}</p>
-                <ul className="mt-4 flex-1 space-y-2 text-sm">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="mt-5 w-full"
-                  variant={plan.highlighted ? "default" : "outline"}
-                  onClick={goSignup}
-                >
-                  {plan.id === "free" ? "Cadastrar grátis" : "Assinar e cadastrar"}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-        <p className="mt-2 text-center text-xs text-muted-foreground">
-          Para acessar perfis completos é necessário criar uma conta.
-        </p>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 /* ====================== Explore Doctors ====================== */
 function ExploreDoctors() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [doctors, setDoctors] = useState<PublicDoctor[]>([]);
-  const [plansOpen, setPlansOpen] = useState(false);
-
-  useEffect(() => {
-    supabase
-      .from("doctors_public")
-      .select("id, full_name, specialty, city, state, avatar_url")
-      .limit(9)
-      .then(({ data }) => setDoctors((data as PublicDoctor[] | null) ?? []));
-  }, []);
-
-  const handleClick = () => {
-    if (user) navigate({ to: "/medicos" });
-    else setPlansOpen(true);
-  };
-
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
@@ -457,95 +274,23 @@ function ExploreDoctors() {
               <p className="mt-3 text-muted-foreground lg:max-w-md">
                 Explore nossa rede de profissionais qualificados. Filtre por especialidade, localização e taxa horária.
               </p>
-            </div>
-          </div>
-
-          {doctors.length === 0 ? (
-            <div className="mt-10 rounded-2xl border border-dashed bg-background/60 p-8 text-center">
-              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent">
-                <Stethoscope className="h-7 w-7 text-primary" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">Seja um dos primeiros médicos</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Cadastre-se como médico e fique visível para todas as redes parceiras.
-              </p>
-              <div className="mt-5">
-                <Link to="/auth" search={{ mode: "signup" }}>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/explorar-medicos">
                   <Button size="lg" className="gap-2">
-                    Cadastrar como médico <ArrowRight className="h-4 w-4" />
+                    Conhecer médicos <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {doctors.map((d) => {
-                const local = [d.city, d.state].filter(Boolean).join(", ");
-                return (
-                  <button
-                    key={d.id}
-                    type="button"
-                    onClick={handleClick}
-                    className="flex items-center gap-4 rounded-2xl border bg-background p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
-                    style={{ boxShadow: "var(--shadow-card)" }}
-                  >
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-accent">
-                      {d.avatar_url ? (
-                        <img src={d.avatar_url} alt={`Foto ${d.full_name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                      ) : (
-                        <Stethoscope className="h-6 w-6 text-primary" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold">{d.full_name}</h3>
-                      {d.specialty && (
-                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{d.specialty}</p>
-                      )}
-                      {local && (
-                        <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <MapPin className="h-3 w-3" /> {local}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
       </div>
-
-      <PlansDialog
-        open={plansOpen}
-        onOpenChange={setPlansOpen}
-        title="Para ver o perfil completo do médico"
-        description="Crie sua conta para acessar informações detalhadas, currículo e contato direto."
-      />
     </section>
   );
 }
 
 /* ====================== Explore Networks ====================== */
 function ExploreNetworks() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [networks, setNetworks] = useState<PublicNetwork[]>([]);
-  const [plansOpen, setPlansOpen] = useState(false);
-
-  useEffect(() => {
-    supabase
-      .from("networks_public")
-      .select("id, network_name, city, state, avatar_url, is_verified, cnpj_activity, created_at")
-      .order("is_verified", { ascending: false })
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setNetworks((data as PublicNetwork[] | null) ?? []));
-  }, []);
-
-  const handleClick = (n: PublicNetwork) => {
-    if (user) navigate({ to: "/rede/$networkId", params: { networkId: n.id } });
-    else setPlansOpen(true);
-  };
-
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
@@ -575,70 +320,17 @@ function ExploreNetworks() {
               <p className="mt-3 text-muted-foreground lg:max-w-md">
                 Descubra as empresas de telemedicina que contratam profissionais através do Connect-Med e encontre oportunidades alinhadas à sua especialidade.
               </p>
-            </div>
-          </div>
-
-          {networks.length === 0 ? (
-            <div className="mt-10 rounded-2xl border border-dashed bg-background/60 p-8 text-center">
-              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent">
-                <Building2 className="h-7 w-7 text-primary" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">Seja uma das primeiras redes</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Ainda não temos redes cadastradas por aqui. Cadastre sua rede de telemedicina e comece a contratar médicos qualificados em minutos.
-              </p>
-              <div className="mt-5">
-                <Link to="/auth" search={{ mode: "signup" }}>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/explorar-redes">
                   <Button size="lg" className="gap-2">
-                    Cadastrar minha rede <ArrowRight className="h-4 w-4" />
+                    Conhecer redes <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
             </div>
-          ) : (
-            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {networks.map((n) => {
-                const local = [n.city, n.state].filter(Boolean).join(", ");
-                return (
-                  <button
-                    key={n.id}
-                    type="button"
-                    onClick={() => handleClick(n)}
-                    className="flex items-center gap-4 rounded-2xl border bg-background p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
-                    style={{ boxShadow: "var(--shadow-card)" }}
-                  >
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
-                      {n.avatar_url ? (
-                        <img src={n.avatar_url} alt={`Logo ${n.network_name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                      ) : (
-                        <Building2 className="h-6 w-6 text-primary-foreground" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-sm font-semibold flex items-center gap-1">
-                        {n.network_name}
-                        {n.is_verified && <BadgeCheck className="h-3.5 w-3.5 text-primary" />}
-                      </h3>
-                      {local && (
-                        <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <MapPin className="h-3 w-3" /> {local}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          </div>
         </div>
       </div>
-
-      <PlansDialog
-        open={plansOpen}
-        onOpenChange={setPlansOpen}
-        title="Para ver os detalhes da rede"
-        description="Crie sua conta para acessar informações completas e entrar em contato com a rede."
-      />
     </section>
   );
 }
