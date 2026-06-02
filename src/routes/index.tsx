@@ -5,7 +5,7 @@ import {
   Mail, MapPin, Users, Briefcase, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SiteHeader } from "@/components/site-header";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -258,9 +258,179 @@ function Benefits() {
   );
 }
 
-/* ====================== Explore Doctors ====================== */
+/* ====================== Shared plans + types ====================== */
+type PublicNetwork = {
+  id: string;
+  network_name: string;
+  city: string | null;
+  state: string | null;
+  avatar_url: string | null;
+  is_verified: boolean;
+  cnpj_activity: string | null;
+  created_at: string;
+};
 
+type PublicDoctor = {
+  id: string;
+  full_name: string;
+  specialty: string | null;
+  city: string | null;
+  state: string | null;
+  avatar_url: string | null;
+};
+
+type Plan = {
+  id: "free" | "pro" | "premium";
+  name: string;
+  monthly: number;
+  annual: number;
+  description: string;
+  features: string[];
+  highlighted?: boolean;
+};
+
+const PLANS: Plan[] = [
+  {
+    id: "free",
+    name: "Gratuito",
+    monthly: 0,
+    annual: 0,
+    description: "Para começar a explorar a plataforma.",
+    features: ["Cadastro gratuito", "Visualizar redes e médicos", "Perfil básico"],
+  },
+  {
+    id: "pro",
+    name: "Profissional",
+    monthly: 49,
+    annual: 470,
+    description: "Mais visibilidade e contato direto.",
+    features: ["Tudo do Gratuito", "Contato direto", "Destaque no perfil", "Suporte prioritário"],
+    highlighted: true,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    monthly: 129,
+    annual: 1238,
+    description: "Recursos avançados para redes e médicos.",
+    features: ["Tudo do Profissional", "Analytics avançado", "Chat ilimitado", "Suporte dedicado 24/7"],
+  },
+];
+
+function formatBRL(v: number) {
+  return v === 0 ? "R$ 0" : `R$ ${v.toLocaleString("pt-BR")}`;
+}
+
+function PlansDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  title: string;
+  description: string;
+}) {
+  const navigate = useNavigate();
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+
+  const goSignup = () => {
+    onOpenChange(false);
+    navigate({ to: "/auth", search: { mode: "signup" } });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+
+        <div className="mx-auto inline-flex rounded-full border bg-muted p-1 text-xs font-medium">
+          <button
+            type="button"
+            onClick={() => setBilling("monthly")}
+            className={`rounded-full px-4 py-1.5 transition ${billing === "monthly" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
+          >
+            Mensal
+          </button>
+          <button
+            type="button"
+            onClick={() => setBilling("annual")}
+            className={`rounded-full px-4 py-1.5 transition ${billing === "annual" ? "bg-background shadow text-foreground" : "text-muted-foreground"}`}
+          >
+            Anual <span className="ml-1 text-[10px] text-primary">−20%</span>
+          </button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          {PLANS.map((plan) => {
+            const value = billing === "monthly" ? plan.monthly : plan.annual;
+            const period = billing === "monthly" ? "/mês" : "/ano";
+            return (
+              <div
+                key={plan.id}
+                className={`flex flex-col rounded-2xl border p-5 ${plan.highlighted ? "border-primary shadow-lg" : "bg-card"}`}
+              >
+                {plan.highlighted && (
+                  <span className="mb-2 self-start rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                    MAIS POPULAR
+                  </span>
+                )}
+                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-2xl font-bold">{formatBRL(value)}</span>
+                  <span className="text-xs text-muted-foreground">{plan.id === "free" ? "" : period}</span>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">{plan.description}</p>
+                <ul className="mt-4 flex-1 space-y-2 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {f}
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className="mt-5 w-full"
+                  variant={plan.highlighted ? "default" : "outline"}
+                  onClick={goSignup}
+                >
+                  {plan.id === "free" ? "Cadastrar grátis" : "Assinar e cadastrar"}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-center text-xs text-muted-foreground">
+          Para acessar perfis completos é necessário criar uma conta.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ====================== Explore Doctors ====================== */
 function ExploreDoctors() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [doctors, setDoctors] = useState<PublicDoctor[]>([]);
+  const [plansOpen, setPlansOpen] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("doctors_public")
+      .select("id, full_name, specialty, city, state, avatar_url")
+      .limit(9)
+      .then(({ data }) => setDoctors((data as PublicDoctor[] | null) ?? []));
+  }, []);
+
+  const handleClick = () => {
+    if (user) navigate({ to: "/medicos" });
+    else setPlansOpen(true);
+  };
+
   return (
     <section className="bg-background">
       <div className="mx-auto max-w-6xl px-4 py-20">
@@ -287,77 +457,80 @@ function ExploreDoctors() {
               <p className="mt-3 text-muted-foreground lg:max-w-md">
                 Explore nossa rede de profissionais qualificados. Filtre por especialidade, localização e taxa horária.
               </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
-                <Link to="/medicos">
+            </div>
+          </div>
+
+          {doctors.length === 0 ? (
+            <div className="mt-10 rounded-2xl border border-dashed bg-background/60 p-8 text-center">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent">
+                <Stethoscope className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">Seja um dos primeiros médicos</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+                Cadastre-se como médico e fique visível para todas as redes parceiras.
+              </p>
+              <div className="mt-5">
+                <Link to="/auth" search={{ mode: "signup" }}>
                   <Button size="lg" className="gap-2">
-                    Explorar médicos <ArrowRight className="h-4 w-4" />
+                    Cadastrar como médico <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {doctors.map((d) => {
+                const local = [d.city, d.state].filter(Boolean).join(", ");
+                return (
+                  <button
+                    key={d.id}
+                    type="button"
+                    onClick={handleClick}
+                    className="flex items-center gap-4 rounded-2xl border bg-background p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary"
+                    style={{ boxShadow: "var(--shadow-card)" }}
+                  >
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-accent">
+                      {d.avatar_url ? (
+                        <img src={d.avatar_url} alt={`Foto ${d.full_name}`} width={56} height={56} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      ) : (
+                        <Stethoscope className="h-6 w-6 text-primary" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold">{d.full_name}</h3>
+                      {d.specialty && (
+                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{d.specialty}</p>
+                      )}
+                      {local && (
+                        <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <MapPin className="h-3 w-3" /> {local}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
+
+      <PlansDialog
+        open={plansOpen}
+        onOpenChange={setPlansOpen}
+        title="Para ver o perfil completo do médico"
+        description="Crie sua conta para acessar informações detalhadas, currículo e contato direto."
+      />
     </section>
   );
 }
 
 /* ====================== Explore Networks ====================== */
-type PublicNetwork = {
-  id: string;
-  network_name: string;
-  city: string | null;
-  state: string | null;
-  avatar_url: string | null;
-  is_verified: boolean;
-  cnpj_activity: string | null;
-  created_at: string;
-};
-
-type Plan = {
-  id: "free" | "pro" | "premium";
-  name: string;
-  price: string;
-  period: string;
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-};
-
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Gratuito",
-    price: "R$ 0",
-    period: "/mês",
-    description: "Para começar a explorar a plataforma.",
-    features: ["Cadastro gratuito", "Visualizar redes parceiras", "Perfil básico"],
-  },
-  {
-    id: "pro",
-    name: "Profissional",
-    price: "R$ 49",
-    period: "/mês",
-    description: "Mais visibilidade e contato direto com redes.",
-    features: ["Tudo do Gratuito", "Contato direto com redes", "Destaque no perfil", "Suporte prioritário"],
-    highlighted: true,
-  },
-  {
-    id: "premium",
-    name: "Premium",
-    price: "R$ 129",
-    period: "/mês",
-    description: "Recursos avançados para redes e médicos.",
-    features: ["Tudo do Profissional", "Analytics avançado", "Chat ilimitado", "Suporte dedicado 24/7"],
-  },
-];
-
 function ExploreNetworks() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
   const [plansOpen, setPlansOpen] = useState(false);
-  const [paymentPlan, setPaymentPlan] = useState<Plan | null>(null);
 
   useEffect(() => {
     supabase
@@ -372,16 +545,6 @@ function ExploreNetworks() {
     if (user) navigate({ to: "/rede/$networkId", params: { networkId: n.id } });
     else setPlansOpen(true);
   };
-
-  const handleSelectPlan = (plan: Plan) => {
-    setPlansOpen(false);
-    if (plan.id === "free") {
-      navigate({ to: "/auth", search: { mode: "signup" } });
-    } else {
-      setPaymentPlan(plan);
-    }
-  };
-
 
   return (
     <section className="bg-background">
@@ -470,103 +633,12 @@ function ExploreNetworks() {
         </div>
       </div>
 
-      {/* Diálogo de planos (visitante) */}
-
-      <Dialog open={plansOpen} onOpenChange={setPlansOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Escolha seu plano</DialogTitle>
-            <DialogDescription>
-              Selecione um plano para acessar as informações das redes parceiras.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.id}
-                className={`flex flex-col rounded-2xl border p-5 ${plan.highlighted ? "border-primary shadow-lg" : "bg-card"}`}
-              >
-                {plan.highlighted && (
-                  <span className="mb-2 self-start rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                    MAIS POPULAR
-                  </span>
-                )}
-                <h3 className="text-lg font-semibold">{plan.name}</h3>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-2xl font-bold">{plan.price}</span>
-                  <span className="text-xs text-muted-foreground">{plan.period}</span>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">{plan.description}</p>
-                <ul className="mt-4 flex-1 space-y-2 text-sm">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
-                  className="mt-5 w-full"
-                  variant={plan.highlighted ? "default" : "outline"}
-                  onClick={() => handleSelectPlan(plan)}
-                >
-                  {plan.id === "free" ? "Cadastrar grátis" : "Assinar"}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Diálogo de pagamento (mock) */}
-      <Dialog open={!!paymentPlan} onOpenChange={(o) => !o && setPaymentPlan(null)}>
-        <DialogContent>
-          {paymentPlan && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Pagamento — Plano {paymentPlan.name}</DialogTitle>
-                <DialogDescription>
-                  {paymentPlan.price}{paymentPlan.period} · Preencha seus dados de pagamento.
-                </DialogDescription>
-              </DialogHeader>
-              <form
-                className="space-y-3"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setPaymentPlan(null);
-                  navigate({ to: "/auth", search: { mode: "signup" } });
-                }}
-              >
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">Nome no cartão</label>
-                  <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="Como aparece no cartão" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground">Número do cartão</label>
-                  <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="0000 0000 0000 0000" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Validade</label>
-                    <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="MM/AA" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">CVV</label>
-                    <input className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm" placeholder="000" />
-                  </div>
-                </div>
-                <DialogFooter className="gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setPaymentPlan(null)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit">
-                    Pagar {paymentPlan.price}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <PlansDialog
+        open={plansOpen}
+        onOpenChange={setPlansOpen}
+        title="Para ver os detalhes da rede"
+        description="Crie sua conta para acessar informações completas e entrar em contato com a rede."
+      />
     </section>
   );
 }
