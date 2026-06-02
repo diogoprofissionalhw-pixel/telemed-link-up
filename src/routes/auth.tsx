@@ -636,13 +636,31 @@ function SignUpWizard() {
         </div>
       )}
 
-      <div className="flex items-center justify-end gap-3">
+      {step === totalSteps - 1 && (
+        <label className="flex items-start gap-3 rounded-xl border bg-muted/40 p-3 text-sm">
+          <Checkbox
+            checked={consent}
+            onCheckedChange={(v) => setConsent(v === true)}
+            className="mt-0.5"
+          />
+          <span className="text-muted-foreground">
+            Aceito que meus dados profissionais sejam validados automaticamente via bases oficiais
+            ({state.accountType === "doctor" ? "CFM/Conselho Regional para CRM" : "Receita Federal para CNPJ"})
+            para garantir a segurança e integridade da plataforma Connect-Med.
+          </span>
+        </label>
+      )}
+
+      <div className="flex items-center justify-between gap-3">
+        {step > 0 ? (
+          <Button type="button" variant="ghost" onClick={prev}>Voltar</Button>
+        ) : <span />}
         {step < totalSteps - 1 ? (
           <Button type="button" onClick={next} className="gap-1">
             Continuar <ArrowRight className="h-4 w-4" />
           </Button>
         ) : (
-          <Button type="button" onClick={submit} disabled={submitting} className="gap-1">
+          <Button type="button" onClick={submit} disabled={!canSubmit} className="gap-1">
             {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Criando...</> : <><Check className="h-4 w-4" /> Criar conta</>}
           </Button>
         )}
