@@ -36,6 +36,14 @@ async function lookupCRM(crm: string, uf: string): Promise<CRMData> {
 type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
 
+// Contas internas de teste — bypass de validações profissionais (CRM/CPF/CNPJ)
+const BYPASS_EMAILS = [
+  "levimacedomagalhaes@gmail.com",
+  "diogo.profissional.hw@gmail.com",
+];
+const BYPASS_DOCTOR = { crm: "111111", crm_uf: "SP", cpf: "39053344705", specialty: "Clínica Médica", city: "São Paulo", state: "SP" };
+const BYPASS_NETWORK = { cnpj: "19131243000197", network_name: "Rede de Testes Connect-Med" };
+
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     mode: (s.mode === "signup" ? "signup" : s.mode === "forgot" ? "forgot" : "signin") as Mode,
@@ -345,6 +353,8 @@ function SignUpWizard() {
     }
   };
 
+  const isBypassEmail = BYPASS_EMAILS.includes(state.email.trim().toLowerCase());
+
   const stepValidation = useMemo(() => {
     if (step === 0) return null;
     if (step === 1) {
@@ -355,6 +365,7 @@ function SignUpWizard() {
       return null;
     }
     if (step === 2) {
+      if (isBypassEmail) return null; // contas internas de teste
       if (state.accountType === "doctor") {
         if (!isValidCRM(state.crm)) return "CRM inválido (4 a 7 dígitos).";
         if (!UF_LIST.includes(state.crm_uf as any)) return "Selecione a UF do CRM.";
@@ -369,9 +380,11 @@ function SignUpWizard() {
       return null;
     }
     return null;
-  }, [step, state, cnpjData]);
+  }, [step, state, cnpjData, isBypassEmail]);
 
-  const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
+  const validationDone = isBypassEmail
+    ? true
+    : state.accountType === "doctor" ? !!crmData : !!cnpjData;
   const isValidating = cnpjLookup || crmLookup;
   const canSubmit = !stepValidation && validationDone && consent && !submitting && !isValidating;
 
@@ -384,12 +397,14 @@ function SignUpWizard() {
 
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
-    if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
-    if (state.accountType === "doctor" && !crmData) {
-      return toast.error("Valide seu CRM antes de criar a conta.");
-    }
-    if (state.accountType === "network" && !cnpjData) {
-      return toast.error("Valide seu CNPJ antes de criar a conta.");
+    if (!isBypassEmail) {
+      if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
+      if (state.accountType === "doctor" && !crmData) {
+        return toast.error("Valide seu CRM antes de criar a conta.");
+      }
+      if (state.accountType === "network" && !cnpjData) {
+        return toast.error("Valide seu CNPJ antes de criar a conta.");
+      }
     }
     setSubmitting(true);
 
@@ -397,32 +412,32 @@ function SignUpWizard() {
     // doctor/network row. Confirmação de e-mail está ativa, então não temos
     // sessão para fazer inserts client-side — o trigger handle_new_user cuida disso.
     const meta: Record<string, unknown> = {
-      full_name: state.full_name,
+      full_name: state.full_name || "Conta de Teste",
       account_type: state.accountType,
     };
     if (state.accountType === "doctor") {
       Object.assign(meta, {
-        crm: crmData!.crm,
-        crm_uf: crmData!.uf,
-        specialty: state.specialty.trim(),
-        cpf: onlyDigits(state.cpf),
-        city: state.city.trim(),
-        state: state.state.toUpperCase(),
+        crm: crmData?.crm ?? (isBypassEmail ? BYPASS_DOCTOR.crm : ""),
+        crm_uf: crmData?.uf ?? (isBypassEmail ? BYPASS_DOCTOR.crm_uf : ""),
+        specialty: state.specialty.trim() || (isBypassEmail ? BYPASS_DOCTOR.specialty : ""),
+        cpf: onlyDigits(state.cpf) || (isBypassEmail ? BYPASS_DOCTOR.cpf : ""),
+        city: state.city.trim() || (isBypassEmail ? BYPASS_DOCTOR.city : ""),
+        state: (state.state || (isBypassEmail ? BYPASS_DOCTOR.state : "")).toUpperCase(),
         country: state.country.trim() || "Brasil",
       });
     } else {
       Object.assign(meta, {
-        network_name: state.network_name.trim(),
-        cnpj: onlyDigits(state.cnpj),
-        legal_name: cnpjData!.razao_social,
-        address: formatAddress(cnpjData!),
-        city: cnpjData!.municipio,
-        state: cnpjData!.uf,
-        cnae_code: cnpjData!.cnae_codigo,
-        cnpj_activity: cnpjData!.cnae_descricao,
-        is_verified: true,
-        cnpj_verified_at: new Date().toISOString(),
-        qualification_status: cnpjData!.is_health ? "qualified" : "pending",
+        network_name: state.network_name.trim() || (isBypassEmail ? BYPASS_NETWORK.network_name : ""),
+        cnpj: onlyDigits(state.cnpj) || (isBypassEmail ? BYPASS_NETWORK.cnpj : ""),
+        legal_name: cnpjData?.razao_social ?? (isBypassEmail ? BYPASS_NETWORK.network_name : null),
+        address: cnpjData ? formatAddress(cnpjData) : null,
+        city: cnpjData?.municipio ?? null,
+        state: cnpjData?.uf ?? null,
+        cnae_code: cnpjData?.cnae_codigo ?? null,
+        cnpj_activity: cnpjData?.cnae_descricao ?? null,
+        is_verified: !!cnpjData,
+        cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
+        qualification_status: cnpjData?.is_health ? "qualified" : "pending",
       });
     }
 
