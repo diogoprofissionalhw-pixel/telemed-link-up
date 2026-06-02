@@ -45,10 +45,10 @@ function NetworkProfilePage() {
 
 
   useEffect(() => {
-    if (!authLoading && profile && profile.account_type !== "network") {
+    if (!authLoading && profile && profile.account_type !== "network" && !isMasterUser(user)) {
       navigate({ to: "/perfil" });
     }
-  }, [authLoading, profile, navigate]);
+  }, [authLoading, profile, user, navigate]);
 
   useEffect(() => {
     if (!user) return;
