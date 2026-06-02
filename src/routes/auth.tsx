@@ -372,7 +372,8 @@ function SignUpWizard() {
   }, [step, state, cnpjData]);
 
   const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
-  const canSubmit = !stepValidation && validationDone && consent && !submitting;
+  const isValidating = cnpjLookup || crmLookup;
+  const canSubmit = !stepValidation && validationDone && consent && !submitting && !isValidating;
 
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
