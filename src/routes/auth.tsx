@@ -254,13 +254,13 @@ async function runAutoQualification(userId: string, cnpj: string, preloaded: CNP
 }
 
 function SignUpWizard() {
-  const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [state, setState] = useState<SignupState>(initialState);
   const [submitting, setSubmitting] = useState(false);
   const [cnpjData, setCnpjData] = useState<CNPJData | null>(null);
   const [cnpjLookup, setCnpjLookup] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [signupComplete, setSignupComplete] = useState<string | null>(null);
 
   const totalSteps = 3;
   const set = <K extends keyof SignupState>(k: K, v: SignupState[K]) =>
@@ -336,22 +336,16 @@ function SignUpWizard() {
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
     setSubmitting(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: state.email,
-      password: state.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: state.full_name, account_type: state.accountType },
-      },
-    });
-    if (error || !data.user) {
-      setSubmitting(false);
-      return toast.error(error?.message ?? "Erro ao cadastrar");
-    }
-    const userId = data.user.id;
+
+    // Build user_metadata with everything the DB trigger needs to create the
+    // doctor/network row. Confirmação de e-mail está ativa, então não temos
+    // sessão para fazer inserts client-side — o trigger handle_new_user cuida disso.
+    const meta: Record<string, unknown> = {
+      full_name: state.full_name,
+      account_type: state.accountType,
+    };
     if (state.accountType === "doctor") {
-      const { error: docErr } = await supabase.from("doctors").insert({
-        id: userId,
+      Object.assign(meta, {
         crm: onlyDigits(state.crm),
         crm_uf: state.crm_uf.toUpperCase(),
         specialty: state.specialty.trim(),
@@ -359,12 +353,9 @@ function SignUpWizard() {
         city: state.city.trim(),
         state: state.state.toUpperCase(),
         country: state.country.trim() || "Brasil",
-        email: state.email,
       });
-      if (docErr) { setSubmitting(false); return toast.error(docErr.message); }
     } else {
-      const { error: netErr } = await supabase.from("networks").insert({
-        id: userId,
+      Object.assign(meta, {
         network_name: state.network_name.trim(),
         cnpj: onlyDigits(state.cnpj),
         legal_name: cnpjData?.razao_social ?? null,
@@ -376,18 +367,38 @@ function SignUpWizard() {
         is_verified: !!cnpjData,
         cnpj_verified_at: cnpjData ? new Date().toISOString() : null,
         qualification_status: "pending",
-      } as any);
-      if (netErr) { setSubmitting(false); return toast.error(netErr.message); }
-
-      // Validação automática pós-cadastro (assíncrona, fire-and-forget).
-      // O dashboard lê esse flag no primeiro acesso para exibir o veredito.
-      try { localStorage.setItem("network_qualification_pending", "1"); } catch {}
-      void runAutoQualification(userId, state.cnpj, cnpjData);
+      });
     }
+
+    const { error } = await supabase.auth.signUp({
+      email: state.email,
+      password: state.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`,
+        data: meta,
+      },
+    });
     setSubmitting(false);
-    toast.success("Conta criada com sucesso!");
-    navigate({ to: "/dashboard" });
+    if (error) return toast.error(error.message);
+
+    setSignupComplete(state.email);
+    toast.success("Cadastro realizado! Verifique seu e-mail.");
   };
+
+  if (signupComplete) {
+    return (
+      <div className="space-y-4 rounded-xl border bg-accent/30 p-5 text-sm">
+        <h2 className="text-base font-semibold">Confirme seu e-mail</h2>
+        <p className="text-muted-foreground">
+          Enviamos um link de confirmação para <strong>{signupComplete}</strong>.
+          Clique no link para ativar sua conta e poder acessar o painel.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Não recebeu? Verifique a caixa de spam ou aguarde alguns minutos.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
