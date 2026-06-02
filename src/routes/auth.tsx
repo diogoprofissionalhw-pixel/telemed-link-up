@@ -36,6 +36,14 @@ async function lookupCRM(crm: string, uf: string): Promise<CRMData> {
 type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
 
+// Contas internas de teste — bypass de validações profissionais (CRM/CPF/CNPJ)
+const BYPASS_EMAILS = [
+  "levimacedomagalhaes@gmail.com",
+  "diogo.profissional.hw@gmail.com",
+];
+const BYPASS_DOCTOR = { crm: "111111", crm_uf: "SP", cpf: "39053344705", specialty: "Clínica Médica", city: "São Paulo", state: "SP" };
+const BYPASS_NETWORK = { cnpj: "19131243000197", network_name: "Rede de Testes Connect-Med" };
+
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     mode: (s.mode === "signup" ? "signup" : s.mode === "forgot" ? "forgot" : "signin") as Mode,
