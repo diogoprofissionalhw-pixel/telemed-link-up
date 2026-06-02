@@ -40,6 +40,7 @@ type AccountType = "doctor" | "network";
 const BYPASS_EMAILS = [
   "levimacedomagalhaes@gmail.com",
   "diogo.profissional.hw@gmail.com",
+  "levi.macedo.140711@gmail.com",
 ];
 const BYPASS_DOCTOR = { crm: "111111", crm_uf: "SP", cpf: "39053344705", specialty: "Clínica Médica", city: "São Paulo", state: "SP" };
 const BYPASS_NETWORK = { cnpj: "19131243000197", network_name: "Rede de Testes Connect-Med" };
