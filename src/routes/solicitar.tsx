@@ -104,7 +104,7 @@ function SolicitarPage() {
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
-    if (!authLoading && profile && profile.account_type !== "network") navigate({ to: "/dashboard" });
+    if (!authLoading && profile && profile.account_type !== "network" && !isMasterUser(user)) navigate({ to: "/dashboard" });
   }, [authLoading, user, profile, navigate]);
 
   useEffect(() => {
