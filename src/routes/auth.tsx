@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SiteHeader } from "@/components/site-header";
@@ -19,6 +20,18 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
+
+// Validação de CRM: não existe API pública gratuita do CFM, então simulamos
+// uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
+// uma chamada server-side para CFM/Conselho Regional.
+type CRMData = { crm: string; uf: string; situacao: "ATIVO"; verifiedAt: string };
+async function lookupCRM(crm: string, uf: string): Promise<CRMData> {
+  await new Promise((r) => setTimeout(r, 900));
+  const d = onlyDigits(crm);
+  if (!isValidCRM(d)) throw new Error("CRM inválido.");
+  if (!UF_LIST.includes(uf.toUpperCase() as any)) throw new Error("UF inválida.");
+  return { crm: d, uf: uf.toUpperCase(), situacao: "ATIVO", verifiedAt: new Date().toISOString() };
+}
 
 type Mode = "signin" | "signup" | "forgot";
 type AccountType = "doctor" | "network";
