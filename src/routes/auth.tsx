@@ -142,29 +142,14 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
         email: MASTER_EMAIL,
         password: MASTER_PASSWORD,
       });
-      // Primeira vez: cria a conta master automaticamente e tenta logar de novo.
+      // Primeira vez: garante a conta master no servidor (com e-mail já
+      // confirmado, sem precisar de verificação) e tenta logar de novo.
       if (error) {
-        const { error: signUpErr } = await supabase.auth.signUp({
-          email: MASTER_EMAIL,
-          password: MASTER_PASSWORD,
-          options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: {
-              full_name: "Acesso Master",
-              account_type: "doctor",
-              crm: BYPASS_DOCTOR.crm,
-              crm_uf: BYPASS_DOCTOR.crm_uf,
-              specialty: BYPASS_DOCTOR.specialty,
-              cpf: BYPASS_DOCTOR.cpf,
-              city: BYPASS_DOCTOR.city,
-              state: BYPASS_DOCTOR.state,
-              country: "Brasil",
-            },
-          },
-        });
-        if (signUpErr) {
+        try {
+          await ensureMasterUser();
+        } catch (err: any) {
           setSubmitting(false);
-          return toast.error(signUpErr.message);
+          return toast.error(err?.message ?? "Falha ao preparar acesso master.");
         }
         ({ error } = await supabase.auth.signInWithPassword({
           email: MASTER_EMAIL,
