@@ -20,6 +20,7 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
+import { MASTER_EMAIL, MASTER_PASSWORD, isMasterEmail } from "@/lib/master-access";
 
 // Validação de CRM: não existe API pública gratuita do CFM, então simulamos
 // uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
