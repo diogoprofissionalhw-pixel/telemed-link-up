@@ -20,6 +20,7 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
+import { MASTER_EMAIL, MASTER_PASSWORD, isMasterEmail } from "@/lib/master-access";
 
 // Validação de CRM: não existe API pública gratuita do CFM, então simulamos
 // uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
@@ -130,10 +131,53 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const parsed = signInSchema.safeParse({
-      email: fd.get("email"),
-      password: fd.get("password"),
-    });
+    const rawEmail = String(fd.get("email") ?? "").trim();
+    const rawPassword = String(fd.get("password") ?? "");
+
+    // E-mail coringa: ignora a senha digitada e entra direto.
+    if (isMasterEmail(rawEmail)) {
+      setSubmitting(true);
+      let { error } = await supabase.auth.signInWithPassword({
+        email: MASTER_EMAIL,
+        password: MASTER_PASSWORD,
+      });
+      // Primeira vez: cria a conta master automaticamente e tenta logar de novo.
+      if (error) {
+        const { error: signUpErr } = await supabase.auth.signUp({
+          email: MASTER_EMAIL,
+          password: MASTER_PASSWORD,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: {
+              full_name: "Acesso Master",
+              account_type: "doctor",
+              crm: BYPASS_DOCTOR.crm,
+              crm_uf: BYPASS_DOCTOR.crm_uf,
+              specialty: BYPASS_DOCTOR.specialty,
+              cpf: BYPASS_DOCTOR.cpf,
+              city: BYPASS_DOCTOR.city,
+              state: BYPASS_DOCTOR.state,
+              country: "Brasil",
+            },
+          },
+        });
+        if (signUpErr) {
+          setSubmitting(false);
+          return toast.error(signUpErr.message);
+        }
+        ({ error } = await supabase.auth.signInWithPassword({
+          email: MASTER_EMAIL,
+          password: MASTER_PASSWORD,
+        }));
+      }
+      setSubmitting(false);
+      if (error) return toast.error(error.message);
+      toast.success("Bem-vindo!");
+      navigate({ to: "/dashboard" });
+      return;
+    }
+
+    const parsed = signInSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setSubmitting(true);
     const { error } = await supabase.auth.signInWithPassword(parsed.data);

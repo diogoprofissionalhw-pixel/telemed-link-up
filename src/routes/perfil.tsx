@@ -10,6 +10,7 @@ import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -96,10 +97,10 @@ function PerfilPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (profile && profile.account_type !== "doctor") {
+    if (profile && profile.account_type !== "doctor" && !isMasterUser(user)) {
       navigate({ to: "/perfil-empresa" });
     }
-  }, [profile, navigate]);
+  }, [profile, user, navigate]);
 
   if (!user || !profile) {
     return (
@@ -108,7 +109,8 @@ function PerfilPage() {
       </div>
     );
   }
-  if (profile.account_type !== "doctor") return null;
+  if (profile.account_type !== "doctor" && !isMasterUser(user)) return null;
+
 
   return <DoctorRegistration userId={user.id} fullName={profile.full_name} email={user.email ?? ""} onSaved={refreshProfile} />;
 }

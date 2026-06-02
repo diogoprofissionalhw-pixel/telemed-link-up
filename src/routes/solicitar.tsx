@@ -9,6 +9,7 @@ import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,7 +104,7 @@ function SolicitarPage() {
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
-    if (!authLoading && profile && profile.account_type !== "network") navigate({ to: "/dashboard" });
+    if (!authLoading && profile && profile.account_type !== "network" && !isMasterUser(user)) navigate({ to: "/dashboard" });
   }, [authLoading, user, profile, navigate]);
 
   useEffect(() => {

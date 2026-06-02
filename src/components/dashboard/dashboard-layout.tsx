@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { AppShell } from "@/components/app-sidebar";
 import { PageHeader, type BreadcrumbItem } from "./page-header";
 
@@ -30,10 +31,10 @@ export function DashboardLayout({
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (!loading && profile && requireUserType && profile.account_type !== requireUserType) {
+    if (!loading && profile && requireUserType && profile.account_type !== requireUserType && !isMasterUser(user)) {
       navigate({ to: "/dashboard" });
     }
-  }, [profile, loading, requireUserType, navigate]);
+  }, [profile, loading, requireUserType, navigate, user]);
 
   if (loading || !user || !profile) {
     return (
@@ -43,7 +44,7 @@ export function DashboardLayout({
     );
   }
 
-  if (requireUserType && profile.account_type !== requireUserType) {
+  if (requireUserType && profile.account_type !== requireUserType && !isMasterUser(user)) {
     return null;
   }
 

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { isValidCNPJ, maskCNPJ, onlyDigits } from "@/lib/validators";
 
 
@@ -44,10 +45,10 @@ function NetworkProfilePage() {
 
 
   useEffect(() => {
-    if (!authLoading && profile && profile.account_type !== "network") {
+    if (!authLoading && profile && profile.account_type !== "network" && !isMasterUser(user)) {
       navigate({ to: "/perfil" });
     }
-  }, [authLoading, profile, navigate]);
+  }, [authLoading, profile, user, navigate]);
 
   useEffect(() => {
     if (!user) return;
