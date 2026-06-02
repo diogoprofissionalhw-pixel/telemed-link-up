@@ -273,6 +273,10 @@ function SignUpWizard() {
   const [cnpjData, setCnpjData] = useState<CNPJData | null>(null);
   const [cnpjLookup, setCnpjLookup] = useState(false);
   const [cnpjError, setCnpjError] = useState<string | null>(null);
+  const [crmData, setCrmData] = useState<CRMData | null>(null);
+  const [crmLookup, setCrmLookup] = useState(false);
+  const [crmError, setCrmError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(false);
   const [signupComplete, setSignupComplete] = useState<string | null>(null);
 
   const totalSteps = 3;
@@ -286,6 +290,14 @@ function SignUpWizard() {
       setCnpjError(null);
     }
   }, [state.cnpj, cnpjData]);
+
+  // Reset validação se trocou CRM ou UF
+  useEffect(() => {
+    if (crmData && (onlyDigits(state.crm) !== crmData.crm || state.crm_uf.toUpperCase() !== crmData.uf)) {
+      setCrmData(null);
+      setCrmError(null);
+    }
+  }, [state.crm, state.crm_uf, crmData]);
 
   const handleLookupCnpj = async () => {
     setCnpjError(null);
@@ -311,6 +323,25 @@ function SignUpWizard() {
       setCnpjData(null);
     } finally {
       setCnpjLookup(false);
+    }
+  };
+
+  const handleLookupCrm = async () => {
+    setCrmError(null);
+    if (!isValidCRM(state.crm) || !UF_LIST.includes(state.crm_uf as any)) {
+      setCrmError("Informe CRM e UF válidos.");
+      return;
+    }
+    setCrmLookup(true);
+    try {
+      const data = await lookupCRM(state.crm, state.crm_uf);
+      setCrmData(data);
+      toast.success("CRM validado!");
+    } catch (e: any) {
+      setCrmError(e?.message ?? "Não foi possível validar seu registro profissional. Verifique os dados e tente novamente.");
+      setCrmData(null);
+    } finally {
+      setCrmLookup(false);
     }
   };
 
@@ -340,11 +371,15 @@ function SignUpWizard() {
     return null;
   }, [step, state, cnpjData]);
 
+  const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
+  const canSubmit = !stepValidation && validationDone && consent && !submitting;
+
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
     setStep((s) => Math.min(s + 1, totalSteps - 1));
   };
   const prev = () => setStep((s) => Math.max(s - 1, 0));
+
 
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
