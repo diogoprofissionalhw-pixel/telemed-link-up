@@ -1,18 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BadgeCheck, Building2, Lock, MapPin, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, BadgeCheck, Building2, Lock, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { PlansDialog } from "@/components/plans-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
