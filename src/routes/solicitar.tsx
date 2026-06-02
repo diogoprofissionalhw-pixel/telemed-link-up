@@ -9,6 +9,7 @@ import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
