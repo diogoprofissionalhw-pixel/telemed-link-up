@@ -595,8 +595,9 @@ function SignUpWizard() {
               </Button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Sua rede será validada automaticamente na Receita Federal (BrasilAPI) logo após criar a conta. Você pode pré-visualizar agora se quiser.
+              Obrigatório: validamos seu CNPJ na Receita Federal (BrasilAPI) antes de criar a conta.
             </p>
+
           </Field>
 
           {cnpjError && (
