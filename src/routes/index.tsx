@@ -30,18 +30,6 @@ export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-/* ====================== Mock data ====================== */
-const DOCTORS = [
-  { id: 1, name: "Dr. Carlos Silva", specialty: "Médico Clínico Geral", location: "São Paulo, SP", rating: 4.9, reviews: 127, responseTime: "Responde em minutos", hourlyRate: 150, specialties: ["Clínica Geral", "Telemedicina", "Diagnóstico Clínico"], avatar: "👨‍⚕️" },
-  { id: 2, name: "Dra. Marina Costa", specialty: "Cardiologista", location: "Rio de Janeiro, RJ", rating: 4.8, reviews: 95, responseTime: "Responde em 2 horas", hourlyRate: 200, specialties: ["Cardiologia", "Telemedicina", "Prevenção"], avatar: "👩‍⚕️" },
-  { id: 3, name: "Dr. Rafael Mendes", specialty: "Pediatra", location: "Belo Horizonte, MG", rating: 4.7, reviews: 64, responseTime: "Responde em 1 hora", hourlyRate: 180, specialties: ["Pediatria", "Telemedicina", "Neonatologia"], avatar: "👨‍⚕️" },
-  { id: 4, name: "Dra. Juliana Alves", specialty: "Psiquiatra", location: "São Paulo, SP", rating: 5.0, reviews: 152, responseTime: "Responde em minutos", hourlyRate: 250, specialties: ["Psiquiatria", "Telemedicina", "Saúde Mental"], avatar: "👩‍⚕️" },
-  { id: 5, name: "Dr. Pedro Rocha", specialty: "Médico de Família", location: "Curitiba, PR", rating: 4.6, reviews: 41, responseTime: "Responde em 3 horas", hourlyRate: 130, specialties: ["Medicina de Família", "Clínica Geral"], avatar: "👨‍⚕️" },
-  { id: 6, name: "Dra. Beatriz Lima", specialty: "Endocrinologista", location: "Porto Alegre, RS", rating: 4.9, reviews: 88, responseTime: "Responde em 1 hora", hourlyRate: 220, specialties: ["Endocrinologia", "Telemedicina"], avatar: "👩‍⚕️" },
-];
-
-const ALL_SPECIALTIES = ["Clínica Geral", "Cardiologia", "Pediatria", "Psiquiatria", "Medicina de Família", "Endocrinologia", "Telemedicina"];
-const ALL_LOCATIONS = ["São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", "Curitiba, PR", "Porto Alegre, RS"];
 
 /* ====================== Page ====================== */
 function LandingPage() {
