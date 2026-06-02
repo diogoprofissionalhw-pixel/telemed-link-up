@@ -372,7 +372,8 @@ function SignUpWizard() {
   }, [step, state, cnpjData]);
 
   const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
-  const canSubmit = !stepValidation && validationDone && consent && !submitting;
+  const isValidating = cnpjLookup || crmLookup;
+  const canSubmit = !stepValidation && validationDone && consent && !submitting && !isValidating;
 
   const next = () => {
     if (stepValidation) return toast.error(stepValidation);
@@ -649,6 +650,13 @@ function SignUpWizard() {
             para garantir a segurança e integridade da plataforma Connect-Med.
           </span>
         </label>
+      )}
+
+      {isValidating && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Validando seus dados profissionais… aguarde para criar a conta.
+        </div>
       )}
 
       <div className="flex items-center justify-between gap-3">
