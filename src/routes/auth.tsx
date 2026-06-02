@@ -652,6 +652,13 @@ function SignUpWizard() {
         </label>
       )}
 
+      {isValidating && (
+        <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Validando seus dados profissionais… aguarde para criar a conta.
+        </div>
+      )}
+
       <div className="flex items-center justify-between gap-3">
         {step > 0 ? (
           <Button type="button" variant="ghost" onClick={prev}>Voltar</Button>
