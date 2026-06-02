@@ -38,9 +38,6 @@ function ExplorarRedesPage() {
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [state, setState] = useState("all");
-  const [verified, setVerified] = useState<"all" | "yes" | "no">("all");
   const [plansOpen, setPlansOpen] = useState(false);
 
   useEffect(() => {
