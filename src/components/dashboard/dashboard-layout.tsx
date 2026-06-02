@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterUser } from "@/lib/master-access";
 import { AppShell } from "@/components/app-sidebar";
 import { PageHeader, type BreadcrumbItem } from "./page-header";
 
