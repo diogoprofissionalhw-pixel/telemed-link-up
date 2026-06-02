@@ -31,10 +31,10 @@ export function DashboardLayout({
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (!loading && profile && requireUserType && profile.account_type !== requireUserType) {
+    if (!loading && profile && requireUserType && profile.account_type !== requireUserType && !isMasterUser(user)) {
       navigate({ to: "/dashboard" });
     }
-  }, [profile, loading, requireUserType, navigate]);
+  }, [profile, loading, requireUserType, navigate, user]);
 
   if (loading || !user || !profile) {
     return (
@@ -44,7 +44,7 @@ export function DashboardLayout({
     );
   }
 
-  if (requireUserType && profile.account_type !== requireUserType) {
+  if (requireUserType && profile.account_type !== requireUserType && !isMasterUser(user)) {
     return null;
   }
 
