@@ -1,18 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowRight, BadgeCheck, Building2, Lock, MapPin, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, BadgeCheck, Building2, Lock, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { PlansDialog } from "@/components/plans-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -34,7 +26,7 @@ export const Route = createFileRoute("/explorar-redes")({
       {
         name: "description",
         content:
-          "Explore redes de telemedicina parceiras da Connect-Med. Filtre por localização e veja detalhes ao se cadastrar.",
+          "Explore redes de telemedicina parceiras da Connect-Med. Veja detalhes ao se cadastrar.",
       },
     ],
   }),
@@ -46,9 +38,6 @@ function ExplorarRedesPage() {
   const navigate = useNavigate();
   const [networks, setNetworks] = useState<PublicNetwork[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [state, setState] = useState("all");
-  const [verified, setVerified] = useState<"all" | "yes" | "no">("all");
   const [plansOpen, setPlansOpen] = useState(false);
 
   useEffect(() => {
@@ -63,23 +52,6 @@ function ExplorarRedesPage() {
         setLoading(false);
       });
   }, []);
-
-  const states = useMemo(() => {
-    const set = new Set<string>();
-    networks.forEach((n) => n.state && set.add(n.state));
-    return Array.from(set).sort();
-  }, [networks]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return networks.filter((n) => {
-      if (q && !(n.network_name ?? "").toLowerCase().includes(q)) return false;
-      if (state !== "all" && n.state !== state) return false;
-      if (verified === "yes" && !n.is_verified) return false;
-      if (verified === "no" && n.is_verified) return false;
-      return true;
-    });
-  }, [networks, query, state, verified]);
 
   const handleSeeMore = (id: string) => {
     if (user) navigate({ to: "/rede/$networkId", params: { networkId: id } });
@@ -96,50 +68,17 @@ function ExplorarRedesPage() {
               Conheça nossas <span className="text-primary">redes</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Use os filtros para encontrar redes de telemedicina. Para ver detalhes completos, é necessário ter conta.
+              Explore redes de telemedicina parceiras. Para ver detalhes completos, é necessário ter conta.
             </p>
           </div>
           <BackButton to="/" label="Voltar ao início" />
         </div>
 
-        <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-3" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="relative sm:col-span-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por nome da rede"
-              className="pl-9"
-            />
-          </div>
-          <Select value={state} onValueChange={setState}>
-            <SelectTrigger>
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os estados</SelectItem>
-              {states.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={verified} onValueChange={(v) => setVerified(v as "all" | "yes" | "no")}>
-            <SelectTrigger>
-              <SelectValue placeholder="Verificação" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as redes</SelectItem>
-              <SelectItem value="yes">Somente verificadas</SelectItem>
-              <SelectItem value="no">Verificação pendente</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         {loading ? (
           <p className="mt-10 text-center text-sm text-muted-foreground">Carregando redes…</p>
-        ) : filtered.length === 0 ? (
+        ) : networks.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-sm text-muted-foreground">Nenhuma rede encontrada com esses filtros.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma rede encontrada.</p>
             <div className="mt-4">
               <Link to="/auth" search={{ mode: "signup" }}>
                 <Button className="gap-2">Cadastrar minha rede <ArrowRight className="h-4 w-4" /></Button>
@@ -148,7 +87,7 @@ function ExplorarRedesPage() {
           </div>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((n) => {
+            {networks.map((n) => {
               const local = [n.city, n.state].filter(Boolean).join(", ");
               return (
                 <article
