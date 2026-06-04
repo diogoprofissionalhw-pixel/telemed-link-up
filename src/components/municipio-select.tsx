@@ -7,11 +7,23 @@ const cache = new Map<string, string[]>();
 
 async function fetchMunicipios(uf: string): Promise<string[]> {
   if (cache.has(uf)) return cache.get(uf)!;
-  const res = await fetch(
-    `https://servicos.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`
-  );
-  if (!res.ok) throw new Error("Falha ao carregar municípios");
-  const data: Array<{ nome: string }> = await res.json();
+  const sources = [
+    `https://brasilapi.com.br/api/ibge/municipios/v1/${uf}?providers=dados-abertos-br,gov,wikipedia`,
+    `https://servicos.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`,
+  ];
+  let data: Array<{ nome: string }> = [];
+  let lastErr: unknown;
+  for (const url of sources) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      data = await res.json();
+      if (Array.isArray(data) && data.length) break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!data.length) throw lastErr ?? new Error("Falha ao carregar municípios");
   const list = data
     .map((m) => m.nome)
     .sort((a, b) => a.localeCompare(b, "pt-BR", { sensitivity: "base" }));
