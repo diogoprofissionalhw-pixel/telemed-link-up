@@ -628,12 +628,13 @@ function SignUpWizard() {
 
 
       {step === 2 && state.accountType === "network" && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           <Field label="CNPJ" htmlFor="cnpj"
             error={state.cnpj && !isValidCNPJ(state.cnpj) ? "CNPJ inválido" : undefined}>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
-                value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
+                value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))}
+                className="flex-1" />
               <Button type="button" variant="outline" className="gap-1.5 shrink-0"
                 onClick={handleLookupCnpj}
                 disabled={cnpjLookup || !isValidCNPJ(state.cnpj) || !!cnpjData}>
@@ -641,10 +642,9 @@ function SignUpWizard() {
                 {cnpjData ? "Validado" : "Validar"}
               </Button>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
               Obrigatório: validamos seu CNPJ na Receita Federal (BrasilAPI) antes de criar a conta.
             </p>
-
           </Field>
 
           {cnpjError && (
@@ -684,15 +684,15 @@ function SignUpWizard() {
       )}
 
       {step === totalSteps - 1 && (
-        <label className="flex items-start gap-3 rounded-xl border bg-muted/40 p-3 text-sm">
+        <label className="flex items-start gap-3 rounded-xl border bg-muted/40 p-4 text-sm leading-relaxed cursor-pointer transition-colors hover:bg-muted/60">
           <Checkbox
             checked={consent}
             onCheckedChange={(v) => setConsent(v === true)}
-            className="mt-0.5"
+            className="mt-0.5 shrink-0"
           />
           <span className="text-muted-foreground">
             Aceito que meus dados profissionais sejam validados automaticamente via bases oficiais
-            ({state.accountType === "doctor" ? "CFM/Conselho Regional para CRM" : "Receita Federal para CNPJ"})
+            {" "}({state.accountType === "doctor" ? "CFM/Conselho Regional para CRM" : "Receita Federal para CNPJ"}){" "}
             para garantir a segurança e integridade da plataforma Connect-Med.
           </span>
         </label>
