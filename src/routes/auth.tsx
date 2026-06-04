@@ -330,6 +330,14 @@ function SignUpWizard() {
     }
   }, [state.cnpj, cnpjData]);
 
+  // Validação automática do CNPJ quando completo e válido
+  useEffect(() => {
+    if (isValidCNPJ(state.cnpj) && !cnpjData && !cnpjLookup && !cnpjError) {
+      handleLookupCnpj();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.cnpj, cnpjData, cnpjLookup, cnpjError]);
+
   // Reset validação se trocou CRM ou UF
   useEffect(() => {
     if (crmData && (onlyDigits(state.crm) !== crmData.crm || state.crm_uf.toUpperCase() !== crmData.uf)) {
