@@ -377,8 +377,6 @@ function SignUpWizard() {
     }
   };
 
-  const isBypassEmail = BYPASS_EMAILS.includes(state.email.trim().toLowerCase());
-
   const stepValidation = useMemo(() => {
     if (step === 0) return null;
     if (step === 1) {
@@ -389,7 +387,6 @@ function SignUpWizard() {
       return null;
     }
     if (step === 2) {
-      if (isBypassEmail) return null; // contas internas de teste
       if (state.accountType === "doctor") {
         if (!isValidCRM(state.crm)) return "CRM inválido (4 a 7 dígitos).";
         if (!UF_LIST.includes(state.crm_uf as any)) return "Selecione a UF do CRM.";
@@ -404,11 +401,9 @@ function SignUpWizard() {
       return null;
     }
     return null;
-  }, [step, state, cnpjData, isBypassEmail]);
+  }, [step, state, cnpjData]);
 
-  const validationDone = isBypassEmail
-    ? true
-    : state.accountType === "doctor" ? !!crmData : !!cnpjData;
+  const validationDone = state.accountType === "doctor" ? !!crmData : !!cnpjData;
   const isValidating = cnpjLookup || crmLookup;
   const canSubmit = !stepValidation && validationDone && consent && !submitting && !isValidating;
 
@@ -421,14 +416,12 @@ function SignUpWizard() {
 
   const submit = async () => {
     if (stepValidation) return toast.error(stepValidation);
-    if (!isBypassEmail) {
-      if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
-      if (state.accountType === "doctor" && !crmData) {
-        return toast.error("Valide seu CRM antes de criar a conta.");
-      }
-      if (state.accountType === "network" && !cnpjData) {
-        return toast.error("Valide seu CNPJ antes de criar a conta.");
-      }
+    if (!consent) return toast.error("Você precisa aceitar a validação dos seus dados profissionais.");
+    if (state.accountType === "doctor" && !crmData) {
+      return toast.error("Valide seu CRM antes de criar a conta.");
+    }
+    if (state.accountType === "network" && !cnpjData) {
+      return toast.error("Valide seu CNPJ antes de criar a conta.");
     }
     setSubmitting(true);
 
@@ -441,19 +434,19 @@ function SignUpWizard() {
     };
     if (state.accountType === "doctor") {
       Object.assign(meta, {
-        crm: crmData?.crm ?? (isBypassEmail ? BYPASS_DOCTOR.crm : ""),
-        crm_uf: crmData?.uf ?? (isBypassEmail ? BYPASS_DOCTOR.crm_uf : ""),
-        specialty: state.specialty.trim() || (isBypassEmail ? BYPASS_DOCTOR.specialty : ""),
-        cpf: onlyDigits(state.cpf) || (isBypassEmail ? BYPASS_DOCTOR.cpf : ""),
-        city: state.city.trim() || (isBypassEmail ? BYPASS_DOCTOR.city : ""),
-        state: (state.state || (isBypassEmail ? BYPASS_DOCTOR.state : "")).toUpperCase(),
+        crm: crmData?.crm ?? "",
+        crm_uf: crmData?.uf ?? "",
+        specialty: state.specialty.trim(),
+        cpf: onlyDigits(state.cpf),
+        city: state.city.trim(),
+        state: state.state.toUpperCase(),
         country: state.country.trim() || "Brasil",
       });
     } else {
       Object.assign(meta, {
-        network_name: state.network_name.trim() || (isBypassEmail ? BYPASS_NETWORK.network_name : ""),
-        cnpj: onlyDigits(state.cnpj) || (isBypassEmail ? BYPASS_NETWORK.cnpj : ""),
-        legal_name: cnpjData?.razao_social ?? (isBypassEmail ? BYPASS_NETWORK.network_name : null),
+        network_name: state.network_name.trim(),
+        cnpj: onlyDigits(state.cnpj),
+        legal_name: cnpjData?.razao_social ?? null,
         address: cnpjData ? formatAddress(cnpjData) : null,
         city: cnpjData?.municipio ?? null,
         state: cnpjData?.uf ?? null,
