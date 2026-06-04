@@ -53,7 +53,7 @@ function NetworkProfilePage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase.from("networks").select("*").eq("id", user.id).maybeSingle();
+      const { data } = await supabase.rpc("get_my_network" as any).maybeSingle();
       if (data) {
         setNetworkName(data.network_name ?? "");
         setCnpj(data.cnpj ? maskCNPJ(data.cnpj) : "");
