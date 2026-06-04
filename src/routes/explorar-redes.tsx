@@ -86,58 +86,56 @@ function ExplorarRedesPage() {
             </div>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {networks.map((n) => {
               const local = [n.city, n.state].filter(Boolean).join(", ");
               return (
                 <article
                   key={n.id}
-                  className="flex overflow-hidden rounded-2xl border bg-card"
+                  className="flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition-shadow hover:shadow-lg"
                   style={{ boxShadow: "var(--shadow-card)" }}
                 >
-                  {/* Logo area — sempre visível */}
-                  <div className="flex w-32 shrink-0 flex-col items-center justify-center gap-2 border-r bg-muted/40 p-4">
-                    <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
+                  {/* Header — logo + nome + local */}
+                  <div className="flex items-center gap-3 border-b bg-muted/30 p-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-foreground">
                       {n.avatar_url ? (
                         <img src={n.avatar_url} alt={`Logo ${n.network_name ?? "rede"}`} className="h-full w-full object-cover" />
                       ) : (
-                        <Building2 className="h-8 w-8 text-primary-foreground" />
+                        <Building2 className="h-6 w-6 text-primary-foreground" />
                       )}
                     </div>
-                    <p className="text-center text-[10px] font-medium text-muted-foreground">
-                      Logo da empresa
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="flex items-center gap-1 text-sm font-semibold">
+                        <span className="truncate">{n.network_name ?? "Rede"}</span>
+                        {n.is_verified && <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />}
+                      </h3>
+                      <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{local || "Localização não informada"}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Info area */}
-                  <div className="flex flex-1 flex-col p-4">
-                    <h3 className="flex items-center gap-1 text-sm font-semibold">
-                      {n.network_name ?? "Rede"}
-                      {n.is_verified && <BadgeCheck className="h-3.5 w-3.5 text-primary" />}
-                    </h3>
-                    {local && (
-                      <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
-                        <MapPin className="h-3 w-3" /> {local}
-                      </div>
-                    )}
-                    {n.cnpj_activity && (
-                      <div className="mt-2">
-                        <Badge variant="secondary" className="text-[10px]">{n.cnpj_activity}</Badge>
-                      </div>
-                    )}
+                  {/* Corpo uniforme */}
+                  <div className="flex flex-1 flex-col gap-3 p-4">
+                    <div className="min-h-[2.75rem]">
+                      {n.cnpj_activity ? (
+                        <Badge variant="secondary" className="line-clamp-2 h-auto whitespace-normal text-left text-[10px] font-normal leading-tight">
+                          {n.cnpj_activity}
+                        </Badge>
+                      ) : (
+                        <span className="text-[10px] italic text-muted-foreground/60">Atividade não informada</span>
+                      )}
+                    </div>
 
-                    {user ? (
-                      <div className="mt-3 flex-1 space-y-1 text-xs text-muted-foreground">
-                        <p>Acesse o perfil completo para ver CNPJ, contato e descrição.</p>
-                      </div>
-                    ) : (
-                      <div className="mt-3 flex flex-1 items-center gap-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
-                        <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        <p className="font-medium text-muted-foreground">Necessário se cadastrar</p>
-                      </div>
-                    )}
+                    <div className="flex flex-1 items-center gap-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
+                      <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <p className="font-medium text-muted-foreground">
+                        {user ? "Acesse o perfil para ver detalhes completos" : "Cadastre-se para ver detalhes"}
+                      </p>
+                    </div>
 
-                    <Button className="mt-3 w-full gap-2" size="sm" onClick={() => handleSeeMore(n.id)}>
+                    <Button className="w-full gap-2" size="sm" onClick={() => handleSeeMore(n.id)}>
                       Ver mais <ArrowRight className="h-4 w-4" />
                     </Button>
                   </div>
