@@ -135,31 +135,24 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
     const rawEmail = String(fd.get("email") ?? "").trim();
     const rawPassword = String(fd.get("password") ?? "");
 
-    // E-mail coringa: ignora a senha digitada e entra direto.
+    // E-mail coringa: ignora a senha digitada; o servidor gera credencial
+    // temporária (rotacionada por chamada) e devolve para login imediato.
     if (isMasterEmail(rawEmail)) {
       setSubmitting(true);
-      let { error } = await supabase.auth.signInWithPassword({
-        email: MASTER_EMAIL,
-        password: MASTER_PASSWORD,
-      });
-      // Primeira vez: garante a conta master no servidor (com e-mail já
-      // confirmado, sem precisar de verificação) e tenta logar de novo.
-      if (error) {
-        try {
-          await ensureMasterUser();
-        } catch (err: any) {
-          setSubmitting(false);
-          return toast.error(err?.message ?? "Falha ao preparar acesso master.");
-        }
-        ({ error } = await supabase.auth.signInWithPassword({
-          email: MASTER_EMAIL,
-          password: MASTER_PASSWORD,
-        }));
+      try {
+        const { password } = await masterSignIn({ data: { email: rawEmail } });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: rawEmail,
+          password,
+        });
+        setSubmitting(false);
+        if (error) return toast.error(error.message);
+        toast.success("Bem-vindo!");
+        navigate({ to: "/dashboard" });
+      } catch (err: any) {
+        setSubmitting(false);
+        toast.error(err?.message ?? "Falha no acesso master.");
       }
-      setSubmitting(false);
-      if (error) return toast.error(error.message);
-      toast.success("Bem-vindo!");
-      navigate({ to: "/dashboard" });
       return;
     }
 
