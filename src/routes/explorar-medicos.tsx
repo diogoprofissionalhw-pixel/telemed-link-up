@@ -203,8 +203,8 @@ function ExplorarMedicosPage() {
                     <p className="select-none blur-sm">Contato direto e currículo completo</p>
                   </div>
 
-                  <Button className="mt-auto w-full gap-2 pt-0" onClick={() => handleSeeMore(d.id)}>
-                    <span className="mt-4 flex w-full items-center justify-center gap-2">Ver mais <ArrowRight className="h-4 w-4" /></span>
+                  <Button className="mt-4 w-full gap-2" onClick={() => handleSeeMore(d.id)}>
+                    Ver mais <ArrowRight className="h-4 w-4" />
                   </Button>
                 </article>
               );
