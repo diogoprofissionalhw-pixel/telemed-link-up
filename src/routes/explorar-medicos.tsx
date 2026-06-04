@@ -165,7 +165,7 @@ function ExplorarMedicosPage() {
               return (
                 <article
                   key={d.id}
-                  className="flex flex-col rounded-2xl border bg-card p-5"
+                  className="flex h-full flex-col rounded-2xl border bg-card p-5"
                   style={{ boxShadow: "var(--shadow-card)" }}
                 >
                   <div className="flex items-center gap-3">
@@ -189,15 +189,13 @@ function ExplorarMedicosPage() {
                     </div>
                   </div>
 
-                  {d.specialties && d.specialties.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {d.specialties.slice(0, 3).map((s) => (
-                        <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
-                      ))}
-                    </div>
-                  )}
+                  <div className="mt-3 flex min-h-[1.5rem] flex-wrap gap-1.5">
+                    {d.specialties?.slice(0, 3).map((s) => (
+                      <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                    ))}
+                  </div>
 
-                  <div className="mt-4 space-y-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
+                  <div className="mt-3 space-y-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
                     <p className="flex items-center gap-1.5 font-medium text-muted-foreground">
                       <Lock className="h-3 w-3" /> Informações confidenciais
                     </p>
@@ -205,8 +203,8 @@ function ExplorarMedicosPage() {
                     <p className="select-none blur-sm">Contato direto e currículo completo</p>
                   </div>
 
-                  <Button className="mt-4 w-full gap-2" onClick={() => handleSeeMore(d.id)}>
-                    Ver mais <ArrowRight className="h-4 w-4" />
+                  <Button className="mt-auto w-full gap-2 pt-0" onClick={() => handleSeeMore(d.id)}>
+                    <span className="mt-4 flex w-full items-center justify-center gap-2">Ver mais <ArrowRight className="h-4 w-4" /></span>
                   </Button>
                 </article>
               );
