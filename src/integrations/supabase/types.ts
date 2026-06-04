@@ -867,6 +867,35 @@ export type Database = {
     }
     Functions: {
       auto_finalize_shifts: { Args: never; Returns: undefined }
+      get_my_network: {
+        Args: never
+        Returns: {
+          address: string | null
+          avatar_url: string | null
+          city: string | null
+          cnae_code: string | null
+          cnpj: string
+          cnpj_activity: string | null
+          cnpj_verified_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_verified: boolean
+          legal_name: string | null
+          linkedin_url: string | null
+          network_name: string
+          qualification_status: string
+          qualified_at: string | null
+          state: string | null
+          website_url: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "networks"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       is_verified_network: { Args: { _uid: string }; Returns: boolean }
       send_shift_reminders: { Args: never; Returns: undefined }
