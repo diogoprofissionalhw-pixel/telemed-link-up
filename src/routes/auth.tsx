@@ -639,19 +639,10 @@ function SignUpWizard() {
         <div className="space-y-5">
           <Field label="CNPJ" htmlFor="cnpj"
             error={state.cnpj && !isValidCNPJ(state.cnpj) ? "CNPJ inválido" : undefined}>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
-                value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))}
-                className="flex-1" />
-              <Button type="button" variant="outline" className="gap-1.5 shrink-0"
-                onClick={handleLookupCnpj}
-                disabled={cnpjLookup || !isValidCNPJ(state.cnpj) || !!cnpjData}>
-                {cnpjLookup ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                {cnpjData ? "Validado" : "Validar"}
-              </Button>
-            </div>
+            <Input id="cnpj" inputMode="numeric" placeholder="00.000.000/0000-00"
+              value={state.cnpj} onChange={(e) => set("cnpj", maskCNPJ(e.target.value))} />
             <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-              Obrigatório: validamos seu CNPJ na Receita Federal (BrasilAPI) antes de criar a conta.
+              Obrigatório: validamos seu CNPJ na Receita Federal (BrasilAPI) automaticamente ao preencher.
             </p>
           </Field>
 
