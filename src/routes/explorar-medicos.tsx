@@ -27,7 +27,7 @@ export const Route = createFileRoute("/explorar-medicos")({
       {
         name: "description",
         content:
-          "Explore médicos cadastrados na Connect-Med. Filtre por especialidade e localização. Cadastre-se para ver o perfil completo.",
+          "Explore médicos cadastrados na Connect-Med. Cadastre-se para ver o perfil completo.",
       },
     ],
   }),
@@ -39,9 +39,6 @@ function ExplorarMedicosPage() {
   const navigate = useNavigate();
   const [doctors, setDoctors] = useState<PublicDoctor[]>([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [specialty, setSpecialty] = useState("all");
-  const [state, setState] = useState("all");
   const [plansOpen, setPlansOpen] = useState(false);
 
   useEffect(() => {
@@ -55,34 +52,6 @@ function ExplorarMedicosPage() {
         setLoading(false);
       });
   }, []);
-
-  const specialties = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => {
-      if (d.specialty) set.add(d.specialty);
-      d.specialties?.forEach((s) => s && set.add(s));
-    });
-    return Array.from(set).sort();
-  }, [doctors]);
-
-  const states = useMemo(() => {
-    const set = new Set<string>();
-    doctors.forEach((d) => d.state && set.add(d.state));
-    return Array.from(set).sort();
-  }, [doctors]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return doctors.filter((d) => {
-      if (q && !(d.full_name ?? "").toLowerCase().includes(q)) return false;
-      if (specialty !== "all") {
-        const all = [d.specialty, ...(d.specialties ?? [])].filter(Boolean) as string[];
-        if (!all.includes(specialty)) return false;
-      }
-      if (state !== "all" && d.state !== state) return false;
-      return true;
-    });
-  }, [doctors, query, specialty, state]);
 
   const handleSeeMore = (id: string) => {
     if (user) navigate({ to: "/medicos" });
@@ -99,51 +68,17 @@ function ExplorarMedicosPage() {
               Conheça nossos <span className="text-primary">médicos</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Use os filtros para encontrar profissionais. Para ver o perfil completo, é necessário ter conta.
+              Explore nossos profissionais cadastrados. Para ver o perfil completo, é necessário ter conta.
             </p>
           </div>
           <BackButton to="/" label="Voltar ao início" />
         </div>
 
-        <div className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-3" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="relative sm:col-span-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por nome"
-              className="pl-9"
-            />
-          </div>
-          <Select value={specialty} onValueChange={setSpecialty}>
-            <SelectTrigger>
-              <SelectValue placeholder="Especialidade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as especialidades</SelectItem>
-              {specialties.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={state} onValueChange={setState}>
-            <SelectTrigger>
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos os estados</SelectItem>
-              {states.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         {loading ? (
           <p className="mt-10 text-center text-sm text-muted-foreground">Carregando médicos…</p>
-        ) : filtered.length === 0 ? (
+        ) : doctors.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-sm text-muted-foreground">Nenhum médico encontrado com esses filtros.</p>
+            <p className="text-sm text-muted-foreground">Nenhum médico encontrado.</p>
             <div className="mt-4">
               <Link to="/auth" search={{ mode: "signup" }}>
                 <Button className="gap-2">Cadastrar como médico <ArrowRight className="h-4 w-4" /></Button>
@@ -152,7 +87,7 @@ function ExplorarMedicosPage() {
           </div>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((d) => {
+            {doctors.map((d) => {
               const local = [d.city, d.state].filter(Boolean).join(", ");
               return (
                 <article
