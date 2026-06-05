@@ -103,7 +103,7 @@ function ExplorarMedicosPage() {
   const { user } = useAuth();
   const navigate = useNavigate({ from: "/explorar-medicos" });
   const { items: doctors, total, page: currentPage, limit: currentLimit } =
-    Route.useLoaderData();
+    Route.useLoaderData() as LoaderData;
   const [plansOpen, setPlansOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / currentLimit));
