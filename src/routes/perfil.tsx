@@ -1520,7 +1520,11 @@ function SummaryCard({ avatarUrl, name, headline, extras, progressPct }: {
   );
 }
 
-function ChecklistCard({ items, progressPct }: { items: { ok: boolean; label: string }[]; progressPct: number }) {
+function ChecklistCard({ items, progressPct, onItemClick }: {
+  items: { ok: boolean; label: string; tab: TabKey }[];
+  progressPct: number;
+  onItemClick?: (tab: TabKey) => void;
+}) {
   return (
     <div className="rounded-2xl border bg-white p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-3">
@@ -1529,13 +1533,23 @@ function ChecklistCard({ items, progressPct }: { items: { ok: boolean; label: st
       </div>
       <ul className="space-y-1.5 text-sm">
         {items.map((item, i) => (
-          <li key={i} className="flex items-center gap-2">
-            <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
-              item.ok ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"
-            }`}>
-              <Check className="h-3 w-3" strokeWidth={3} />
-            </span>
-            <span className={item.ok ? "text-gray-700" : "text-gray-500"}>{item.label}</span>
+          <li key={i}>
+            <button
+              type="button"
+              onClick={() => onItemClick?.(item.tab)}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left transition hover:bg-gray-50",
+                !item.ok && "hover:text-[#4F46E5]"
+              )}
+              title={`Ir para ${TAB_LABELS[item.tab]}`}
+            >
+              <span className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${
+                item.ok ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-400"
+              }`}>
+                <Check className="h-3 w-3" strokeWidth={3} />
+              </span>
+              <span className={cn("flex-1", item.ok ? "text-gray-700" : "text-gray-500")}>{item.label}</span>
+            </button>
           </li>
         ))}
       </ul>
@@ -1547,6 +1561,7 @@ function ChecklistCard({ items, progressPct }: { items: { ok: boolean; label: st
     </div>
   );
 }
+
 
 /* ================== CRM CTA + BENEFITS DIALOG ================== */
 
