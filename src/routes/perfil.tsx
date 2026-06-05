@@ -1434,15 +1434,29 @@ function DocUploader({ userId, label, url, folder, onChange, bucket = "documents
   };
   const remove = () => { onChange(null); toast.success("Removido"); };
 
+  const isImage = !!url && /\.(png|jpe?g|webp|gif)$/i.test(url);
+  const isPublic = bucket === "cvs" || (url?.startsWith("http") ?? false);
   return (
-    <div className="rounded-lg border border-gray-200 p-3 flex items-center gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600">
-        <FileText className="h-5 w-5" />
+    <div className={cn(
+      "rounded-lg border p-3 flex items-center gap-3 transition",
+      url ? "border-emerald-300 bg-emerald-50/40" : "border-gray-200"
+    )}>
+      <div className={cn(
+        "flex h-12 w-12 shrink-0 items-center justify-center rounded-md overflow-hidden",
+        url ? "bg-emerald-100 text-emerald-700" : "bg-emerald-50 text-emerald-600"
+      )}>
+        {url && isImage && isPublic ? (
+          <img src={url} alt="" className="h-full w-full object-cover" />
+        ) : url ? (
+          <FileCheck2 className="h-5 w-5" />
+        ) : (
+          <FileText className="h-5 w-5" />
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-700">{label}</p>
-        <p className="text-xs text-gray-500 truncate">
-          {url ? "Arquivo enviado" : "PDF, JPG ou PNG (máx 10MB)"}
+        <p className={cn("text-xs truncate", url ? "text-emerald-700 font-medium" : "text-gray-500")}>
+          {url ? "✓ Arquivo pronto" : "PDF, JPG ou PNG (máx 10MB)"}
         </p>
       </div>
       {url && (
@@ -1460,6 +1474,7 @@ function DocUploader({ userId, label, url, folder, onChange, bucket = "documents
     </div>
   );
 }
+
 
 /* ================== SIDEBAR CARDS ================== */
 
