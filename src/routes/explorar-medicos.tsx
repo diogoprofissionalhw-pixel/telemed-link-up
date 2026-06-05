@@ -116,11 +116,69 @@ export const Route = createFileRoute("/explorar-medicos")({
   component: ExplorarMedicosPage,
 });
 
+function FilterCombobox({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between sm:w-[280px]"
+        >
+          {value || label}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0 sm:w-[280px]">
+        <Command>
+          <CommandInput placeholder="Buscar..." />
+          <CommandList>
+            <CommandEmpty>Nenhum resultado.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={() => {
+                    onChange(option === value ? "" : option);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ExplorarMedicosPage() {
   const { user } = useAuth();
   const navigate = useNavigate({ from: "/explorar-medicos" });
   const { items: doctors, total, page: currentPage, limit: currentLimit } =
     Route.useLoaderData() as LoaderData;
+  const search = Route.useSearch() as SearchParams;
   const [plansOpen, setPlansOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / currentLimit));
@@ -132,6 +190,14 @@ function ExplorarMedicosPage() {
   const handleLimitChange = (value: string) => {
     const newLimit = Number(value);
     navigate({ search: (prev: SearchParams) => ({ ...prev, page: 1, limit: newLimit }) });
+  };
+
+  const handleFilterChange = (key: "specialty" | "activity", val: string) => {
+    navigate({ search: (prev: SearchParams) => ({ ...prev, [key]: val, page: 1 }) });
+  };
+
+  const clearFilters = () => {
+    navigate({ search: (prev: SearchParams) => ({ ...prev, specialty: "", activity: "", page: 1 }) });
   };
 
   const handleSeeMore = () => {
