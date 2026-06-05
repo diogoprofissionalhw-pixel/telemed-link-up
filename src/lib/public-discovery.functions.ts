@@ -27,7 +27,7 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
       base = base.ilike("specialty", `%${data.specialty}%`);
     }
     if (data?.activity) {
-      base = base.cs("specialties", `{${data.activity}}`);
+      base = base.or(`specialties.cs.{${data.activity}}`);
     }
 
     const { data: rows, error } = await base.range(offset, offset + limit - 1).limit(limit);
@@ -38,7 +38,7 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
       countQ = countQ.ilike("specialty", `%${data.specialty}%`);
     }
     if (data?.activity) {
-      countQ = countQ.cs("specialties", `{${data.activity}}`);
+      countQ = countQ.or(`specialties.cs.{${data.activity}}`);
     }
     const { count, error: countErr } = await countQ;
 
