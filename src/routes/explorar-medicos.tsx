@@ -41,9 +41,9 @@ type LoaderData = {
 
 export const Route = createFileRoute("/explorar-medicos")({
   validateSearch: zodValidator(searchSchema),
-  loaderDeps: ({ search: { page, limit } }) => ({ page, limit }),
-  loader: async ({ deps: { page, limit } }) => {
-    const res = await listPublicDoctors({ data: { page, limit } });
+  loaderDeps: ({ search: { page, limit, specialty, activity } }) => ({ page, limit, specialty, activity }),
+  loader: async ({ deps: { page, limit, specialty, activity } }) => {
+    const res = await listPublicDoctors({ data: { page, limit, specialty: specialty || undefined, activity: activity || undefined } });
     if (res.error) throw new Error(res.error);
     return {
       items: res.items as PublicDoctor[],
