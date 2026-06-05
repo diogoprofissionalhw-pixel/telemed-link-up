@@ -4,7 +4,9 @@ import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
   Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
-  BadgeCheck,
+  BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
+  GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
+  Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
@@ -18,6 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 import { Progress } from "@/components/ui/progress";
 import {
@@ -25,6 +31,15 @@ import {
 } from "@/components/ui/select";
 import { isValidCPF, isValidEmail, isValidPhone, maskCPF, maskPhone, onlyDigits, UF_LIST } from "@/lib/validators";
 import logo from "@/assets/connect-med-logo.webp";
+
+type TabKey = "dados" | "carreira" | "agenda" | "verificacao";
+const TAB_ORDER: TabKey[] = ["dados", "carreira", "agenda", "verificacao"];
+const TAB_LABELS: Record<TabKey, string> = {
+  dados: "Dados Pessoais",
+  carreira: "Carreira e Formação",
+  agenda: "Agenda e Valores",
+  verificacao: "Verificação e Selos",
+};
 
 export const Route = createFileRoute("/perfil")({
   head: () => ({
