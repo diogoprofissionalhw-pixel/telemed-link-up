@@ -295,15 +295,24 @@ function ExplorarMedicosPage() {
         </div>
 
         {doctors.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              Nenhum médico encontrado.
+          <div className="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed p-10 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <SearchX className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h2 className="mt-4 text-lg font-semibold">Nenhum médico encontrado</h2>
+            <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              Não encontramos médicos que correspondam aos filtros selecionados.
+              Tente ajustar os critérios de busca ou cadastre-se para ampliar a rede.
             </p>
-            <div className="mt-4">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {(search.specialty || search.activity) && (
+                <Button variant="outline" onClick={clearFilters} className="gap-2">
+                  <X className="h-4 w-4" /> Limpar filtros
+                </Button>
+              )}
               <Link to="/auth" search={{ mode: "signup" }}>
                 <Button className="gap-2">
-                  Cadastrar como médico{" "}
-                  <ArrowRight className="h-4 w-4" />
+                  Cadastrar como médico <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
