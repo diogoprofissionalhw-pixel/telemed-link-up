@@ -8,7 +8,8 @@ import { z } from "zod";
 const ListInput = z
   .object({
     specialty: z.string().trim().min(1).max(120).optional(),
-    limit: z.number().int().min(1).max(200).optional(),
+    limit: z.number().int().min(1).max(100).optional(),
+    page: z.number().int().min(1).optional(),
   })
   .optional();
 
@@ -16,22 +17,33 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
   .inputValidator((input) => ListInput.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const limit = data?.limit ?? 100;
-    let q = supabaseAdmin
-      .from("doctors_public")
-      .select("id, specialty, specialties")
-      .limit(limit);
+    const limit = data?.limit ?? 12;
+    const page = data?.page ?? 1;
+    const offset = (page - 1) * limit;
+
+    let base = supabaseAdmin.from("doctors_public").select("id, specialty, specialties");
     if (data?.specialty) {
-      q = q.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
+      base = base.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
     }
-    const { data: rows, error } = await q;
-    if (error) return { items: [], error: error.message };
+
+    const { data: rows, error } = await base.range(offset, offset + limit - 1).limit(limit);
+    if (error) return { items: [], total: 0, error: error.message };
+
+    let countQ = supabaseAdmin.from("doctors_public").select("*", { count: "exact", head: true });
+    if (data?.specialty) {
+      countQ = countQ.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
+    }
+    const { count, error: countErr } = await countQ;
+
+    if (countErr) return { items: [], total: 0, error: countErr.message };
+
     return {
       items: (rows ?? []).map((r) => ({
         id: r.id as string,
         specialty: (r.specialty as string | null) ?? null,
         specialties: (r.specialties as string[] | null) ?? [],
       })),
+      total: count ?? 0,
       error: null,
     };
   });
