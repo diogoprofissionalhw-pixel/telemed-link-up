@@ -614,404 +614,419 @@ function DoctorRegistration({
               />
 
 
-              <Section step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
-                <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
-                <FieldGroup>
-                  <Field label="Nome Completo" required>
-                    <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
-                  </Field>
-                  <Field label="Email" required>
-                    <Input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} />
-                  </Field>
-                  <Field label="Estado (UF)">
-                    <Select value={state} onValueChange={(v) => {
-                      setState(v);
-                      setCity("");
-                      setLocation([, v, "Brasil"].filter(Boolean).join(", "));
-                    }}>
-                      <SelectTrigger><SelectValue placeholder="Selecione a UF" /></SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field label="Município">
-                    <MunicipioSelect uf={state} value={city} onChange={(v) => {
-                      setCity(v);
-                      setLocation([v, state, "Brasil"].filter(Boolean).join(", "));
-                    }} />
-                  </Field>
-                  <Field label="Headline Profissional" hint={`${headline.length}/120`}>
-                    <Input value={headline} onChange={(e) => setHeadline(e.target.value.slice(0, 120))}
-                      placeholder="Ex: Médico Clínico Geral | Especialista em Telemedicina" />
-                  </Field>
-                </FieldGroup>
-              </Section>
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)}>
+                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto bg-white border rounded-xl p-1 shadow-sm">
+                  {TAB_ORDER.map((t) => (
+                    <TabsTrigger
+                      key={t}
+                      value={t}
+                      className="text-xs sm:text-sm py-2.5 data-[state=active]:bg-[#4F46E5] data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow"
+                    >
+                      {TAB_LABELS[t]}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
 
-              <Section step={2} of={14} title="Informações Médicas" subtitle="Registro profissional e especialidades">
-                <FieldGroup>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="sm:col-span-2">
-                      <Field label="CRM" required>
-                        <Input value={crm} onChange={(e) => setCrm(onlyDigits(e.target.value).slice(0, 7))} placeholder="Ex: 0505" />
+                {/* ===================== TAB 1: DADOS PESSOAIS ===================== */}
+                <TabsContent value="dados" className="mt-4 space-y-6">
+                  <Section icon={User} step={1} of={14} title="Informações Básicas" subtitle="Dados pessoais e foto de perfil">
+                    <AvatarUploader userId={userId} url={avatarUrl} fallback={name.charAt(0).toUpperCase()} onChange={setAvatarUrl} />
+                    <FieldGroup>
+                      <Field label="Nome Completo" required>
+                        <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
                       </Field>
-                    </div>
-                    <Field label="UF do CRM" required>
-                      <Select value={crmUf} onValueChange={setCrmUf}>
-                        <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
-                        <SelectContent>{UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </Field>
-                  </div>
-                  <Field label="CPF" required>
-                    <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
-                  </Field>
-                  <Field label="Especialidade Principal" required>
-                    <Select value={primarySpecialty} onValueChange={setPrimarySpecialty}>
-                      <SelectTrigger><SelectValue placeholder="Selecione sua especialidade" /></SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {SPECIALTIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field label="Descrição Profissional" required hint={`${bio.length}/1000 (mín. 50)`}>
-                    <Textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 1000))}
-                      rows={4} placeholder="Conte sua experiência, abordagem profissional e áreas de interesse." />
-                  </Field>
-                  <Field label="Anos de Experiência" required hint="Calculado automaticamente a partir das experiências (editável)">
-                    <Input type="number" min={0} max={70} value={yearsExp}
-                      onChange={(e) => setYearsExp(e.target.value === "" ? "" : Math.max(0, Math.min(70, Number(e.target.value))))} />
-                  </Field>
-                  <div>
-                    <Label className="mb-2 block">Especialidades adicionais e áreas de atuação <span className="text-xs font-normal text-gray-500">(até 10)</span></Label>
-                    <div className="relative overflow-hidden transition-[max-height] duration-300"
-                      style={{ maxHeight: showAllSpecs ? "2500px" : "200px" }}>
-                      <div className="flex flex-wrap gap-2">
-                        {ADDITIONAL_OPTIONS.map(s => {
-                          const on = extraSpecs.includes(s);
-                          return (
-                            <button type="button" key={s} onClick={() => toggleSpec(s)}
-                              className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                                on ? "border-emerald-600 bg-emerald-600 text-white"
-                                   : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400"}`}>
-                              {s}
-                            </button>
-                          );
-                        })}
+                      <Field label="Email" required>
+                        <Input type="email" value={emailVal} onChange={(e) => setEmailVal(e.target.value)} />
+                      </Field>
+                      <Field label="Estado (UF)">
+                        <Select value={state} onValueChange={(v) => {
+                          setState(v);
+                          setCity("");
+                          setLocation([, v, "Brasil"].filter(Boolean).join(", "));
+                        }}>
+                          <SelectTrigger><SelectValue placeholder="Selecione a UF" /></SelectTrigger>
+                          <SelectContent className="max-h-72">
+                            {UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Município">
+                        <MunicipioSelect uf={state} value={city} onChange={(v) => {
+                          setCity(v);
+                          setLocation([v, state, "Brasil"].filter(Boolean).join(", "));
+                        }} />
+                      </Field>
+                      <Field label="Headline Profissional" hint={`${headline.length}/120`}>
+                        <Input value={headline} onChange={(e) => setHeadline(e.target.value.slice(0, 120))}
+                          placeholder="Ex: Médico Clínico Geral | Especialista em Telemedicina" />
+                      </Field>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={Phone} step={3} of={14} title="Contato" subtitle="Como as redes podem falar com você">
+                    <FieldGroup>
+                      <Field label="Telefone" required>
+                        <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
+                      </Field>
+                      <Field label="WhatsApp" hint="Deixe em branco se for o mesmo número">
+                        <Input value={whatsapp} onChange={(e) => setWhatsapp(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
+                      </Field>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={LanguagesIcon} step={5} of={14} title="Idiomas" subtitle="Idiomas falados">
+                    <Textarea rows={2} value={languages} onChange={(e) => setLanguages(e.target.value)}
+                      placeholder="Português, Inglês, Espanhol" />
+                  </Section>
+
+                  <TabNav onPrev={null} onNext={goNextTab} />
+                </TabsContent>
+
+                {/* ===================== TAB 2: CARREIRA E FORMAÇÃO ===================== */}
+                <TabsContent value="carreira" className="mt-4 space-y-6">
+                  <Section icon={Stethoscope} step={2} of={14} title="Informações Médicas" subtitle="Registro profissional e especialidades">
+                    <FieldGroup>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="sm:col-span-2">
+                          <Field label="CRM" required>
+                            <Input value={crm} onChange={(e) => setCrm(onlyDigits(e.target.value).slice(0, 7))} placeholder="Ex: 0505" />
+                          </Field>
+                        </div>
+                        <Field label="UF do CRM" required>
+                          <Select value={crmUf} onValueChange={setCrmUf}>
+                            <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
+                            <SelectContent>{UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </Field>
                       </div>
-                      {!showAllSpecs && (
-                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white to-transparent" />
+                      <Field label="CPF" required>
+                        <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
+                      </Field>
+                      <Field label="Especialidade Principal" required>
+                        <Select value={primarySpecialty} onValueChange={setPrimarySpecialty}>
+                          <SelectTrigger><SelectValue placeholder="Selecione sua especialidade" /></SelectTrigger>
+                          <SelectContent className="max-h-72">
+                            {SPECIALTIES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </Field>
+                      <Field label="Descrição Profissional" required hint={`${bio.length}/1000 (mín. 50)`}>
+                        <Textarea value={bio} onChange={(e) => setBio(e.target.value.slice(0, 1000))}
+                          rows={4} placeholder="Conte sua experiência, abordagem profissional e áreas de interesse." />
+                      </Field>
+                      <Field label="Anos de Experiência" required hint="Calculado automaticamente a partir das experiências (editável)">
+                        <Input type="number" min={0} max={70} value={yearsExp}
+                          onChange={(e) => setYearsExp(e.target.value === "" ? "" : Math.max(0, Math.min(70, Number(e.target.value))))} />
+                      </Field>
+                      <Field label={`Especialidades adicionais e áreas de atuação (${extraSpecs.length}/10)`}>
+                        <SpecialtiesMultiSelect
+                          options={ADDITIONAL_OPTIONS}
+                          selected={extraSpecs}
+                          onToggle={toggleSpec}
+                          onClear={() => setExtraSpecs([])}
+                        />
+                      </Field>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={GraduationCap} step={4} of={14} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
+                    <Textarea rows={4} value={education} onChange={(e) => setEducation(e.target.value)}
+                      placeholder="Ex: USP — Medicina (2015-2020), Especialização em Cardiologia — UNIFESP (2021-2023)" />
+                  </Section>
+
+                  <Section icon={Briefcase} step={6} of={14} title="Experiência Profissional" subtitle="Histórico de atuação">
+                    <DynamicList items={experiences} max={10}
+                      onAdd={() => setExperiences(prev => [...prev, { role: "", institution: "", start_date: "", end_date: "", description: "" }])}
+                      onRemove={(i) => setExperiences(prev => prev.filter((_, idx) => idx !== i))}
+                      addLabel="Adicionar experiência"
+                      renderItem={(e, i) => (
+                        <FieldGroup>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <Field label="Cargo"><Input value={e.role} maxLength={100}
+                              onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, role: ev.target.value } : x))} /></Field>
+                            <Field label="Instituição"><Input value={e.institution} maxLength={150}
+                              onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, institution: ev.target.value } : x))} /></Field>
+                            <Field label="Início"><Input type="month" value={e.start_date.slice(0, 7)}
+                              onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, start_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
+                            <Field label="Término" hint="Deixe vazio se atual"><Input type="month" value={e.end_date ? e.end_date.slice(0, 7) : ""}
+                              onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, end_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
+                          </div>
+                          <Field label="Descrição" hint={`${e.description.length}/300`}>
+                            <Textarea rows={2} value={e.description}
+                              onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, description: ev.target.value.slice(0, 300) } : x))} />
+                          </Field>
+                        </FieldGroup>
+                      )} />
+                  </Section>
+
+                  <Section icon={Award} step={7} of={14} title="Certificações" subtitle="Credenciais e certificações">
+                    <DynamicList items={certifications} max={10}
+                      onAdd={() => setCertifications(p => [...p, { title: "", issuer: "", issued_year: "" }])}
+                      onRemove={(i) => setCertifications(p => p.filter((_, idx) => idx !== i))}
+                      addLabel="Adicionar certificação"
+                      renderItem={(c, i) => (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          <div className="sm:col-span-2"><Field label="Nome"><Input value={c.title} maxLength={150}
+                            onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field></div>
+                          <Field label="Ano"><Input type="number" min={1950} max={2100} value={c.issued_year}
+                            onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issued_year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
+                          <div className="sm:col-span-3"><Field label="Instituição emissora"><Input value={c.issuer} maxLength={150}
+                            onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issuer: e.target.value } : x))} /></Field></div>
+                        </div>
+                      )} />
+                  </Section>
+
+                  <Section icon={BookOpen} step={8} of={14} title="Cursos" subtitle="Cursos complementares">
+                    <DynamicList items={courses} max={10}
+                      onAdd={() => setCourses(p => [...p, { title: "", institution: "", hours: "", completed_year: "" }])}
+                      onRemove={(i) => setCourses(p => p.filter((_, idx) => idx !== i))}
+                      addLabel="Adicionar curso"
+                      renderItem={(c, i) => (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <Field label="Curso"><Input value={c.title} maxLength={150}
+                            onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
+                          <Field label="Instituição"><Input value={c.institution} maxLength={150}
+                            onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, institution: e.target.value } : x))} /></Field>
+                        </div>
+                      )} />
+                  </Section>
+
+                  <Section icon={FileEdit} step={9} of={14} title="Publicações" subtitle="Artigos e publicações científicas">
+                    <DynamicList items={publications} max={10}
+                      onAdd={() => setPublications(p => [...p, { title: "", journal: "", year: "", url: "" }])}
+                      onRemove={(i) => setPublications(p => p.filter((_, idx) => idx !== i))}
+                      addLabel="Adicionar publicação"
+                      renderItem={(p, i) => (
+                        <FieldGroup>
+                          <Field label="Título"><Input value={p.title} maxLength={200}
+                            onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            <Field label="Revista / Veículo"><Input value={p.journal}
+                              onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, journal: e.target.value } : x))} /></Field>
+                            <Field label="Ano"><Input type="number" min={1950} max={2100} value={p.year}
+                              onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
+                          </div>
+                          <Field label="Link"><Input type="url" value={p.url} placeholder="https://..."
+                            onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, url: e.target.value } : x))} /></Field>
+                        </FieldGroup>
+                      )} />
+                  </Section>
+
+                  <Section icon={Stethoscope} step={13} of={14} title="Experiência Médica & Links" subtitle="Detalhe sua trajetória clínica e suas redes profissionais">
+                    <FieldGroup>
+                      <Field label="Experiência Médica" hint={`${medicalExperience.length}/2000 — relate condutas, áreas de atuação e diferenciais`}>
+                        <Textarea value={medicalExperience} rows={6}
+                          onChange={(e) => setMedicalExperience(e.target.value.slice(0, 2000))}
+                          placeholder="Conte sua experiência clínica em detalhes: tipos de pacientes, condutas, condutas em telemedicina, casos relevantes…" />
+                      </Field>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field label="Currículo Lattes" hint="URL pública do Lattes">
+                          <Input type="url" value={lattesUrl} placeholder="http://lattes.cnpq.br/..."
+                            onChange={(e) => setLattesUrl(e.target.value.slice(0, 300))} />
+                        </Field>
+                        <Field label="LinkedIn" hint="URL do seu perfil">
+                          <Input type="url" value={linkedinUrl} placeholder="https://linkedin.com/in/..."
+                            onChange={(e) => setLinkedinUrl(e.target.value.slice(0, 300))} />
+                        </Field>
+                      </div>
+                    </FieldGroup>
+                  </Section>
+
+                  <TabNav onPrev={goPrevTab} onNext={goNextTab} />
+                </TabsContent>
+
+                {/* ===================== TAB 3: AGENDA E VALORES ===================== */}
+                <TabsContent value="agenda" className="mt-4 space-y-6">
+                  <Section icon={CalendarClock} step={10} of={14} title="Disponibilidade" subtitle="Quando você está disponível para atender">
+                    <FieldGroup>
+                      <div>
+                        <Label className="mb-2 block">Dias da semana <span className="text-red-500">*</span></Label>
+                        <div className="flex flex-wrap gap-2">
+                          {WEEKDAYS.map(d => {
+                            const on = weekdays.includes(d.v);
+                            return (
+                              <button type="button" key={d.v} onClick={() => toggleWeekday(d.v)}
+                                className={`min-w-[52px] rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                                  on ? "border-emerald-600 bg-emerald-600 text-white"
+                                     : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400"}`}>
+                                {d.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <Field label="Início" required><Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} /></Field>
+                        <Field label="Término" required><Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} /></Field>
+                      </div>
+                      <Field label="Fuso horário" required>
+                        <Select value={timezone} onValueChange={setTimezone}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>{TIMEZONES.map(t => <SelectItem key={t.v} value={t.v}>{t.label}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </Field>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={Wallet} step={11} of={14} title="Informações de Pagamento" subtitle="Como você quer receber">
+                    <FieldGroup>
+                      <Field label="Taxa de Consulta (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
+                        <Input type="number" min={50} max={1000} step="0.01" value={fee}
+                          onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
+                      </Field>
+                    </FieldGroup>
+                  </Section>
+
+                  <TabNav onPrev={goPrevTab} onNext={goNextTab} />
+                </TabsContent>
+
+                {/* ===================== TAB 4: VERIFICAÇÃO E SELOS ===================== */}
+                <TabsContent value="verificacao" className="mt-4 space-y-6">
+                  <Section icon={FileCheck2} step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
+                    <FieldGroup>
+                      <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
+                      <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
+                      <DocUploader userId={userId} label="Documento de Identidade (RG/CNH) *" url={rgUrl} folder="rg" onChange={setRgUrl} />
+                      <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={ShieldCheck} step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
+                    <FieldGroup>
+                      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500 max-w-md">
+                            Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
+                            A análise é simulada e prepara a estrutura para integração com a API do CFM.
+                          </p>
+                        </div>
+                        {identityVerified ? (
+                          <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
+                            <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                            Não verificada
+                          </Badge>
+                        )}
+                      </div>
+
+                      {identityVerified && identityVerifiedAt && (
+                        <p className="text-xs text-sky-700">
+                          Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
+                        </p>
                       )}
-                    </div>
-                    <Button type="button" variant="ghost" size="sm" className="mt-2 text-emerald-700 hover:text-emerald-800"
-                      onClick={() => setShowAllSpecs(s => !s)}>
-                      {showAllSpecs ? "Ver menos" : "Ver mais"}
-                    </Button>
-                  </div>
-                </FieldGroup>
-              </Section>
 
-              <Section step={3} of={14} title="Contato" subtitle="Como as redes podem falar com você">
-                <FieldGroup>
-                  <Field label="Telefone" required>
-                    <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
-                  </Field>
-                  <Field label="WhatsApp" hint="Deixe em branco se for o mesmo número">
-                    <Input value={whatsapp} onChange={(e) => setWhatsapp(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
-                  </Field>
-                </FieldGroup>
-              </Section>
-
-              <Section step={4} of={14} title="Formação Acadêmica" subtitle="Faculdade, residência, pós-graduação">
-                <Textarea rows={4} value={education} onChange={(e) => setEducation(e.target.value)}
-                  placeholder="Ex: USP — Medicina (2015-2020), Especialização em Cardiologia — UNIFESP (2021-2023)" />
-              </Section>
-
-              <Section step={5} of={14} title="Idiomas" subtitle="Idiomas falados">
-                <Textarea rows={2} value={languages} onChange={(e) => setLanguages(e.target.value)}
-                  placeholder="Português, Inglês, Espanhol" />
-              </Section>
-
-              <Section step={6} of={14} title="Experiência Profissional" subtitle="Histórico de atuação">
-                <DynamicList items={experiences} max={10}
-                  onAdd={() => setExperiences(prev => [...prev, { role: "", institution: "", start_date: "", end_date: "", description: "" }])}
-                  onRemove={(i) => setExperiences(prev => prev.filter((_, idx) => idx !== i))}
-                  addLabel="Adicionar experiência"
-                  renderItem={(e, i) => (
-                    <FieldGroup>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Field label="Cargo"><Input value={e.role} maxLength={100}
-                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, role: ev.target.value } : x))} /></Field>
-                        <Field label="Instituição"><Input value={e.institution} maxLength={150}
-                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, institution: ev.target.value } : x))} /></Field>
-                        <Field label="Início"><Input type="month" value={e.start_date.slice(0, 7)}
-                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, start_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
-                        <Field label="Término" hint="Deixe vazio se atual"><Input type="month" value={e.end_date ? e.end_date.slice(0, 7) : ""}
-                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, end_date: ev.target.value ? `${ev.target.value}-01` : "" } : x))} /></Field>
+                        <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
+                        <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
                       </div>
-                      <Field label="Descrição" hint={`${e.description.length}/300`}>
-                        <Textarea rows={2} value={e.description}
-                          onChange={(ev) => setExperiences(p => p.map((x, idx) => idx === i ? { ...x, description: ev.target.value.slice(0, 300) } : x))} />
-                      </Field>
-                    </FieldGroup>
-                  )} />
-              </Section>
 
-              <Section step={7} of={14} title="Certificações" subtitle="Credenciais e certificações">
-                <DynamicList items={certifications} max={10}
-                  onAdd={() => setCertifications(p => [...p, { title: "", issuer: "", issued_year: "" }])}
-                  onRemove={(i) => setCertifications(p => p.filter((_, idx) => idx !== i))}
-                  addLabel="Adicionar certificação"
-                  renderItem={(c, i) => (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <div className="sm:col-span-2"><Field label="Nome"><Input value={c.title} maxLength={150}
-                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field></div>
-                      <Field label="Ano"><Input type="number" min={1950} max={2100} value={c.issued_year}
-                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issued_year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
-                      <div className="sm:col-span-3"><Field label="Instituição emissora"><Input value={c.issuer} maxLength={150}
-                        onChange={(e) => setCertifications(p => p.map((x, idx) => idx === i ? { ...x, issuer: e.target.value } : x))} /></Field></div>
-                    </div>
-                  )} />
-              </Section>
+                      {!identityVerified && (
+                        <Button type="button" onClick={verifyIdentity}
+                          disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
+                          className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
+                          {verifyingIdentity
+                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
+                            : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
+                        </Button>
+                      )}
 
-              <Section step={8} of={14} title="Cursos" subtitle="Cursos complementares">
-                <DynamicList items={courses} max={10}
-                  onAdd={() => setCourses(p => [...p, { title: "", institution: "", hours: "", completed_year: "" }])}
-                  onRemove={(i) => setCourses(p => p.filter((_, idx) => idx !== i))}
-                  addLabel="Adicionar curso"
-                  renderItem={(c, i) => (
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <Field label="Curso"><Input value={c.title} maxLength={150}
-                        onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
-                      <Field label="Instituição"><Input value={c.institution} maxLength={150}
-                        onChange={(e) => setCourses(p => p.map((x, idx) => idx === i ? { ...x, institution: e.target.value } : x))} /></Field>
-                    </div>
-                  )} />
-              </Section>
+                      <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="max-w-md">
+                            <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
+                              <BadgeCheck className="h-4 w-4" /> Selo de Informações Verificadas por CRM
+                            </p>
+                            <p className="mt-1 text-xs text-emerald-900/80">
+                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho e ativamos o selo verde permanente no diretório <span className="font-semibold">/medicos</span>.
+                            </p>
+                          </div>
+                          {crmStatus === "verified" ? (
+                            <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
+                              <BadgeCheck className="h-3.5 w-3.5" /> Verificado
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                              {crmStatus === "invalid" ? "CRM inválido" : "Não verificado"}
+                            </Badge>
+                          )}
+                        </div>
 
-              <Section step={9} of={14} title="Publicações" subtitle="Artigos e publicações científicas">
-                <DynamicList items={publications} max={10}
-                  onAdd={() => setPublications(p => [...p, { title: "", journal: "", year: "", url: "" }])}
-                  onRemove={(i) => setPublications(p => p.filter((_, idx) => idx !== i))}
-                  addLabel="Adicionar publicação"
-                  renderItem={(p, i) => (
-                    <FieldGroup>
-                      <Field label="Título"><Input value={p.title} maxLength={200}
-                        onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, title: e.target.value } : x))} /></Field>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <Field label="Revista / Veículo"><Input value={p.journal}
-                          onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, journal: e.target.value } : x))} /></Field>
-                        <Field label="Ano"><Input type="number" min={1950} max={2100} value={p.year}
-                          onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, year: e.target.value === "" ? "" : Number(e.target.value) } : x))} /></Field>
-                      </div>
-                      <Field label="Link"><Input type="url" value={p.url} placeholder="https://..."
-                        onChange={(e) => setPublications(prev => prev.map((x, idx) => idx === i ? { ...x, url: e.target.value } : x))} /></Field>
-                    </FieldGroup>
-                  )} />
-              </Section>
-
-              <Section step={13} of={14} title="Experiência Médica & Links" subtitle="Detalhe sua trajetória clínica e suas redes profissionais">
-                <FieldGroup>
-                  <Field label="Experiência Médica" hint={`${medicalExperience.length}/2000 — relate condutas, áreas de atuação e diferenciais`}>
-                    <Textarea value={medicalExperience} rows={6}
-                      onChange={(e) => setMedicalExperience(e.target.value.slice(0, 2000))}
-                      placeholder="Conte sua experiência clínica em detalhes: tipos de pacientes, condutas, condutas em telemedicina, casos relevantes…" />
-                  </Field>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Currículo Lattes" hint="URL pública do Lattes">
-                      <Input type="url" value={lattesUrl} placeholder="http://lattes.cnpq.br/..."
-                        onChange={(e) => setLattesUrl(e.target.value.slice(0, 300))} />
-                    </Field>
-                    <Field label="LinkedIn" hint="URL do seu perfil">
-                      <Input type="url" value={linkedinUrl} placeholder="https://linkedin.com/in/..."
-                        onChange={(e) => setLinkedinUrl(e.target.value.slice(0, 300))} />
-                    </Field>
-                  </div>
-                </FieldGroup>
-              </Section>
-
-
-
-              <Section step={10} of={14} title="Disponibilidade" subtitle="Quando você está disponível para atender">
-                <FieldGroup>
-                  <div>
-                    <Label className="mb-2 block">Dias da semana <span className="text-red-500">*</span></Label>
-                    <div className="flex flex-wrap gap-2">
-                      {WEEKDAYS.map(d => {
-                        const on = weekdays.includes(d.v);
-                        return (
-                          <button type="button" key={d.v} onClick={() => toggleWeekday(d.v)}
-                            className={`min-w-[52px] rounded-lg border px-3 py-2 text-sm font-medium transition ${
-                              on ? "border-emerald-600 bg-emerald-600 text-white"
-                                 : "border-gray-200 bg-white text-gray-700 hover:border-emerald-400"}`}>
-                            {d.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Início" required><Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} /></Field>
-                    <Field label="Término" required><Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} /></Field>
-                  </div>
-                  <Field label="Fuso horário" required>
-                    <Select value={timezone} onValueChange={setTimezone}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{TIMEZONES.map(t => <SelectItem key={t.v} value={t.v}>{t.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </Field>
-                </FieldGroup>
-              </Section>
-
-              <Section step={11} of={14} title="Informações de Pagamento" subtitle="Como você quer receber">
-                <FieldGroup>
-                  <Field label="Taxa de Consulta (R$)" required hint="Mín. R$ 50, máx. R$ 1000">
-                    <Input type="number" min={50} max={1000} step="0.01" value={fee}
-                      onChange={(e) => setFee(e.target.value === "" ? "" : Number(e.target.value))} placeholder="300.00" />
-                  </Field>
-                </FieldGroup>
-              </Section>
-
-              <Section step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
-                <FieldGroup>
-                  <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
-                  <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
-                  <DocUploader userId={userId} label="Documento de Identidade (RG/CNH) *" url={rgUrl} folder="rg" onChange={setRgUrl} />
-                  <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
-                </FieldGroup>
-              </Section>
-
-              <Section step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
-                <FieldGroup>
-                  <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
-                      </p>
-                      <p className="mt-1 text-xs text-gray-500 max-w-md">
-                        Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
-                        A análise é simulada e prepara a estrutura para integração com a API do CFM.
-                      </p>
-                    </div>
-                    {identityVerified ? (
-                      <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
-                        <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-                        Não verificada
-                      </Badge>
-                    )}
-                  </div>
-
-                  {identityVerified && identityVerifiedAt && (
-                    <p className="text-xs text-sky-700">
-                      Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
-                    </p>
-                  )}
-
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
-                    <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
-                  </div>
-
-                  {!identityVerified && (
-                    <Button type="button" onClick={verifyIdentity}
-                      disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
-                      className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
-                      {verifyingIdentity
-                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
-                        : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
-                    </Button>
-                  )}
-
-                  <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="max-w-md">
-                        <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
-                          <BadgeCheck className="h-4 w-4" /> Selo de Informações Verificadas por CRM
-                        </p>
-                        <p className="mt-1 text-xs text-emerald-900/80">
-                          Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho e ativamos o selo verde permanente no diretório <span className="font-semibold">/medicos</span>.
+                        {crmStatus !== "verified" && (
+                          <Button
+                            type="button"
+                            onClick={verifyCrmWithPayment}
+                            disabled={verifyingCrm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                            className="mt-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            {verifyingCrm
+                              ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                              : <><BadgeCheck className="h-4 w-4" /> Validar CRM · R$ 150,00</>}
+                          </Button>
+                        )}
+                        <p className="mt-2 text-[11px] text-emerald-900/60">
+                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway (Stripe).
                         </p>
                       </div>
-                      {crmStatus === "verified" ? (
-                        <Badge className="gap-1 bg-emerald-600 text-white hover:bg-emerald-600">
-                          <BadgeCheck className="h-3.5 w-3.5" /> Verificado
-                        </Badge>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={Star} step={14} of={14} title="Selo Premium" subtitle="Destaque seu perfil no diretório /medicos e seja visto primeiro pelas redes">
+                    <FieldGroup>
+                      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
+                        <div className="max-w-md">
+                          <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+                            <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Selo Premium Connect-Med
+                          </p>
+                          <p className="mt-1 text-xs text-amber-800/80">
+                            Médicos com selo Premium aparecem no topo do diretório com borda dourada e badge de destaque.
+                            Apenas <span className="font-semibold">R$ 49,90/mês</span> · ativação imediata.
+                          </p>
+                          {isPremium && premiumUntil && (
+                            <p className="mt-2 text-xs font-medium text-emerald-700">
+                              Ativo até {new Date(premiumUntil).toLocaleDateString("pt-BR")}
+                            </p>
+                          )}
+                        </div>
+                        {isPremium ? (
+                          <Badge className="gap-1 bg-amber-500 text-white hover:bg-amber-500">
+                            <Star className="h-3.5 w-3.5 fill-current" /> Premium Ativo
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-gray-200 text-gray-700">
+                            Inativo
+                          </Badge>
+                        )}
+                      </div>
+
+                      {isPremium ? (
+                        <Button type="button" variant="outline" onClick={cancelPremium} disabled={premiumLoading}
+                          className="gap-1.5">
+                          {premiumLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                          Cancelar Selo Premium
+                        </Button>
                       ) : (
-                        <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-                          {crmStatus === "invalid" ? "CRM inválido" : "Não verificado"}
-                        </Badge>
+                        <Button type="button" onClick={activatePremium} disabled={premiumLoading}
+                          className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
+                          {premiumLoading
+                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                            : <><Star className="h-4 w-4 fill-current" /> Ativar Selo Premium · R$ 49,90/mês</>}
+                        </Button>
                       )}
-                    </div>
-
-                    {crmStatus !== "verified" && (
-                      <Button
-                        type="button"
-                        onClick={verifyCrmWithPayment}
-                        disabled={verifyingCrm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
-                        className="mt-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-                      >
-                        {verifyingCrm
-                          ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
-                          : <><BadgeCheck className="h-4 w-4" /> Validar CRM · R$ 150,00</>}
-                      </Button>
-                    )}
-                    <p className="mt-2 text-[11px] text-emerald-900/60">
-                      Pagamento único (simulação). Em produção a cobrança seguirá via gateway (Stripe).
-                    </p>
-                  </div>
-                </FieldGroup>
-              </Section>
-
-              <Section step={14} of={14} title="Selo Premium" subtitle="Destaque seu perfil no diretório /medicos e seja visto primeiro pelas redes">
-                <FieldGroup>
-                  <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
-                    <div className="max-w-md">
-                      <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                        <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Selo Premium Connect-Med
+                      <p className="text-[11px] text-gray-500">
+                        Esta é uma simulação de pagamento (mock). A integração real com Stripe pode ser ativada quando você desejar.
                       </p>
-                      <p className="mt-1 text-xs text-amber-800/80">
-                        Médicos com selo Premium aparecem no topo do diretório com borda dourada e badge de destaque.
-                        Apenas <span className="font-semibold">R$ 49,90/mês</span> · ativação imediata.
-                      </p>
-                      {isPremium && premiumUntil && (
-                        <p className="mt-2 text-xs font-medium text-emerald-700">
-                          Ativo até {new Date(premiumUntil).toLocaleDateString("pt-BR")}
-                        </p>
-                      )}
-                    </div>
-                    {isPremium ? (
-                      <Badge className="gap-1 bg-amber-500 text-white hover:bg-amber-500">
-                        <Star className="h-3.5 w-3.5 fill-current" /> Premium Ativo
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-gray-200 text-gray-700">
-                        Inativo
-                      </Badge>
-                    )}
-                  </div>
+                    </FieldGroup>
+                  </Section>
 
-                  {isPremium ? (
-                    <Button type="button" variant="outline" onClick={cancelPremium} disabled={premiumLoading}
-                      className="gap-1.5">
-                      {premiumLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                      Cancelar Selo Premium
-                    </Button>
-                  ) : (
-                    <Button type="button" onClick={activatePremium} disabled={premiumLoading}
-                      className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
-                      {premiumLoading
-                        ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
-                        : <><Star className="h-4 w-4 fill-current" /> Ativar Selo Premium · R$ 49,90/mês</>}
-                    </Button>
-                  )}
-                  <p className="text-[11px] text-gray-500">
-                    Esta é uma simulação de pagamento (mock). A integração real com Stripe pode ser ativada quando você desejar.
-                  </p>
-                </FieldGroup>
-              </Section>
+                  <TabNav onPrev={goPrevTab} onNext={null} />
+                </TabsContent>
+              </Tabs>
+
 
 
 
