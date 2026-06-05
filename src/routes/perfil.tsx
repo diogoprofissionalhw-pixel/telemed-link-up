@@ -384,26 +384,37 @@ function DoctorRegistration({
     toast.success("Selo Premium cancelado.");
   };
 
+  /* ---------- Tabs state ---------- */
+  const [activeTab, setActiveTab] = useState<TabKey>("dados");
+
   /* ---------- Validation / progress ---------- */
   const checklist = useMemo(() => [
-    { ok: !!avatarUrl, label: "Foto de perfil" },
-    { ok: name.trim().length >= 2, label: "Nome completo" },
-    { ok: isValidEmail(emailVal), label: "Email válido" },
-    { ok: /^\d{4,7}$/.test(onlyDigits(crm)), label: "CRM válido" },
-    { ok: UF_LIST.includes(crmUf as any), label: "UF do CRM" },
-    { ok: isValidCPF(cpf), label: "CPF válido" },
-    { ok: !!primarySpecialty, label: "Especialidade principal" },
-    { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)" },
-    { ok: isValidPhone(phone), label: "Telefone válido" },
-    { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta" },
-    { ok: weekdays.length >= 1, label: "Dias da semana" },
-    { ok: !!diplomaUrl, label: "Diploma enviado" },
-    { ok: !!crmDocUrl, label: "Documento do CRM" },
-    { ok: !!rgUrl, label: "Documento de identidade" },
+    { ok: !!avatarUrl, label: "Foto de perfil", tab: "dados" as TabKey },
+    { ok: name.trim().length >= 2, label: "Nome completo", tab: "dados" as TabKey },
+    { ok: isValidEmail(emailVal), label: "Email válido", tab: "dados" as TabKey },
+    { ok: /^\d{4,7}$/.test(onlyDigits(crm)), label: "CRM válido", tab: "carreira" as TabKey },
+    { ok: UF_LIST.includes(crmUf as any), label: "UF do CRM", tab: "carreira" as TabKey },
+    { ok: isValidCPF(cpf), label: "CPF válido", tab: "carreira" as TabKey },
+    { ok: !!primarySpecialty, label: "Especialidade principal", tab: "carreira" as TabKey },
+    { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)", tab: "carreira" as TabKey },
+    { ok: isValidPhone(phone), label: "Telefone válido", tab: "dados" as TabKey },
+    { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta", tab: "agenda" as TabKey },
+    { ok: weekdays.length >= 1, label: "Dias da semana", tab: "agenda" as TabKey },
+    { ok: !!diplomaUrl, label: "Diploma enviado", tab: "verificacao" as TabKey },
+    { ok: !!crmDocUrl, label: "Documento do CRM", tab: "verificacao" as TabKey },
+    { ok: !!rgUrl, label: "Documento de identidade", tab: "verificacao" as TabKey },
   ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
 
   const completedCount = checklist.filter(c => c.ok).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
+
+  const goTab = (tab: TabKey) => {
+    setActiveTab(tab);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+  };
+  const tabIndex = TAB_ORDER.indexOf(activeTab);
+  const goPrevTab = () => tabIndex > 0 && goTab(TAB_ORDER[tabIndex - 1]);
+  const goNextTab = () => tabIndex < TAB_ORDER.length - 1 && goTab(TAB_ORDER[tabIndex + 1]);
 
   /* ---------- Auto-save (draft to localStorage) ---------- */
   const draftKey = `cm-doctor-draft-${userId}`;
