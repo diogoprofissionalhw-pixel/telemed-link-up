@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, Lock, Stethoscope } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Lock, Stethoscope, X } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { SiteHeader } from "@/components/site-header";
@@ -17,6 +17,21 @@ import {
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { listPublicDoctors } from "@/lib/public-discovery.functions";
+import { SPECIALTIES, AREAS_OF_ACTUATION } from "@/lib/specialties";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 type PublicDoctor = {
   id: string;
@@ -27,6 +42,8 @@ type PublicDoctor = {
 const searchSchema = z.object({
   page: fallback(z.coerce.number().int().min(1), 1).default(1),
   limit: fallback(z.coerce.number().int().min(1).max(100), 12).default(12),
+  specialty: fallback(z.coerce.string().trim().max(120), "").default(""),
+  activity: fallback(z.coerce.string().trim().max(120), "").default(""),
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
@@ -39,9 +56,9 @@ type LoaderData = {
 
 export const Route = createFileRoute("/explorar-medicos")({
   validateSearch: zodValidator(searchSchema),
-  loaderDeps: ({ search: { page, limit } }) => ({ page, limit }),
-  loader: async ({ deps: { page, limit } }) => {
-    const res = await listPublicDoctors({ data: { page, limit } });
+  loaderDeps: ({ search: { page, limit, specialty, activity } }) => ({ page, limit, specialty, activity }),
+  loader: async ({ deps: { page, limit, specialty, activity } }) => {
+    const res = await listPublicDoctors({ data: { page, limit, specialty: specialty || undefined, activity: activity || undefined } });
     if (res.error) throw new Error(res.error);
     return {
       items: res.items as PublicDoctor[],
@@ -99,11 +116,69 @@ export const Route = createFileRoute("/explorar-medicos")({
   component: ExplorarMedicosPage,
 });
 
+function FilterCombobox({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between sm:w-[280px]"
+        >
+          {value || label}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0 sm:w-[280px]">
+        <Command>
+          <CommandInput placeholder="Buscar..." />
+          <CommandList>
+            <CommandEmpty>Nenhum resultado.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={() => {
+                    onChange(option === value ? "" : option);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === option ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ExplorarMedicosPage() {
   const { user } = useAuth();
   const navigate = useNavigate({ from: "/explorar-medicos" });
   const { items: doctors, total, page: currentPage, limit: currentLimit } =
     Route.useLoaderData() as LoaderData;
+  const search = Route.useSearch() as SearchParams;
   const [plansOpen, setPlansOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / currentLimit));
@@ -115,6 +190,14 @@ function ExplorarMedicosPage() {
   const handleLimitChange = (value: string) => {
     const newLimit = Number(value);
     navigate({ search: (prev: SearchParams) => ({ ...prev, page: 1, limit: newLimit }) });
+  };
+
+  const handleFilterChange = (key: "specialty" | "activity", val: string) => {
+    navigate({ search: (prev: SearchParams) => ({ ...prev, [key]: val, page: 1 }) });
+  };
+
+  const clearFilters = () => {
+    navigate({ search: (prev: SearchParams) => ({ ...prev, specialty: "", activity: "", page: 1 }) });
   };
 
   const handleSeeMore = () => {
@@ -138,6 +221,56 @@ function ExplorarMedicosPage() {
           </div>
           <BackButton to="/" label="Voltar ao início" />
         </div>
+
+        {/* Filtros */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <FilterCombobox
+            label="Especialidade"
+            value={search.specialty}
+            options={SPECIALTIES}
+            onChange={(val) => handleFilterChange("specialty", val)}
+          />
+          <FilterCombobox
+            label="Área de atuação"
+            value={search.activity}
+            options={AREAS_OF_ACTUATION}
+            onChange={(val) => handleFilterChange("activity", val)}
+          />
+          {(search.specialty || search.activity) && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+              <X className="h-4 w-4" /> Limpar filtros
+            </Button>
+          )}
+        </div>
+
+        {(search.specialty || search.activity) && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {search.specialty && (
+              <Badge variant="secondary" className="gap-1">
+                Especialidade: {search.specialty}
+                <button
+                  aria-label="Remover filtro de especialidade"
+                  onClick={() => handleFilterChange("specialty", "")}
+                  className="ml-1 inline-flex items-center justify-center rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {search.activity && (
+              <Badge variant="secondary" className="gap-1">
+                Área: {search.activity}
+                <button
+                  aria-label="Remover filtro de área"
+                  onClick={() => handleFilterChange("activity", "")}
+                  className="ml-1 inline-flex items-center justify-center rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
+        )}
 
         {/* Controles de paginação */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

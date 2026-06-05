@@ -8,6 +8,7 @@ import { z } from "zod";
 const ListInput = z
   .object({
     specialty: z.string().trim().min(1).max(120).optional(),
+    activity: z.string().trim().min(1).max(120).optional(),
     limit: z.number().int().min(1).max(100).optional(),
     page: z.number().int().min(1).optional(),
   })
@@ -23,7 +24,10 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
 
     let base = supabaseAdmin.from("doctors_public").select("id, specialty, specialties");
     if (data?.specialty) {
-      base = base.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
+      base = base.ilike("specialty", `%${data.specialty}%`);
+    }
+    if (data?.activity) {
+      base = base.or(`specialties.cs.{${data.activity}}`);
     }
 
     const { data: rows, error } = await base.range(offset, offset + limit - 1).limit(limit);
@@ -31,7 +35,10 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
 
     let countQ = supabaseAdmin.from("doctors_public").select("*", { count: "exact", head: true });
     if (data?.specialty) {
-      countQ = countQ.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
+      countQ = countQ.ilike("specialty", `%${data.specialty}%`);
+    }
+    if (data?.activity) {
+      countQ = countQ.or(`specialties.cs.{${data.activity}}`);
     }
     const { count, error: countErr } = await countQ;
 
