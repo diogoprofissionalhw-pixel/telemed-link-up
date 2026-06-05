@@ -222,6 +222,56 @@ function ExplorarMedicosPage() {
           <BackButton to="/" label="Voltar ao início" />
         </div>
 
+        {/* Filtros */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <FilterCombobox
+            label="Especialidade"
+            value={search.specialty}
+            options={SPECIALTIES}
+            onChange={(val) => handleFilterChange("specialty", val)}
+          />
+          <FilterCombobox
+            label="Área de atuação"
+            value={search.activity}
+            options={AREAS_OF_ACTUATION}
+            onChange={(val) => handleFilterChange("activity", val)}
+          />
+          {(search.specialty || search.activity) && (
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-1">
+              <X className="h-4 w-4" /> Limpar filtros
+            </Button>
+          )}
+        </div>
+
+        {(search.specialty || search.activity) && (
+          <div className="mb-4 flex flex-wrap gap-2">
+            {search.specialty && (
+              <Badge variant="secondary" className="gap-1">
+                Especialidade: {search.specialty}
+                <button
+                  aria-label="Remover filtro de especialidade"
+                  onClick={() => handleFilterChange("specialty", "")}
+                  className="ml-1 inline-flex items-center justify-center rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+            {search.activity && (
+              <Badge variant="secondary" className="gap-1">
+                Área: {search.activity}
+                <button
+                  aria-label="Remover filtro de área"
+                  onClick={() => handleFilterChange("activity", "")}
+                  className="ml-1 inline-flex items-center justify-center rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            )}
+          </div>
+        )}
+
         {/* Controles de paginação */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
