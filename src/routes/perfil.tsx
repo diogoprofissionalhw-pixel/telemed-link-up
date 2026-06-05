@@ -1097,17 +1097,26 @@ function AuthChoice({ onLinkedIn, onManual }: { onLinkedIn: () => void; onManual
 
 /* ================== UI BUILDING BLOCKS ================== */
 
-function Section({ step, of, title, subtitle, children }: {
-  step: number; of: number; title: string; subtitle?: string; children: React.ReactNode;
+function Section({ step, of, title, subtitle, icon: Icon, children }: {
+  step: number; of: number; title: string; subtitle?: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
 }) {
   return (
     <section className="rounded-2xl border bg-white p-6 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
-            {title}
-          </h2>
-          {subtitle && <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>}
+        <div className="flex items-start gap-3">
+          {Icon && (
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#4F46E5]/10 text-[#4F46E5]">
+              <Icon className="h-5 w-5" />
+            </span>
+          )}
+          <div>
+            <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
+              {title}
+            </h2>
+            {subtitle && <p className="mt-0.5 text-sm text-gray-500">{subtitle}</p>}
+          </div>
         </div>
         <Badge variant="outline" className="shrink-0 border-emerald-200 bg-emerald-50 text-emerald-700">
           {step}/{of}
@@ -1117,6 +1126,82 @@ function Section({ step, of, title, subtitle, children }: {
     </section>
   );
 }
+
+function TabNav({ onPrev, onNext }: { onPrev: (() => void) | null; onNext: (() => void) | null }) {
+  return (
+    <div className="flex items-center justify-between gap-3 pt-2">
+      {onPrev ? (
+        <Button type="button" variant="outline" onClick={onPrev} className="gap-1.5">
+          <ChevronLeft className="h-4 w-4" /> Anterior
+        </Button>
+      ) : <span />}
+      {onNext ? (
+        <Button type="button" onClick={onNext} className="gap-1.5 bg-[#4F46E5] hover:bg-[#4338CA] text-white">
+          Próximo <ChevronRight className="h-4 w-4" />
+        </Button>
+      ) : <span />}
+    </div>
+  );
+}
+
+function SpecialtiesMultiSelect({
+  options, selected, onToggle, onClear,
+}: { options: string[]; selected: string[]; onToggle: (s: string) => void; onClear: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button type="button" variant="outline" role="combobox"
+            className="w-full justify-between font-normal">
+            <span className="truncate text-left">
+              {selected.length === 0
+                ? "Buscar e selecionar áreas de atuação…"
+                : `${selected.length} selecionada${selected.length > 1 ? "s" : ""}`}
+            </span>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Buscar especialidade…" />
+            <CommandList>
+              <CommandEmpty>Nada encontrado.</CommandEmpty>
+              <CommandGroup>
+                {options.map((opt) => {
+                  const on = selected.includes(opt);
+                  return (
+                    <CommandItem key={opt} value={opt} onSelect={() => onToggle(opt)}>
+                      <Check className={cn("mr-2 h-4 w-4", on ? "opacity-100" : "opacity-0")} />
+                      {opt}
+                    </CommandItem>
+                  );
+                })}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selected.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selected.map((s) => (
+            <Badge key={s} variant="secondary" className="gap-1 bg-[#4F46E5]/10 text-[#4F46E5] hover:bg-[#4F46E5]/20">
+              {s}
+              <button type="button" onClick={() => onToggle(s)} className="ml-0.5 opacity-70 hover:opacity-100" aria-label={`Remover ${s}`}>
+                ×
+              </button>
+            </Badge>
+          ))}
+          <button type="button" onClick={onClear}
+            className="text-xs font-medium text-gray-500 underline-offset-2 hover:underline">
+            Limpar
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function FieldGroup({ children }: { children: React.ReactNode }) {
   return <div className="space-y-4">{children}</div>;
