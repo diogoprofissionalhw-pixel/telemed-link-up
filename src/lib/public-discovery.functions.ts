@@ -8,6 +8,7 @@ import { z } from "zod";
 const ListInput = z
   .object({
     specialty: z.string().trim().min(1).max(120).optional(),
+    activity: z.string().trim().min(1).max(120).optional(),
     limit: z.number().int().min(1).max(100).optional(),
     page: z.number().int().min(1).optional(),
   })
