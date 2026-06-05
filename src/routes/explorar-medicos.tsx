@@ -109,12 +109,12 @@ function ExplorarMedicosPage() {
   const totalPages = Math.max(1, Math.ceil(total / currentLimit));
 
   const handlePageChange = (newPage: number) => {
-    navigate({ search: (prev) => ({ ...prev, page: newPage }) });
+    navigate({ search: (prev: SearchParams) => ({ ...prev, page: newPage }) });
   };
 
   const handleLimitChange = (value: string) => {
     const newLimit = Number(value);
-    navigate({ search: (prev) => ({ ...prev, page: 1, limit: newLimit }) });
+    navigate({ search: (prev: SearchParams) => ({ ...prev, page: 1, limit: newLimit }) });
   };
 
   const handleSeeMore = () => {
