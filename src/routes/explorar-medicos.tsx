@@ -29,6 +29,14 @@ const searchSchema = z.object({
   limit: fallback(z.number().int().min(1).max(100), 12).default(12),
 });
 
+type SearchParams = z.infer<typeof searchSchema>;
+type LoaderData = {
+  items: PublicDoctor[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export const Route = createFileRoute("/explorar-medicos")({
   validateSearch: zodValidator(searchSchema),
   loaderDeps: ({ search: { page, limit } }) => ({ page, limit }),
