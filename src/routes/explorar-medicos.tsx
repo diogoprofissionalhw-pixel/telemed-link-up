@@ -17,6 +17,21 @@ import {
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { listPublicDoctors } from "@/lib/public-discovery.functions";
+import { SPECIALTIES, AREAS_OF_ACTUATION } from "@/lib/specialties";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 type PublicDoctor = {
   id: string;
