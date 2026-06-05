@@ -1,10 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowRight, Lock, Stethoscope } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Lock, Stethoscope } from "lucide-react";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { listPublicDoctors } from "@/lib/public-discovery.functions";
@@ -15,7 +24,24 @@ type PublicDoctor = {
   specialties: string[];
 };
 
+const searchSchema = z.object({
+  page: fallback(z.number().int().min(1), 1).default(1),
+  limit: fallback(z.number().int().min(1).max(100), 12).default(12),
+});
+
 export const Route = createFileRoute("/explorar-medicos")({
+  validateSearch: zodValidator(searchSchema),
+  loaderDeps: ({ search: { page, limit } }) => ({ page, limit }),
+  loader: async ({ deps: { page, limit } }) => {
+    const res = await listPublicDoctors({ data: { page, limit } });
+    if (res.error) throw new Error(res.error);
+    return {
+      items: res.items as PublicDoctor[],
+      total: res.total,
+      page,
+      limit,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Conheça nossos médicos — Connect-Med" },
@@ -26,24 +52,62 @@ export const Route = createFileRoute("/explorar-medicos")({
       },
     ],
   }),
+  errorComponent: ({ error }) => (
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 py-10 text-center">
+        <p className="text-destructive">
+          Erro ao carregar médicos: {error.message}
+        </p>
+        <div className="mt-4 flex justify-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+          >
+            Tentar novamente
+          </Button>
+          <Link to="/">
+            <Button>Voltar ao início</Button>
+          </Link>
+        </div>
+      </main>
+    </div>
+  ),
+  notFoundComponent: () => (
+    <div className="flex min-h-screen flex-col bg-background">
+      <SiteHeader />
+      <main className="mx-auto max-w-6xl px-4 py-10 text-center">
+        <p className="text-muted-foreground">Nenhum médico encontrado.</p>
+        <div className="mt-4">
+          <Link to="/auth" search={{ mode: "signup" }}>
+            <Button className="gap-2">
+              Cadastrar como médico <ArrowRight className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </main>
+    </div>
+  ),
   component: ExplorarMedicosPage,
 });
 
 function ExplorarMedicosPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const [doctors, setDoctors] = useState<PublicDoctor[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate({ from: "/explorar-medicos" });
+  const { items: doctors, total, page: currentPage, limit: currentLimit } =
+    Route.useLoaderData();
   const [plansOpen, setPlansOpen] = useState(false);
 
-  useEffect(() => {
-    listPublicDoctors({ data: { limit: 120 } })
-      .then((res) => {
-        setDoctors(res.items ?? []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const totalPages = Math.max(1, Math.ceil(total / currentLimit));
+
+  const handlePageChange = (newPage: number) => {
+    navigate({ search: (prev) => ({ ...prev, page: newPage }) });
+  };
+
+  const handleLimitChange = (value: string) => {
+    const newLimit = Number(value);
+    navigate({ search: (prev) => ({ ...prev, page: 1, limit: newLimit }) });
+  };
 
   const handleSeeMore = () => {
     if (user) navigate({ to: "/medicos" });
@@ -60,65 +124,135 @@ function ExplorarMedicosPage() {
               Conheça nossos <span className="text-primary">médicos</span>
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Por privacidade, exibimos publicamente apenas a especialidade. Cadastre-se para ver o perfil completo.
+              Por privacidade, exibimos publicamente apenas a especialidade.
+              Cadastre-se para ver o perfil completo.
             </p>
           </div>
           <BackButton to="/" label="Voltar ao início" />
         </div>
 
-        {loading ? (
-          <p className="mt-10 text-center text-sm text-muted-foreground">Carregando médicos…</p>
-        ) : doctors.length === 0 ? (
+        {/* Controles de paginação */}
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            Mostrando {doctors.length} de {total} médicos
+          </p>
+          <div className="flex items-center gap-3">
+            <Select
+              value={String(currentLimit)}
+              onValueChange={handleLimitChange}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Itens por página" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="12">12 por página</SelectItem>
+                <SelectItem value="24">24 por página</SelectItem>
+                <SelectItem value="48">48 por página</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {doctors.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-sm text-muted-foreground">Nenhum médico encontrado.</p>
+            <p className="text-sm text-muted-foreground">
+              Nenhum médico encontrado.
+            </p>
             <div className="mt-4">
               <Link to="/auth" search={{ mode: "signup" }}>
-                <Button className="gap-2">Cadastrar como médico <ArrowRight className="h-4 w-4" /></Button>
+                <Button className="gap-2">
+                  Cadastrar como médico{" "}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
               </Link>
             </div>
           </div>
         ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {doctors.map((d) => (
-              <article
-                key={d.id}
-                className="flex h-full flex-col rounded-2xl border bg-card p-5"
-                style={{ boxShadow: "var(--shadow-card)" }}
+          <>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {doctors.map((d) => (
+                <article
+                  key={d.id}
+                  className="flex h-full flex-col rounded-2xl border bg-card p-5"
+                  style={{ boxShadow: "var(--shadow-card)" }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-accent">
+                      <Stethoscope className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate text-sm font-semibold">
+                        Profissional verificado
+                      </h3>
+                      {d.specialty && (
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                          {d.specialty}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex min-h-[1.5rem] flex-wrap gap-1.5">
+                    {d.specialties?.slice(0, 3).map((s) => (
+                      <Badge
+                        key={s}
+                        variant="secondary"
+                        className="text-[10px]"
+                      >
+                        {s}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 space-y-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
+                    <p className="flex items-center gap-1.5 font-medium text-muted-foreground">
+                      <Lock className="h-3 w-3" /> Informações confidenciais
+                    </p>
+                    <p className="select-none blur-sm">
+                      Nome • CRM •••••-•• · Cidade/UF
+                    </p>
+                    <p className="select-none blur-sm">
+                      Valor da consulta · Contato · Currículo
+                    </p>
+                  </div>
+
+                  <div className="mt-auto pt-4">
+                    <Button
+                      className="w-full gap-2"
+                      onClick={handleSeeMore}
+                    >
+                      Ver mais <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            {/* Paginação */}
+            <div className="mt-8 flex items-center justify-between">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage <= 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="gap-1"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-accent bg-accent">
-                    <Stethoscope className="h-6 w-6 text-primary" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-sm font-semibold">Profissional verificado</h3>
-                    {d.specialty && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">{d.specialty}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-3 flex min-h-[1.5rem] flex-wrap gap-1.5">
-                  {d.specialties?.slice(0, 3).map((s) => (
-                    <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
-                  ))}
-                </div>
-
-                <div className="mt-3 space-y-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
-                  <p className="flex items-center gap-1.5 font-medium text-muted-foreground">
-                    <Lock className="h-3 w-3" /> Informações confidenciais
-                  </p>
-                  <p className="select-none blur-sm">Nome • CRM •••••-•• · Cidade/UF</p>
-                  <p className="select-none blur-sm">Valor da consulta · Contato · Currículo</p>
-                </div>
-
-                <div className="mt-auto pt-4">
-                  <Button className="w-full gap-2" onClick={handleSeeMore}>
-                    Ver mais <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </article>
-            ))}
-          </div>
+                <ChevronLeft className="h-4 w-4" /> Anterior
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="gap-1"
+              >
+                Próxima <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
         )}
       </main>
 
