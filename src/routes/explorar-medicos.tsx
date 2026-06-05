@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, ChevronLeft, ChevronRight, Lock, Stethoscope } from "lucide-react";
+import { ArrowRight, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Lock, Stethoscope, X } from "lucide-react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { SiteHeader } from "@/components/site-header";
