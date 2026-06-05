@@ -25,8 +25,8 @@ type PublicDoctor = {
 };
 
 const searchSchema = z.object({
-  page: fallback(z.number().int().min(1), 1).default(1),
-  limit: fallback(z.number().int().min(1).max(100), 12).default(12),
+  page: fallback(z.coerce.number().int().min(1), 1).default(1),
+  limit: fallback(z.coerce.number().int().min(1).max(100), 12).default(12),
 });
 
 type SearchParams = z.infer<typeof searchSchema>;
