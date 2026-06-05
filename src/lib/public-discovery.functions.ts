@@ -29,9 +29,11 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
     const { data: rows, error } = await base.range(offset, offset + limit - 1).limit(limit);
     if (error) return { items: [], total: 0, error: error.message };
 
-    const { count, error: countErr } = await supabaseAdmin
-      .from("doctors_public")
-      .select("*", { count: "exact", head: true });
+    let countQ = supabaseAdmin.from("doctors_public").select("*", { count: "exact", head: true });
+    if (data?.specialty) {
+      countQ = countQ.or(`specialty.ilike.%${data.specialty}%,specialties.cs.{${data.specialty}}`);
+    }
+    const { count, error: countErr } = await countQ;
 
     if (countErr) return { items: [], total: 0, error: countErr.message };
 
