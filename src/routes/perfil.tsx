@@ -175,7 +175,7 @@ function DoctorRegistration({
 
   // Contact
   const [phone, setPhone] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  
 
   // Education / languages
   const [education, setEducation] = useState("");
@@ -255,7 +255,7 @@ function DoctorRegistration({
         setYearsExp(doc.years_experience ?? "");
         setExtraSpecs(doc.specialties ?? []);
         setPhone(doc.phone ? maskPhone(doc.phone) : "");
-        setWhatsapp(doc.whatsapp ? maskPhone(doc.whatsapp) : "");
+        
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
@@ -424,7 +424,7 @@ function DoctorRegistration({
       try {
         localStorage.setItem(draftKey, JSON.stringify({
           name, emailVal, location, city, state, headline, crm, crmUf, cpf,
-          primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp,
+          primarySpecialty, bio, yearsExp, extraSpecs, phone,
           education, languages, weekdays, startTime, endTime, timezone,
           fee,
         }));
@@ -433,7 +433,7 @@ function DoctorRegistration({
     }, 30000);
     return () => clearInterval(t);
   }, [loading, draftKey, name, emailVal, location, city, state, headline, crm, crmUf, cpf,
-      primarySpecialty, bio, yearsExp, extraSpecs, phone, whatsapp, education, languages,
+      primarySpecialty, bio, yearsExp, extraSpecs, phone, education, languages,
       weekdays, startTime, endTime, timezone, fee]);
 
   /* ---------- Toggle helpers ---------- */
@@ -486,7 +486,7 @@ function DoctorRegistration({
         bio: bio.trim(),
         years_experience: yearsExp || null,
         phone: onlyDigits(phone),
-        whatsapp: whatsapp ? onlyDigits(whatsapp) : null,
+        
         education: education || null,
         languages: languages || null,
         consultation_fee: fee,
@@ -667,9 +667,6 @@ function DoctorRegistration({
                     <FieldGroup>
                       <Field label="Telefone" required>
                         <Input value={phone} onChange={(e) => setPhone(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
-                      </Field>
-                      <Field label="WhatsApp" hint="Deixe em branco se for o mesmo número">
-                        <Input value={whatsapp} onChange={(e) => setWhatsapp(maskPhone(e.target.value))} placeholder="(11) 99999-9999" />
                       </Field>
                     </FieldGroup>
                   </Section>
