@@ -7,6 +7,7 @@ import {
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
   Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
+  Crown, Sparkles, TrendingUp, Eye, Zap,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
