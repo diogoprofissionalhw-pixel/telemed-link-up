@@ -973,50 +973,90 @@ function DoctorRegistration({
                     </FieldGroup>
                   </Section>
 
-                  <Section icon={Star} step={14} of={14} title="Selo Premium" subtitle="Destaque seu perfil no diretório /medicos e seja visto primeiro pelas redes">
+                  <Section icon={Crown} step={14} of={14} title="Selo Premium" subtitle="Destaque seu perfil no diretório e seja visto primeiro pelas redes">
                     <FieldGroup>
-                      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-4">
-                        <div className="max-w-md">
-                          <p className="text-sm font-semibold text-amber-900 flex items-center gap-2">
-                            <Star className="h-4 w-4 fill-amber-500 text-amber-500" /> Selo Premium Connect-Med
-                          </p>
-                          <p className="mt-1 text-xs text-amber-800/80">
-                            Médicos com selo Premium aparecem no topo do diretório com borda dourada e badge de destaque.
-                            Apenas <span className="font-semibold">R$ 49,90/mês</span> · ativação imediata.
-                          </p>
-                          {isPremium && premiumUntil && (
-                            <p className="mt-2 text-xs font-medium text-emerald-700">
-                              Ativo até {new Date(premiumUntil).toLocaleDateString("pt-BR")}
-                            </p>
+                      <div className="relative overflow-hidden rounded-xl border border-slate-200 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-lg">
+                        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-amber-400/10 blur-3xl" />
+                        <div className="pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl" />
+
+                        <div className="relative flex flex-wrap items-start justify-between gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="grid h-11 w-11 place-items-center rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 shadow-md ring-1 ring-amber-300/40">
+                              <Crown className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/90">Connect-Med Premium</p>
+                              <h3 className="text-lg font-semibold leading-tight">Acelere sua visibilidade</h3>
+                            </div>
+                          </div>
+                          {isPremium ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/30">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Ativo
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-300 ring-1 ring-white/10">
+                              <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inativo
+                            </span>
                           )}
                         </div>
-                        {isPremium ? (
-                          <Badge className="gap-1 bg-amber-500 text-white hover:bg-amber-500">
-                            <Star className="h-3.5 w-3.5 fill-current" /> Premium Ativo
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-gray-200 text-gray-700">
-                            Inativo
-                          </Badge>
-                        )}
+
+                        <div className="relative mt-5 grid gap-2.5 sm:grid-cols-3">
+                          {[
+                            { icon: TrendingUp, label: "Topo do diretório" },
+                            { icon: Eye, label: "Mais visualizações" },
+                            { icon: Zap, label: "Ativação imediata" },
+                          ].map((f) => (
+                            <div key={f.label} className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2 ring-1 ring-white/10">
+                              <f.icon className="h-4 w-4 text-amber-300" />
+                              <span className="text-xs font-medium text-slate-100">{f.label}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="relative mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-white/10 pt-5">
+                          <div>
+                            <p className="text-[11px] uppercase tracking-wider text-slate-400">Investimento</p>
+                            <p className="mt-1 flex items-baseline gap-1.5">
+                              <span className="text-3xl font-bold tracking-tight text-white">R$ 49,90</span>
+                              <span className="text-sm text-slate-400">/mês</span>
+                            </p>
+                            {isPremium && premiumUntil && (
+                              <p className="mt-1.5 text-xs text-emerald-300">
+                                Ativo até {new Date(premiumUntil).toLocaleDateString("pt-BR")}
+                              </p>
+                            )}
+                          </div>
+
+                          {isPremium ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={cancelPremium}
+                              disabled={premiumLoading}
+                              className="gap-1.5 border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+                            >
+                              {premiumLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                              Cancelar assinatura
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              onClick={activatePremium}
+                              disabled={premiumLoading}
+                              className="gap-2 bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 shadow-md hover:from-amber-300 hover:to-amber-500"
+                            >
+                              {premiumLoading ? (
+                                <><Loader2 className="h-4 w-4 animate-spin" /> Processando…</>
+                              ) : (
+                                <><Sparkles className="h-4 w-4" /> Ativar Premium</>
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </div>
 
-                      {isPremium ? (
-                        <Button type="button" variant="outline" onClick={cancelPremium} disabled={premiumLoading}
-                          className="gap-1.5">
-                          {premiumLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                          Cancelar Selo Premium
-                        </Button>
-                      ) : (
-                        <Button type="button" onClick={activatePremium} disabled={premiumLoading}
-                          className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white">
-                          {premiumLoading
-                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
-                            : <><Star className="h-4 w-4 fill-current" /> Ativar Selo Premium · R$ 49,90/mês</>}
-                        </Button>
-                      )}
-                      <p className="text-[11px] text-gray-500">
-                        Esta é uma simulação de pagamento (mock). A integração real com Stripe pode ser ativada quando você desejar.
+                      <p className="text-[11px] text-muted-foreground">
+                        Pagamento processado em ambiente de simulação. A integração com gateway real pode ser ativada quando desejar.
                       </p>
                     </FieldGroup>
                   </Section>
