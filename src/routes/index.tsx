@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Stethoscope, Building2, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Users,
+  Mail, MapPin, Users, CreditCard, Lock, Globe, Code2, Smartphone, Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
@@ -40,6 +40,7 @@ function LandingPage() {
         <Benefits />
         <ExploreDoctors />
         <ExploreNetworks />
+        <StripeSection />
         <FinalCTA />
       </main>
       <Footer />
@@ -326,6 +327,151 @@ function ExploreNetworks() {
                     Conhecer redes <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+
+/* ====================== Stripe Section ====================== */
+function StripeSection() {
+  const steps = [
+    {
+      icon: CreditCard,
+      title: "Captura de dados",
+      desc: "Fornece o formulário seguro para o cliente digitar o cartão.",
+    },
+    {
+      icon: Lock,
+      title: "Segurança",
+      desc: "Criptografa as informações para proteger o número do cartão do vendedor.",
+    },
+    {
+      icon: ArrowRight,
+      title: "Processamento",
+      desc: "Envia a cobrança para a bandeira (Visa, Mastercard, etc.) e para o banco.",
+    },
+    {
+      icon: Wallet,
+      title: "Depósito",
+      desc: "Recebe o dinheiro e o transfere consolidado para a conta bancária da empresa.",
+    },
+  ];
+
+  const methods = [
+    "Pix (com aprovação instantânea)",
+    "Cartões de Crédito e Débito (nacionais e internacionais)",
+    "Parcelamento (com ou sem juros para o cliente)",
+    "Carteiras Digitais (Apple Pay e Google Pay)",
+  ];
+
+  const users = [
+    {
+      icon: Code2,
+      title: "Plataformas de Assinatura (SaaS)",
+      desc: "Para cobranças mensais automáticas.",
+    },
+    {
+      icon: Building2,
+      title: "Marketplaces",
+      desc: "Para dividir pagamentos entre comprador, vendedor e plataforma (split de pagamento).",
+    },
+    {
+      icon: Globe,
+      title: "E-commerces Globais",
+      desc: "Para vendas internacionais e conversão automática de moedas.",
+    },
+  ];
+
+  return (
+    <section className="bg-background">
+      <div className="mx-auto max-w-6xl px-4 py-20">
+        <div className="rounded-3xl border bg-card p-8 sm:p-12" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="grid gap-10 lg:grid-cols-2">
+            <div>
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-background px-4 py-1.5 text-xs font-semibold text-primary">
+                <ShieldCheck className="h-3.5 w-3.5" /> Pagamentos seguros
+              </div>
+              <h2 className="text-3xl font-bold sm:text-4xl">
+                Como a <span className="text-primary">Stripe</span> Protege Suas Transações Online
+              </h2>
+              <p className="mt-4 text-muted-foreground leading-relaxed">
+                A Stripe não é um aplicativo de pagamento para o consumidor final, mas sim uma{" "}
+                <strong>infraestrutura de software (gateway)</strong> utilizada por empresas para
+                processar pagamentos. Quando você compra um produto na internet e digita o seu cartão de
+                crédito, muitas vezes é a tecnologia da Stripe que está validando e liquidando aquela
+                transação de forma invisível.
+              </p>
+
+              <div className="mt-8 rounded-2xl p-6" style={{ background: "color-mix(in oklab, var(--primary) 8%, var(--background))" }}>
+                <h3 className="text-xl font-semibold">Como a Stripe Funciona na Prática?</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  A Stripe atua como a <strong>ponte</strong> entre o cliente, a loja virtual e os bancos.
+                </p>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  {steps.map((s) => (
+                    <div key={s.title} className="flex gap-3">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent">
+                        <s.icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{s.title}</p>
+                        <p className="text-xs text-muted-foreground">{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="rounded-2xl border p-6">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                    <Smartphone className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Principais Meios de Pagamento Suportados no Brasil</h3>
+                </div>
+                <ul className="mt-5 space-y-3">
+                  {methods.map((m) => (
+                    <li key={m} className="flex items-start gap-3 text-sm">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>{m}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border p-6">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Quem Costuma Usar a Stripe?</h3>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  A Stripe é a escolha principal de empresas que precisam de alta personalização via{" "}
+                  <strong>APIs</strong>.
+                </p>
+                <div className="mt-5 space-y-4">
+                  {users.map((u) => (
+                    <div key={u.title} className="flex gap-3">
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent">
+                        <u.icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{u.title}</p>
+                        <p className="text-xs text-muted-foreground">{u.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
