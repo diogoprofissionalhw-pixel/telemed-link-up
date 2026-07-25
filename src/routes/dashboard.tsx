@@ -692,7 +692,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
 
   return (
     <div className="space-y-10">
-      {networkVerified === false && (
+      {networkVerified === false && !isTestNetwork && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-semibold text-amber-900">Sua rede ainda não está verificada</p>
