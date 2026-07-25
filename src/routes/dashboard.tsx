@@ -785,34 +785,6 @@ function NetworkPanel({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* GRÁFICO — custo médio/hora + tempo médio em minutos */}
-      <section className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Indicadores (90 dias)</p>
-            <h3 className="mt-1 text-base font-semibold tracking-tight">Custo médio por hora & tempo médio de preenchimento</h3>
-          </div>
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
-            <TrendingUp className="h-[18px] w-[18px] text-primary" />
-          </div>
-        </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <MetricBar
-            label="Custo médio por hora"
-            value={avgCostPerHour > 0 ? avgCostPerHour.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}
-            ratio={Math.min(1, avgCostPerHour / 500)}
-            icon={DollarSign}
-            colorVar="var(--primary)"
-          />
-          <MetricBar
-            label="Tempo médio de resposta"
-            value={avgFillMin > 0 ? `${Math.round(avgFillMin)} min` : "—"}
-            ratio={avgFillMin > 0 ? Math.min(1, avgFillMin / 240) : 0}
-            icon={Clock}
-            colorVar="oklch(0.55 0.18 250)"
-          />
-        </div>
-      </section>
 
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
