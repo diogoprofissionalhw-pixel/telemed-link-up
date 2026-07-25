@@ -647,13 +647,7 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   const acceptedHist = allHist.filter(h => h.status === "accepted" || h.status === "completed");
   const declinedHist = allHist.filter(h => h.status === "declined");
-  const totalCost = acceptedHist.reduce((a, h) => a + (Number(h.agreed_value) || 0), 0);
-  const totalHours = acceptedHist.reduce((a, h) => a + (Number(h.duration_hours) || 0), 0);
-  const avgCostPerHour = totalHours > 0 ? totalCost / totalHours : 0;
-  const filledWithTime = acceptedHist.filter(h => h.responded_at);
-  const avgFillMin = filledWithTime.length
-    ? filledWithTime.reduce((a, h) => a + (new Date(h.responded_at!).getTime() - new Date(h.created_at).getTime()), 0) / filledWithTime.length / 1000 / 60
-    : 0;
+
 
   const favoriteDoctors = useMemo(
     () => doctors.filter(d => favoriteIds.has(d.id)),
