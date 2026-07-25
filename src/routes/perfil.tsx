@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
-  Loader2, ShieldCheck, ShieldAlert, FileText, Save, Star,
+  Loader2, ShieldCheck, FileText, Save, Star,
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
   Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
@@ -1521,11 +1521,6 @@ function SummaryCard({ avatarUrl, name, headline, extras, progressPct }: {
 }) {
   return (
     <div className="rounded-2xl border bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
-          <ShieldAlert className="mr-1 h-3 w-3" /> Em análise
-        </Badge>
-      </div>
       <div className="flex flex-col items-center text-center">
         <Avatar className="h-20 w-20 ring-2 ring-emerald-100">
           {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
