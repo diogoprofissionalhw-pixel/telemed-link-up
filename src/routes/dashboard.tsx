@@ -526,6 +526,8 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
+  const TEST_NETWORK_EMAIL = "diogomassaro465@gmail.com";
+  const isTestNetwork = userEmail === TEST_NETWORK_EMAIL;
 
   useEffect(() => {
     supabase.from("networks").select("is_verified, qualification_status").eq("id", userId).maybeSingle()
