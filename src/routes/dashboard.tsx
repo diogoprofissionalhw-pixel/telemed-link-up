@@ -1029,22 +1029,6 @@ function AddDoctorDialog({
   );
 }
 
-function MetricBar({ label, value, ratio, icon: Icon, colorVar }: { label: string; value: string; ratio: number; icon: any; colorVar: string }) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </div>
-      <div className="mt-2 text-2xl font-bold tabular-nums">{value}</div>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-background">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${Math.max(4, ratio * 100)}%`, backgroundColor: colorVar }}
-        />
-      </div>
-    </div>
-  );
-}
 
 /* ----------------- NEW REQUEST DIALOG (Match Inteligente) ----------------- */
 const PRESETS: Record<"morning" | "night", { start: string; end: string }> = {
