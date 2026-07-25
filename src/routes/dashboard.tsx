@@ -511,7 +511,7 @@ interface NetDoctor {
   rating_count: number;
 }
 
-function NetworkPanel({ userId }: { userId: string }) {
+function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allHist, setAllHist] = useState<Array<{ status: string; agreed_value: number | null; duration_hours: number; created_at: string; responded_at: string | null }>>([]);
   const [doctors, setDoctors] = useState<NetDoctor[]>([]);
