@@ -647,13 +647,7 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   const acceptedHist = allHist.filter(h => h.status === "accepted" || h.status === "completed");
   const declinedHist = allHist.filter(h => h.status === "declined");
-  const totalCost = acceptedHist.reduce((a, h) => a + (Number(h.agreed_value) || 0), 0);
-  const totalHours = acceptedHist.reduce((a, h) => a + (Number(h.duration_hours) || 0), 0);
-  const avgCostPerHour = totalHours > 0 ? totalCost / totalHours : 0;
-  const filledWithTime = acceptedHist.filter(h => h.responded_at);
-  const avgFillMin = filledWithTime.length
-    ? filledWithTime.reduce((a, h) => a + (new Date(h.responded_at!).getTime() - new Date(h.created_at).getTime()), 0) / filledWithTime.length / 1000 / 60
-    : 0;
+
 
   const favoriteDoctors = useMemo(
     () => doctors.filter(d => favoriteIds.has(d.id)),
@@ -785,34 +779,6 @@ function NetworkPanel({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* GRÁFICO — custo médio/hora + tempo médio em minutos */}
-      <section className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Indicadores (90 dias)</p>
-            <h3 className="mt-1 text-base font-semibold tracking-tight">Custo médio por hora & tempo médio de preenchimento</h3>
-          </div>
-          <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
-            <TrendingUp className="h-[18px] w-[18px] text-primary" />
-          </div>
-        </div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <MetricBar
-            label="Custo médio por hora"
-            value={avgCostPerHour > 0 ? avgCostPerHour.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) : "—"}
-            ratio={Math.min(1, avgCostPerHour / 500)}
-            icon={DollarSign}
-            colorVar="var(--primary)"
-          />
-          <MetricBar
-            label="Tempo médio de resposta"
-            value={avgFillMin > 0 ? `${Math.round(avgFillMin)} min` : "—"}
-            ratio={avgFillMin > 0 ? Math.min(1, avgFillMin / 240) : 0}
-            icon={Clock}
-            colorVar="oklch(0.55 0.18 250)"
-          />
-        </div>
-      </section>
 
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
@@ -1063,22 +1029,6 @@ function AddDoctorDialog({
   );
 }
 
-function MetricBar({ label, value, ratio, icon: Icon, colorVar }: { label: string; value: string; ratio: number; icon: any; colorVar: string }) {
-  return (
-    <div className="rounded-xl border bg-muted/30 p-4">
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        <Icon className="h-3.5 w-3.5" /> {label}
-      </div>
-      <div className="mt-2 text-2xl font-bold tabular-nums">{value}</div>
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-background">
-        <div
-          className="h-full rounded-full transition-all"
-          style={{ width: `${Math.max(4, ratio * 100)}%`, backgroundColor: colorVar }}
-        />
-      </div>
-    </div>
-  );
-}
 
 /* ----------------- NEW REQUEST DIALOG (Match Inteligente) ----------------- */
 const PRESETS: Record<"morning" | "night", { start: string; end: string }> = {
