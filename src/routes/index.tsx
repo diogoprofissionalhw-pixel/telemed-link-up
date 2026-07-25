@@ -40,7 +40,6 @@ function LandingPage() {
         <Benefits />
         <ExploreDoctors />
         <ExploreNetworks />
-        <StripeSection />
         <FinalCTA />
       </main>
       <Footer />
