@@ -133,7 +133,7 @@ function DashboardPage() {
           {isDoctor ? (
             <DoctorPanel userId={user.id} />
           ) : (
-            <NetworkPanel userId={user.id} />
+            <NetworkPanel userId={user.id} userEmail={user.email} />
           )}
         </div>
       )}
@@ -511,7 +511,7 @@ interface NetDoctor {
   rating_count: number;
 }
 
-function NetworkPanel({ userId }: { userId: string }) {
+function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: string }) {
   const [requests, setRequests] = useState<ShiftRequest[]>([]);
   const [allHist, setAllHist] = useState<Array<{ status: string; agreed_value: number | null; duration_hours: number; created_at: string; responded_at: string | null }>>([]);
   const [doctors, setDoctors] = useState<NetDoctor[]>([]);
@@ -526,6 +526,8 @@ function NetworkPanel({ userId }: { userId: string }) {
   const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [networkVerified, setNetworkVerified] = useState<boolean | null>(null);
+  const TEST_NETWORK_EMAIL = "diogomassaro465@gmail.com";
+  const isTestNetwork = userEmail === TEST_NETWORK_EMAIL;
 
   useEffect(() => {
     supabase.from("networks").select("is_verified, qualification_status").eq("id", userId).maybeSingle()
@@ -690,7 +692,7 @@ function NetworkPanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-10">
-      {networkVerified === false && (
+      {networkVerified === false && !isTestNetwork && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-semibold text-amber-900">Sua rede ainda não está verificada</p>
