@@ -573,7 +573,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.from("doctors_public").select("id, specialty, crm, crm_uf, avatar_url, city, state, full_name").limit(200),
+      supabase.from("doctors_directory").select("id, specialty, crm, crm_uf, avatar_url, city, state, full_name").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
       supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
@@ -1101,7 +1101,7 @@ function NewRequestDialog({
       void net;
 
       const [{ data: docs }, { data: ratings }, { data: shifts }, { data: avails }] = await Promise.all([
-        supabase.from("doctors_public").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, full_name"),
+        supabase.from("doctors_directory").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status, shift_date, start_time, end_time").in("status", ["accepted", "completed", "pending"]),
         supabase.from("doctor_availabilities").select("doctor_id, available_date, start_time, end_time"),

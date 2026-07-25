@@ -83,7 +83,7 @@ function DoctorsPage() {
     (async () => {
       const [{ data: docs }, { data: ratings }, { data: reqs }] = await Promise.all([
         (supabase as any)
-          .from("doctors_public")
+          .from("doctors_directory")
           .select("id, public_id, specialty, specialties, crm_status, identity_verified, is_premium, years_experience, city, state, consultation_fee, full_name"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status"),

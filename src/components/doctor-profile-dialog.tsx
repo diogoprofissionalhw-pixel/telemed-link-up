@@ -54,7 +54,7 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
     (async () => {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
-          .from("doctors_public")
+          .from("doctors_directory")
           .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, city, state, country, full_name")
           .eq("id", doctorId)
           .maybeSingle(),
