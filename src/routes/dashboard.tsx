@@ -706,33 +706,35 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         </div>
       )}
       {/* TOP — Resumo (esquerda) + CTA grande (direita) */}
-      <section className="grid gap-6 lg:grid-cols-3">
-        {/* Coluna esquerda: contadores empilhados */}
-        <div className="space-y-6 lg:col-span-1">
-          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+      <section className="grid gap-6 lg:grid-cols-3 lg:grid-rows-2">
+        {/* Coluna esquerda: contadores empilhados com mesma altura */}
+        <div className="grid grid-rows-2 gap-6 lg:col-span-1 lg:row-span-2">
+          <div className="rounded-2xl border bg-card p-6 flex flex-col" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Solicitação</p>
               <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
                 <Inbox className="h-[18px] w-[18px] text-primary" />
               </div>
             </div>
-            <p className="mt-3 text-3xl font-bold leading-none tracking-tight">{loading ? "—" : pending.length}</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {pending.length === 1 ? "pendente aguardando médico" : "pendentes aguardando médico"}
-            </p>
-            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-              <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+            <div className="mt-auto">
+              <p className="mt-3 text-3xl font-bold leading-none tracking-tight">{loading ? "—" : pending.length}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {pending.length === 1 ? "pendente aguardando médico" : "pendentes aguardando médico"}
+              </p>
+              <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="rounded-2xl border bg-card p-6 flex flex-col" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitas / Negadas</p>
               <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
                 <CheckCircle2 className="h-[18px] w-[18px] text-primary" />
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-auto grid grid-cols-2 gap-3">
               <div>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: "oklch(0.40 0.14 150)" }}>{acceptedHist.length}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Aceitas (90d)</p>
@@ -746,22 +748,20 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         </div>
 
         {/* Coluna direita: CTA grande de Nova solicitação */}
-        <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-8 lg:col-span-2 flex flex-col justify-between min-h-[300px]" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
-                <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
-                <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                  Encontre um médico disponível para o plantão da sua rede com o match inteligente.
-                </p>
-              </div>
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
+        <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-6 lg:col-span-2 lg:row-span-2 flex flex-col justify-between" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                Encontre um médico disponível para o plantão da sua rede com o match inteligente.
+              </p>
+            </div>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10">
+              <Plus className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-3xl font-bold tabular-nums">{loading ? "—" : pending.length}</p>
@@ -772,7 +772,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
                 <p className="mt-1 text-xs text-muted-foreground">Em andamento</p>
               </div>
             </div>
-            <Link to="/solicitar">
+            <Link to="/solicitar" className="ml-auto">
               <Button size="lg" className="gap-2 shadow-lg">
                 <Plus className="h-5 w-5" /> Solicitar médico
               </Button>
@@ -780,6 +780,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           </div>
         </div>
       </section>
+
 
 
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
