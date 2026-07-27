@@ -750,7 +750,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         {/* Coluna direita: CTA grande de Nova solicitação */}
         <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-6 lg:col-span-2 lg:row-span-2 flex flex-col justify-between" style={{ boxShadow: "var(--shadow-card)" }}>
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
               <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
               <p className="mt-2 max-w-md text-sm text-muted-foreground">
@@ -780,6 +780,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           </div>
         </div>
       </section>
+
 
 
 
