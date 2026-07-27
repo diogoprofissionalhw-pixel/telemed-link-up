@@ -95,7 +95,6 @@ function SolicitarPage() {
   const [minRating, setMinRating] = useState(0);
   const [minYears, setMinYears] = useState(0);
   const [maxFee, setMaxFee] = useState(1000);
-  const [onlyVerified, setOnlyVerified] = useState(false);
   const [sortBy, setSortBy] = useState<"match" | "rating" | "fee_asc" | "fee_desc" | "experience">("match");
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -178,7 +177,6 @@ function SolicitarPage() {
         if (minRating > 0 && d.avg_stars < minRating) return false;
         if (minYears > 0 && (d.years_experience ?? 0) < minYears) return false;
         if (maxFee < 1000 && (d.consultation_fee ?? 0) > maxFee) return false;
-        if (onlyVerified && d.crm_status !== "verified") return false;
         return true;
       })
       .map(d => {
@@ -199,11 +197,11 @@ function SolicitarPage() {
           default: return b.score - a.score;
         }
       });
-  }, [doctors, search, specs, ufs, minRating, minYears, maxFee, onlyVerified, sortBy]);
+  }, [doctors, search, specs, ufs, minRating, minYears, maxFee, sortBy]);
 
   const clear = () => {
     setSearch(""); setSpecs([]); setUfs([]);
-    setMinRating(0); setMinYears(0); setMaxFee(1000); setOnlyVerified(false);
+    setMinRating(0); setMinYears(0); setMaxFee(1000);
   };
 
   const filterPanel = (
@@ -214,7 +212,6 @@ function SolicitarPage() {
       minRating={minRating} setMinRating={setMinRating}
       minYears={minYears} setMinYears={setMinYears}
       maxFee={maxFee} setMaxFee={setMaxFee}
-      onlyVerified={onlyVerified} setOnlyVerified={setOnlyVerified}
       clear={clear}
     />
   );
@@ -379,7 +376,7 @@ function SpecialtyFilter({ specs, toggleSpec }: { specs: string[]; toggleSpec: (
 function FilterPanel({
   search, setSearch, specs, toggleSpec, ufs, toggleUf,
   minRating, setMinRating, minYears, setMinYears, maxFee, setMaxFee,
-  onlyVerified, setOnlyVerified, clear,
+  clear,
 }: {
   search: string; setSearch: (v: string) => void;
   specs: string[]; toggleSpec: (s: string) => void;
@@ -387,7 +384,7 @@ function FilterPanel({
   minRating: number; setMinRating: (n: number) => void;
   minYears: number; setMinYears: (n: number) => void;
   maxFee: number; setMaxFee: (n: number) => void;
-  onlyVerified: boolean; setOnlyVerified: (v: boolean) => void;
+  
   clear: () => void;
 }) {
   return (
@@ -445,11 +442,6 @@ function FilterPanel({
         </div>
         <input type="range" min={0} max={1000} step={50} value={maxFee} onChange={(e) => setMaxFee(Number(e.target.value))} className="w-full accent-primary" />
       </div>
-
-      <label className="flex cursor-pointer items-center gap-2 text-xs">
-        <Checkbox checked={onlyVerified} onCheckedChange={(v) => setOnlyVerified(!!v)} />
-        Apenas CRM verificado
-      </label>
 
       <button type="button" onClick={clear} className="text-xs font-medium text-primary hover:underline">
         Limpar filtros
