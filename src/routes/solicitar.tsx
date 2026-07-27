@@ -176,6 +176,7 @@ function SolicitarPage() {
           (d.bio ?? "").toLowerCase().includes(q) ||
           d.specialties.some(s => s.toLowerCase().includes(q))
         )) return false;
+        if (onlyCfmVerified && d.cfm_status !== "verified") return false;
         if (specs.length > 0 && !specs.includes(d.specialty) && !d.specialties.some(s => specs.includes(s))) return false;
         if (ufs.length > 0 && !ufs.includes(d.state ?? "") && !ufs.includes(d.crm_uf)) return false;
         if (minRating > 0 && d.avg_stars < minRating) return false;
