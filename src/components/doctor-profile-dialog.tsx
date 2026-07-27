@@ -68,7 +68,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
           .rpc("doctors_directory")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, city, state, country, full_name")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -78,7 +77,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           .order("created_at", { ascending: false }),
       ]);
       if (d) {
-        let cvUrl: string | null = (d as any).cv_pdf_url ?? null;
+        const row = d as any;
+        let cvUrl: string | null = row.cv_pdf_url ?? null;
         if (cvUrl) {
           const marker = "/storage/v1/object/public/cvs/";
           const idx = cvUrl.indexOf(marker);
@@ -87,23 +87,36 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           cvUrl = signed?.signedUrl ?? null;
         }
         setDoctor({
-          id: (d as any).id,
-          specialty: (d as any).specialty,
-          crm: (d as any).crm,
-          crm_uf: (d as any).crm_uf,
-          bio: (d as any).bio,
-          years_experience: (d as any).years_experience,
-          education: (d as any).education,
-          certifications: (d as any).certifications,
-          languages: (d as any).languages,
-          avatar_url: (d as any).avatar_url ?? null,
+          id: row.id,
+          public_id: row.public_id ?? null,
+          specialty: row.specialty,
+          specialties: (row.specialties as string[] | null) ?? [],
+          crm: row.crm,
+          crm_uf: row.crm_uf,
+          crm_status: row.crm_status ?? null,
+          headline: row.headline ?? null,
+          bio: row.bio ?? null,
+          years_experience: row.years_experience ?? null,
+          consultation_fee: row.consultation_fee ?? null,
+          education: row.education ?? null,
+          certifications: row.certifications ?? null,
+          medical_experience: row.medical_experience ?? null,
+          languages: row.languages ?? null,
+          linkedin_url: row.linkedin_url ?? null,
+          lattes_url: row.lattes_url ?? null,
+          is_premium: !!row.is_premium,
+          identity_verified: !!row.identity_verified,
+          timezone: row.timezone ?? null,
+          created_at: row.created_at ?? null,
+          avatar_url: row.avatar_url ?? null,
           cv_pdf_url: cvUrl,
-          city: (d as any).city ?? null,
-          state: (d as any).state ?? null,
-          country: (d as any).country ?? null,
-          full_name: (d as any).full_name ?? "Médico",
+          city: row.city ?? null,
+          state: row.state ?? null,
+          country: row.country ?? null,
+          full_name: row.full_name ?? "Médico",
         });
       }
+
       setRatings((r ?? []) as RatingItem[]);
       setLoading(false);
     })();
