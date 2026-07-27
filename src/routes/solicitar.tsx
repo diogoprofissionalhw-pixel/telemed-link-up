@@ -514,8 +514,8 @@ function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; on
             </span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
-              <Button size="sm" className="gap-1.5" onClick={onInvite}>
-                <Sparkles className="h-3.5 w-3.5" /> Solicitar
+              <Button size="sm" onClick={onInvite}>
+                Solicitar
               </Button>
             </div>
           </div>
