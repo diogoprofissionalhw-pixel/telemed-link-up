@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import chatBg from "@/assets/chat-bg.png";
+
 
 interface DirectMessage {
   id: string;
@@ -213,11 +213,6 @@ export function ChatPanel({ open, onOpenChange, currentUserId, otherUserId, othe
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto px-3 py-4"
-            style={{
-              backgroundImage: `url(${chatBg})`,
-              backgroundSize: "320px",
-              backgroundRepeat: "repeat",
-            }}
           >
             {loading ? (
               <div className="flex h-full items-center justify-center text-muted-foreground">
