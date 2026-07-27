@@ -102,6 +102,7 @@ function SolicitarPage() {
   // convite
   const [inviteDoctor, setInviteDoctor] = useState<Doctor | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
+  const [chatDoctorId, setChatDoctorId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
