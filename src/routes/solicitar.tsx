@@ -202,7 +202,7 @@ function SolicitarPage() {
           default: return b.score - a.score;
         }
       });
-  }, [doctors, search, specs, ufs, minRating, minYears, maxFee, sortBy]);
+  }, [doctors, search, specs, ufs, onlyCfmVerified, minRating, minYears, maxFee, sortBy]);
 
   const clear = () => {
     setSearch(""); setSpecs([]); setUfs([]);
