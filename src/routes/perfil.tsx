@@ -1073,9 +1073,8 @@ function DoctorRegistration({
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <BackButton to="/dashboard" label="Voltar ao dashboard" />
                 <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
-                    {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
-                  </Button>
-                </div>
+                  {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
+                </Button>
               </div>
             </>
           )}
