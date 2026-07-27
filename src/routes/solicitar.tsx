@@ -515,6 +515,9 @@ function DoctorCard({ d, onInvite, onView, onMessage }: { d: Doctor & { score: n
               {d.accepted_count} {d.accepted_count === 1 ? "plantão" : "plantões"}
             </span>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onMessage} className="gap-1.5">
+                <MessageCircle className="h-4 w-4" /> Mensagem
+              </Button>
               <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
               <Button size="sm" onClick={onInvite}>
                 Solicitar
