@@ -12,14 +12,26 @@ import { ChatPanel } from "@/components/chat-panel";
 
 interface DoctorFull {
   id: string;
+  public_id: string | null;
   specialty: string;
+  specialties: string[];
   crm: string;
   crm_uf: string;
+  crm_status: string | null;
+  headline: string | null;
   bio: string | null;
   years_experience: number | null;
+  consultation_fee: number | null;
   education: string | null;
   certifications: string | null;
+  medical_experience: string | null;
   languages: string | null;
+  linkedin_url: string | null;
+  lattes_url: string | null;
+  is_premium: boolean;
+  identity_verified: boolean;
+  timezone: string | null;
+  created_at: string | null;
   full_name: string;
   avatar_url: string | null;
   cv_pdf_url: string | null;
@@ -27,6 +39,7 @@ interface DoctorFull {
   state: string | null;
   country: string | null;
 }
+
 
 interface RatingItem {
   id: string;
