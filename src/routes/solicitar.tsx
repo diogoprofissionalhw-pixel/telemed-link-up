@@ -60,6 +60,7 @@ interface Doctor {
   crm: string;
   crm_uf: string;
   crm_status: "verified" | "pending" | "invalid";
+  cfm_status: "verified" | "pending" | "invalid";
   avatar_url: string | null;
   city: string | null;
   state: string | null;
