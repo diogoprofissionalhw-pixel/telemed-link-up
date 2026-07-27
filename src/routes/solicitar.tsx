@@ -317,6 +317,17 @@ function SolicitarPage() {
         <DoctorProfileDialog doctorId={profileDoctorId} open={!!profileDoctorId} onOpenChange={(v) => !v && setProfileDoctorId(null)} />
       )}
 
+      {chatDoctorId && user && (
+        <ChatPanel
+          open={!!chatDoctorId}
+          onOpenChange={(v) => !v && setChatDoctorId(null)}
+          currentUserId={user.id}
+          otherUserId={chatDoctorId}
+          otherName={doctors.find(d => d.id === chatDoctorId)?.full_name ?? "Médico"}
+          otherAvatarUrl={doctors.find(d => d.id === chatDoctorId)?.avatar_url ?? null}
+        />
+      )}
+
       <InviteDialog
         doctor={inviteDoctor}
         networkId={user.id}
