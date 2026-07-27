@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
-import { NetworkDoctorTagPanel } from "@/components/network-doctor-tag-panel";
+
 import { ChatPanel } from "@/components/chat-panel";
 
 interface DoctorFull {
@@ -279,7 +279,7 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                   </CvRow>
                   {doctor.public_id && <CvRow icon={BadgeCheck} label="ID público">#{doctor.public_id}</CvRow>}
                 </div>
-                <NetworkDoctorTagPanel doctorId={doctor.id} />
+                
               </TabsContent>
 
               {/* ============ CARREIRA ============ */}
