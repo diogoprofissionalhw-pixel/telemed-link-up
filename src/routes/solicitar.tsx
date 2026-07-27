@@ -205,7 +205,7 @@ function SolicitarPage() {
   }, [doctors, search, specs, ufs, onlyCfmVerified, minRating, minYears, maxFee, sortBy]);
 
   const clear = () => {
-    setSearch(""); setSpecs([]); setUfs([]);
+    setSearch(""); setSpecs([]); setUfs([]); setOnlyCfmVerified(false);
     setMinRating(0); setMinYears(0); setMaxFee(1000);
   };
 
