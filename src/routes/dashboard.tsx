@@ -706,33 +706,35 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         </div>
       )}
       {/* TOP — Resumo (esquerda) + CTA grande (direita) */}
-      <section className="grid gap-6 lg:grid-cols-3">
-        {/* Coluna esquerda: contadores empilhados */}
-        <div className="space-y-6 lg:col-span-1">
-          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+      <section className="grid gap-6 lg:grid-cols-3 lg:grid-rows-2">
+        {/* Coluna esquerda: contadores empilhados com mesma altura */}
+        <div className="grid grid-rows-2 gap-6 lg:col-span-1 lg:row-span-2">
+          <div className="rounded-2xl border bg-card p-6 flex flex-col" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Solicitação</p>
               <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
                 <Inbox className="h-[18px] w-[18px] text-primary" />
               </div>
             </div>
-            <p className="mt-3 text-3xl font-bold leading-none tracking-tight">{loading ? "—" : pending.length}</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {pending.length === 1 ? "pendente aguardando médico" : "pendentes aguardando médico"}
-            </p>
-            <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-              <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+            <div className="mt-auto">
+              <p className="mt-3 text-3xl font-bold leading-none tracking-tight">{loading ? "—" : pending.length}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {pending.length === 1 ? "pendente aguardando médico" : "pendentes aguardando médico"}
+              </p>
+              <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                <span>Em andamento: <strong className="text-foreground">{ongoing.length}</strong></span>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="rounded-2xl border bg-card p-6 flex flex-col" style={{ boxShadow: "var(--shadow-card)" }}>
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitas / Negadas</p>
               <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent">
                 <CheckCircle2 className="h-[18px] w-[18px] text-primary" />
               </div>
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-auto grid grid-cols-2 gap-3">
               <div>
                 <p className="text-2xl font-bold tabular-nums" style={{ color: "oklch(0.40 0.14 150)" }}>{acceptedHist.length}</p>
                 <p className="mt-1 text-xs text-muted-foreground">Aceitas (90d)</p>
@@ -746,22 +748,20 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         </div>
 
         {/* Coluna direita: CTA grande de Nova solicitação */}
-        <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-8 lg:col-span-2 flex flex-col justify-between min-h-[300px]" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
-                <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
-                <p className="mt-2 max-w-md text-sm text-muted-foreground">
-                  Encontre um médico disponível para o plantão da sua rede com o match inteligente.
-                </p>
-              </div>
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10">
-                <Plus className="h-6 w-6 text-primary" />
-              </div>
+        <div className="rounded-2xl border bg-gradient-to-br from-primary/5 to-accent/30 p-6 lg:col-span-2 lg:row-span-2 flex flex-col justify-between" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Nova solicitação</p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-3xl">Solicite um plantão agora</h2>
+              <p className="mt-2 max-w-md text-sm text-muted-foreground">
+                Encontre um médico disponível para o plantão da sua rede com o match inteligente.
+              </p>
+            </div>
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10">
+              <Plus className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-3xl font-bold tabular-nums">{loading ? "—" : pending.length}</p>
@@ -772,7 +772,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
                 <p className="mt-1 text-xs text-muted-foreground">Em andamento</p>
               </div>
             </div>
-            <Link to="/solicitar">
+            <Link to="/solicitar" className="ml-auto">
               <Button size="lg" className="gap-2 shadow-lg">
                 <Plus className="h-5 w-5" /> Solicitar médico
               </Button>
@@ -782,29 +782,16 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
       </section>
 
 
+
+
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <div>
-          <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="flex flex-col">
+          <div className="mb-4 flex min-h-[72px] items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Especialidade</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight">Médicos a serem solicitados</h2>
             </div>
-          </div>
-
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-              <SelectTrigger className="w-full sm:w-[260px]">
-                <SelectValue placeholder="Filtrar por especialidade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as especialidades</SelectItem>
-                {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
-              <Plus className="h-4 w-4" /> Adicionar médico
-            </Button>
           </div>
 
           {loading ? (
@@ -814,51 +801,72 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
               icon={Stethoscope}
               title="Nenhum médico adicionado ainda."
               description='Clique em "Adicionar médico" para montar a sua lista.'
+              action={
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" /> Adicionar médico
+                </Button>
+              }
             />
-          ) : filteredDoctors.length === 0 ? (
-            <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
           ) : (
             <div className="space-y-3">
-              {filteredDoctors.map(d => (
-                <div
-                  key={d.id}
-                  className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
-                  style={{ boxShadow: "var(--shadow-card)" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
-                      <Avatar className="h-11 w-11 border">
-                        {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
-                        <AvatarFallback className="bg-accent">
-                          <Stethoscope className="h-5 w-5 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold leading-tight">{d.full_name}</p>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {d.specialty} · CRM {d.crm}/{d.crm_uf}
-                          {d.city ? ` · ${d.city}` : ""}
-                        </p>
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <StarRating value={d.avg_stars} readonly size={14} />
-                          <span className="text-xs text-muted-foreground tabular-nums">
-                            {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
-                          </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+                  <SelectTrigger className="w-full sm:w-[260px]">
+                    <SelectValue placeholder="Filtrar por especialidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as especialidades</SelectItem>
+                    {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" /> Adicionar médico
+                </Button>
+              </div>
+              {filteredDoctors.length === 0 ? (
+                <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
+              ) : (
+                filteredDoctors.map(d => (
+                  <div
+                    key={d.id}
+                    className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                    style={{ boxShadow: "var(--shadow-card)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
+                        <Avatar className="h-11 w-11 border">
+                          {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                          <AvatarFallback className="bg-accent">
+                            <Stethoscope className="h-5 w-5 text-primary" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-semibold leading-tight">{d.full_name}</p>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                            {d.city ? ` · ${d.city}` : ""}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <StarRating value={d.avg_stars} readonly size={14} />
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                    <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
-                      <XCircle className="h-4 w-4" />
-                    </Button>
+                      </button>
+                      <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
 
-        <div>
-          <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="flex flex-col">
+          <div className="mb-4 flex min-h-[72px] items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitos</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações em andamento</h2>
@@ -888,6 +896,8 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           )}
         </div>
       </section>
+
+
 
       {chatReq && (
         <ChatPanel
