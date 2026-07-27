@@ -381,12 +381,14 @@ function SpecialtyFilter({ specs, toggleSpec }: { specs: string[]; toggleSpec: (
 
 function FilterPanel({
   search, setSearch, specs, toggleSpec, ufs, toggleUf,
+  onlyCfmVerified, setOnlyCfmVerified,
   minRating, setMinRating, minYears, setMinYears, maxFee, setMaxFee,
   clear,
 }: {
   search: string; setSearch: (v: string) => void;
   specs: string[]; toggleSpec: (s: string) => void;
   ufs: string[]; toggleUf: (u: string) => void;
+  onlyCfmVerified: boolean; setOnlyCfmVerified: (v: boolean) => void;
   minRating: number; setMinRating: (n: number) => void;
   minYears: number; setMinYears: (n: number) => void;
   maxFee: number; setMaxFee: (n: number) => void;
