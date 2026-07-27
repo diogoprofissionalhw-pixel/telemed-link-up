@@ -237,6 +237,7 @@ export type Database = {
           bank_name: string | null
           bio: string | null
           certifications: string | null
+          cfm_status: Database["public"]["Enums"]["cfm_status"]
           city: string | null
           consultation_fee: number | null
           country: string | null
@@ -285,6 +286,7 @@ export type Database = {
           bank_name?: string | null
           bio?: string | null
           certifications?: string | null
+          cfm_status?: Database["public"]["Enums"]["cfm_status"]
           city?: string | null
           consultation_fee?: number | null
           country?: string | null
@@ -333,6 +335,7 @@ export type Database = {
           bank_name?: string | null
           bio?: string | null
           certifications?: string | null
+          cfm_status?: Database["public"]["Enums"]["cfm_status"]
           city?: string | null
           consultation_fee?: number | null
           country?: string | null
@@ -873,6 +876,7 @@ export type Database = {
           avatar_url: string
           bio: string
           certifications: string
+          cfm_status: Database["public"]["Enums"]["cfm_status"]
           city: string
           consultation_fee: number
           country: string
@@ -934,6 +938,7 @@ export type Database = {
     }
     Enums: {
       account_type: "doctor" | "network"
+      cfm_status: "verified" | "pending" | "invalid"
       crm_status: "verified" | "pending" | "invalid"
       request_status:
         | "pending"
@@ -1070,6 +1075,7 @@ export const Constants = {
   public: {
     Enums: {
       account_type: ["doctor", "network"],
+      cfm_status: ["verified", "pending", "invalid"],
       crm_status: ["verified", "pending", "invalid"],
       request_status: [
         "pending",

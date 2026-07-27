@@ -1,0 +1,1 @@
+COMMENT ON COLUMN public.doctors.cfm_status IS 'Status de validação no CFM (Conselho Federal de Medicina)';

@@ -60,6 +60,7 @@ interface Doctor {
   crm: string;
   crm_uf: string;
   crm_status: "verified" | "pending" | "invalid";
+  cfm_status: "verified" | "pending" | "invalid";
   avatar_url: string | null;
   city: string | null;
   state: string | null;
@@ -92,6 +93,7 @@ function SolicitarPage() {
   const [search, setSearch] = useState("");
   const [specs, setSpecs] = useState<string[]>([]);
   const [ufs, setUfs] = useState<string[]>([]);
+  const [onlyCfmVerified, setOnlyCfmVerified] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [minYears, setMinYears] = useState(0);
   const [maxFee, setMaxFee] = useState(1000);
@@ -111,7 +113,7 @@ function SolicitarPage() {
   useEffect(() => {
     (async () => {
       const [{ data: docs }, { data: ratings }, { data: shifts }] = await Promise.all([
-        supabase.rpc("doctors_directory").select("id, specialty, specialties, crm, crm_uf, crm_status, avatar_url, city, state, years_experience, consultation_fee, bio, languages, full_name").eq("crm_status", "verified"),
+        supabase.rpc("doctors_directory").select("id, specialty, specialties, crm, crm_uf, crm_status, cfm_status, avatar_url, city, state, years_experience, consultation_fee, bio, languages, full_name").eq("crm_status", "verified"),
         supabase.from("ratings").select("doctor_id, stars"),
         supabase.from("shift_requests").select("doctor_id, status").in("status", ["accepted", "completed", "pending"]),
       ]);
@@ -141,6 +143,7 @@ function SolicitarPage() {
           crm: d.crm,
           crm_uf: d.crm_uf,
           crm_status: (d.crm_status ?? "pending") as Doctor["crm_status"],
+          cfm_status: (d.cfm_status ?? "pending") as Doctor["cfm_status"],
           avatar_url: d.avatar_url ?? null,
           city: d.city ?? null,
           state: d.state ?? null,
@@ -173,6 +176,7 @@ function SolicitarPage() {
           (d.bio ?? "").toLowerCase().includes(q) ||
           d.specialties.some(s => s.toLowerCase().includes(q))
         )) return false;
+        if (onlyCfmVerified && d.cfm_status !== "verified") return false;
         if (specs.length > 0 && !specs.includes(d.specialty) && !d.specialties.some(s => specs.includes(s))) return false;
         if (ufs.length > 0 && !ufs.includes(d.state ?? "") && !ufs.includes(d.crm_uf)) return false;
         if (minRating > 0 && d.avg_stars < minRating) return false;
@@ -198,10 +202,10 @@ function SolicitarPage() {
           default: return b.score - a.score;
         }
       });
-  }, [doctors, search, specs, ufs, minRating, minYears, maxFee, sortBy]);
+  }, [doctors, search, specs, ufs, onlyCfmVerified, minRating, minYears, maxFee, sortBy]);
 
   const clear = () => {
-    setSearch(""); setSpecs([]); setUfs([]);
+    setSearch(""); setSpecs([]); setUfs([]); setOnlyCfmVerified(false);
     setMinRating(0); setMinYears(0); setMaxFee(1000);
   };
 
@@ -210,6 +214,7 @@ function SolicitarPage() {
       search={search} setSearch={setSearch}
       specs={specs} toggleSpec={(s) => setSpecs(toggle(specs, s))}
       ufs={ufs} toggleUf={(u) => setUfs(toggle(ufs, u))}
+      onlyCfmVerified={onlyCfmVerified} setOnlyCfmVerified={setOnlyCfmVerified}
       minRating={minRating} setMinRating={setMinRating}
       minYears={minYears} setMinYears={setMinYears}
       maxFee={maxFee} setMaxFee={setMaxFee}
@@ -376,12 +381,14 @@ function SpecialtyFilter({ specs, toggleSpec }: { specs: string[]; toggleSpec: (
 
 function FilterPanel({
   search, setSearch, specs, toggleSpec, ufs, toggleUf,
+  onlyCfmVerified, setOnlyCfmVerified,
   minRating, setMinRating, minYears, setMinYears, maxFee, setMaxFee,
   clear,
 }: {
   search: string; setSearch: (v: string) => void;
   specs: string[]; toggleSpec: (s: string) => void;
   ufs: string[]; toggleUf: (u: string) => void;
+  onlyCfmVerified: boolean; setOnlyCfmVerified: (v: boolean) => void;
   minRating: number; setMinRating: (n: number) => void;
   minYears: number; setMinYears: (n: number) => void;
   maxFee: number; setMaxFee: (n: number) => void;
@@ -411,6 +418,11 @@ function FilterPanel({
           ))}
         </div>
       </div>
+
+      <label className="flex cursor-pointer items-center gap-2 text-sm">
+        <Checkbox checked={onlyCfmVerified} onCheckedChange={(v) => setOnlyCfmVerified(!!v)} />
+        <span>CFM verificado</span>
+      </label>
 
       <div>
         <p className="mb-2 font-medium">Avaliação mínima</p>
