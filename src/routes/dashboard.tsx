@@ -786,26 +786,11 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col">
-          <div className="mb-4 flex min-h-[72px] flex-col justify-between gap-3 sm:flex-row sm:items-end">
+          <div className="mb-4 flex min-h-[72px] items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Especialidade</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight">Médicos a serem solicitados</h2>
             </div>
-          </div>
-
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-              <SelectTrigger className="w-full sm:w-[260px]">
-                <SelectValue placeholder="Filtrar por especialidade" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as especialidades</SelectItem>
-                {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
-              <Plus className="h-4 w-4" /> Adicionar médico
-            </Button>
           </div>
 
           {loading ? (
@@ -815,45 +800,66 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
               icon={Stethoscope}
               title="Nenhum médico adicionado ainda."
               description='Clique em "Adicionar médico" para montar a sua lista.'
+              action={
+                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" /> Adicionar médico
+                </Button>
+              }
             />
-          ) : filteredDoctors.length === 0 ? (
-            <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
           ) : (
             <div className="space-y-3">
-              {filteredDoctors.map(d => (
-                <div
-                  key={d.id}
-                  className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
-                  style={{ boxShadow: "var(--shadow-card)" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
-                      <Avatar className="h-11 w-11 border">
-                        {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
-                        <AvatarFallback className="bg-accent">
-                          <Stethoscope className="h-5 w-5 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold leading-tight">{d.full_name}</p>
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                          {d.specialty} · CRM {d.crm}/{d.crm_uf}
-                          {d.city ? ` · ${d.city}` : ""}
-                        </p>
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <StarRating value={d.avg_stars} readonly size={14} />
-                          <span className="text-xs text-muted-foreground tabular-nums">
-                            {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
-                          </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+                  <SelectTrigger className="w-full sm:w-[260px]">
+                    <SelectValue placeholder="Filtrar por especialidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as especialidades</SelectItem>
+                    {specialties.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Button size="sm" variant="outline" className="ml-auto gap-1.5" onClick={() => setAddOpen(true)}>
+                  <Plus className="h-4 w-4" /> Adicionar médico
+                </Button>
+              </div>
+              {filteredDoctors.length === 0 ? (
+                <EmptyStateBox icon={Stethoscope} title="Nenhum médico nessa especialidade." />
+              ) : (
+                filteredDoctors.map(d => (
+                  <div
+                    key={d.id}
+                    className="rounded-xl border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-md"
+                    style={{ boxShadow: "var(--shadow-card)" }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <button type="button" onClick={() => setProfileDoctorId(d.id)} className="flex flex-1 items-center gap-3 text-left min-w-0">
+                        <Avatar className="h-11 w-11 border">
+                          {d.avatar_url && <AvatarImage src={d.avatar_url} alt={d.full_name} />}
+                          <AvatarFallback className="bg-accent">
+                            <Stethoscope className="h-5 w-5 text-primary" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-semibold leading-tight">{d.full_name}</p>
+                          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {d.specialty} · CRM {d.crm}/{d.crm_uf}
+                            {d.city ? ` · ${d.city}` : ""}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <StarRating value={d.avg_stars} readonly size={14} />
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {d.rating_count > 0 ? `${d.avg_stars.toFixed(1)} (${d.rating_count})` : "Sem avaliações"}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    </button>
-                    <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
-                      <XCircle className="h-4 w-4" />
-                    </Button>
+                      </button>
+                      <Button size="sm" variant="ghost" onClick={() => removeDoctor(d.id)} className="shrink-0 text-muted-foreground hover:text-destructive">
+                        <XCircle className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
         </div>
@@ -889,6 +895,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           )}
         </div>
       </section>
+
 
 
       {chatReq && (
