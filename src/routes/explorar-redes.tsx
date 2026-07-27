@@ -118,15 +118,18 @@ function ExplorarRedesPage() {
 
                   {/* Corpo uniforme */}
                   <div className="flex flex-1 flex-col gap-3 p-4">
-                    <div className="min-h-[2.75rem]">
-                      {n.cnpj_activity ? (
-                        <Badge variant="secondary" className="line-clamp-2 h-auto whitespace-normal text-left text-[10px] font-normal leading-tight">
-                          {n.cnpj_activity}
-                        </Badge>
-                      ) : (
-                        <span className="text-[10px] italic text-muted-foreground/60">Atividade não informada</span>
-                      )}
-                    </div>
+                    {user && (
+                      <div className="min-h-[2.75rem]">
+                        {n.cnpj_activity ? (
+                          <Badge variant="secondary" className="line-clamp-2 h-auto whitespace-normal text-left text-[10px] font-normal leading-tight">
+                            {n.cnpj_activity}
+                          </Badge>
+                        ) : (
+                          <span className="text-[10px] italic text-muted-foreground/60">Atividade não informada</span>
+                        )}
+                      </div>
+                    )}
+
 
                     <div className="flex flex-1 items-center gap-2 rounded-lg border border-dashed bg-muted/40 p-3 text-xs">
                       <Lock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />

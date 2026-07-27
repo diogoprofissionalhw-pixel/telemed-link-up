@@ -137,7 +137,7 @@ function NetworkDetailPage() {
                   <MapPin className="h-4 w-4" /> {location}
                 </div>
               )}
-              {network.cnpj_activity && (
+              {user && network.cnpj_activity && (
                 <div className="mt-1 flex items-center justify-center gap-1.5 text-sm text-muted-foreground sm:justify-start">
                   <Briefcase className="h-4 w-4" /> {network.cnpj_activity}
                 </div>
@@ -145,14 +145,14 @@ function NetworkDetailPage() {
             </div>
           </div>
 
-          {network.description && (
+          {user && network.description && (
             <div className="mt-6 border-t pt-6">
               <h3 className="text-sm font-semibold text-muted-foreground">Sobre a rede</h3>
               <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{network.description}</p>
             </div>
           )}
 
-          {(linkedinValid || websiteValid) && (
+          {user && (linkedinValid || websiteValid) && (
             <div className="mt-6 border-t pt-6">
               <h3 className="text-sm font-semibold text-muted-foreground">Presença online</h3>
               <div className="mt-3 flex flex-wrap gap-2">
@@ -176,6 +176,7 @@ function NetworkDetailPage() {
               </p>
             </div>
           )}
+
 
           {!user && (
             <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
