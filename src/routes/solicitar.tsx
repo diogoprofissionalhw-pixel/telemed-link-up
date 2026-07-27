@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Search, MapPin, Clock, Filter, X,
-  ShieldCheck, ShieldQuestion, Send, Sun, Moon, DollarSign,
+  ShieldCheck, ShieldQuestion, Send, Sun, Moon, DollarSign, MessageCircle,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
@@ -20,6 +20,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
+import { ChatPanel } from "@/components/chat-panel";
 import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/solicitar")({
@@ -101,6 +102,7 @@ function SolicitarPage() {
   // convite
   const [inviteDoctor, setInviteDoctor] = useState<Doctor | null>(null);
   const [profileDoctorId, setProfileDoctorId] = useState<string | null>(null);
+  const [chatDoctorId, setChatDoctorId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "signin" } });
@@ -302,6 +304,7 @@ function SolicitarPage() {
                     d={d}
                     onInvite={() => setInviteDoctor(d)}
                     onView={() => setProfileDoctorId(d.id)}
+                    onMessage={() => setChatDoctorId(d.id)}
                   />
                 ))}
               </div>
@@ -312,6 +315,17 @@ function SolicitarPage() {
 
       {profileDoctorId && (
         <DoctorProfileDialog doctorId={profileDoctorId} open={!!profileDoctorId} onOpenChange={(v) => !v && setProfileDoctorId(null)} />
+      )}
+
+      {chatDoctorId && user && (
+        <ChatPanel
+          open={!!chatDoctorId}
+          onOpenChange={(v) => !v && setChatDoctorId(null)}
+          currentUserId={user.id}
+          otherUserId={chatDoctorId}
+          otherName={doctors.find(d => d.id === chatDoctorId)?.full_name ?? "Médico"}
+          otherAvatarUrl={doctors.find(d => d.id === chatDoctorId)?.avatar_url ?? null}
+        />
       )}
 
       <InviteDialog
@@ -444,7 +458,7 @@ function FilterPanel({
   );
 }
 
-function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; onInvite: () => void; onView: () => void }) {
+function DoctorCard({ d, onInvite, onView, onMessage }: { d: Doctor & { score: number }; onInvite: () => void; onView: () => void; onMessage: () => void }) {
   return (
     <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md sm:p-5 max-h-[340px] overflow-y-auto">
       <div className="flex flex-col gap-4 sm:flex-row">
@@ -512,6 +526,9 @@ function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; on
               {d.accepted_count} {d.accepted_count === 1 ? "plantão" : "plantões"}
             </span>
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onMessage} className="gap-1.5">
+                <MessageCircle className="h-4 w-4" /> Mensagem
+              </Button>
               <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
               <Button size="sm" onClick={onInvite}>
                 Solicitar
