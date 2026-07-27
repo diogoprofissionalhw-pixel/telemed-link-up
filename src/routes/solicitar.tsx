@@ -447,7 +447,7 @@ function FilterPanel({
   );
 }
 
-function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; onInvite: () => void; onView: () => void }) {
+function DoctorCard({ d, onInvite, onView, onMessage }: { d: Doctor & { score: number }; onInvite: () => void; onView: () => void; onMessage: () => void }) {
   return (
     <div className="rounded-xl border bg-card p-4 transition-all hover:shadow-md sm:p-5 max-h-[340px] overflow-y-auto">
       <div className="flex flex-col gap-4 sm:flex-row">
