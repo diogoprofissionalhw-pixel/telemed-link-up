@@ -698,13 +698,6 @@ export type Database = {
             foreignKeyName: "shift_requests_doctor_id_fkey"
             columns: ["doctor_id"]
             isOneToOne: false
-            referencedRelation: "doctors_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "shift_requests_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: false
             referencedRelation: "doctors_public"
             referencedColumns: ["id"]
           },
@@ -777,45 +770,6 @@ export type Database = {
       }
     }
     Views: {
-      doctors_directory: {
-        Row: {
-          avatar_url: string | null
-          bio: string | null
-          certifications: string | null
-          city: string | null
-          consultation_fee: number | null
-          country: string | null
-          created_at: string | null
-          crm: string | null
-          crm_status: Database["public"]["Enums"]["crm_status"] | null
-          crm_uf: string | null
-          education: string | null
-          full_name: string | null
-          headline: string | null
-          id: string | null
-          identity_verified: boolean | null
-          is_premium: boolean | null
-          languages: string | null
-          lattes_url: string | null
-          linkedin_url: string | null
-          medical_experience: string | null
-          public_id: string | null
-          specialties: string[] | null
-          specialty: string | null
-          state: string | null
-          timezone: string | null
-          years_experience: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "doctors_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       doctors_public: {
         Row: {
           avatar_url: string | null
@@ -913,6 +867,37 @@ export type Database = {
     }
     Functions: {
       auto_finalize_shifts: { Args: never; Returns: undefined }
+      doctors_directory: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          bio: string
+          certifications: string
+          city: string
+          consultation_fee: number
+          country: string
+          created_at: string
+          crm: string
+          crm_status: Database["public"]["Enums"]["crm_status"]
+          crm_uf: string
+          education: string
+          full_name: string
+          headline: string
+          id: string
+          identity_verified: boolean
+          is_premium: boolean
+          languages: string
+          lattes_url: string
+          linkedin_url: string
+          medical_experience: string
+          public_id: string
+          specialties: string[]
+          specialty: string
+          state: string
+          timezone: string
+          years_experience: number
+        }[]
+      }
       get_my_network: {
         Args: never
         Returns: {
