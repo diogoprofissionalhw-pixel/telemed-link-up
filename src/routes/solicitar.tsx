@@ -507,11 +507,16 @@ function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; on
             </div>
           )}
 
-          <div className="mt-4 flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
-            <Button size="sm" onClick={onInvite}>
-              Solicitar
-            </Button>
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <span className="text-xs text-muted-foreground">
+              {d.accepted_count} {d.accepted_count === 1 ? "plantão" : "plantões"}
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
+              <Button size="sm" onClick={onInvite}>
+                Solicitar
+              </Button>
+            </div>
           </div>
         </div>
       </div>
