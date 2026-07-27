@@ -214,6 +214,7 @@ function SolicitarPage() {
       search={search} setSearch={setSearch}
       specs={specs} toggleSpec={(s) => setSpecs(toggle(specs, s))}
       ufs={ufs} toggleUf={(u) => setUfs(toggle(ufs, u))}
+      onlyCfmVerified={onlyCfmVerified} setOnlyCfmVerified={setOnlyCfmVerified}
       minRating={minRating} setMinRating={setMinRating}
       minYears={minYears} setMinYears={setMinYears}
       maxFee={maxFee} setMaxFee={setMaxFee}
