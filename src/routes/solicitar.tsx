@@ -168,6 +168,7 @@ function SolicitarPage() {
       .filter(d => {
         if (q && !(
           d.full_name.toLowerCase().includes(q) ||
+          d.crm.toLowerCase().includes(q) ||
           d.specialty.toLowerCase().includes(q) ||
           (d.bio ?? "").toLowerCase().includes(q) ||
           d.specialties.some(s => s.toLowerCase().includes(q))
@@ -234,7 +235,7 @@ function SolicitarPage() {
           <div className="flex-1 max-w-xl">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, especialidade ou descrição..." className="pl-9 h-10" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, CRM, especialidade ou descrição..." className="pl-9 h-10" />
             </div>
           </div>
           <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
