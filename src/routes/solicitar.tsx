@@ -507,17 +507,11 @@ function DoctorCard({ d, onInvite, onView }: { d: Doctor & { score: number }; on
             </div>
           )}
 
-          <div className="mt-4 flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <TrendingUp className="h-3.5 w-3.5" /> Score {Math.round(d.score)}
-              {d.accepted_count > 0 && <span>· {d.accepted_count} plantões</span>}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
-              <Button size="sm" onClick={onInvite}>
-                Solicitar
-              </Button>
-            </div>
+          <div className="mt-4 flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={onView}>Ver perfil</Button>
+            <Button size="sm" onClick={onInvite}>
+              Solicitar
+            </Button>
           </div>
         </div>
       </div>
