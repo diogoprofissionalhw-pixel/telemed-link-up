@@ -96,7 +96,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
   const [weekly, setWeekly] = useState<WeeklyAvailability | null>(null);
   const [availabilities, setAvailabilities] = useState<AvailabilityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [chatOpen, setChatOpen] = useState(false);
   const [tab, setTab] = useState<string>("dados");
 
   useEffect(() => {
@@ -226,11 +225,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                   )}
                 </div>
               </div>
-              {user && user.id !== doctor.id && (
-                <Button size="sm" onClick={() => setChatOpen(true)} className="gap-1.5 self-start">
-                  <MessageCircle className="h-4 w-4" /> Mensagem
-                </Button>
-              )}
             </div>
 
             <Tabs value={tab} onValueChange={setTab}>
@@ -411,16 +405,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           </div>
         )}
       </DialogContent>
-      {user && doctor && (
-        <ChatPanel
-          open={chatOpen}
-          onOpenChange={setChatOpen}
-          currentUserId={user.id}
-          otherUserId={doctor.id}
-          otherName={doctor.full_name}
-          otherAvatarUrl={doctor.avatar_url}
-        />
-      )}
     </Dialog>
   );
 }
