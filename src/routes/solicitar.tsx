@@ -142,6 +142,7 @@ function SolicitarPage() {
           crm: d.crm,
           crm_uf: d.crm_uf,
           crm_status: (d.crm_status ?? "pending") as Doctor["crm_status"],
+          cfm_status: (d.cfm_status ?? "pending") as Doctor["cfm_status"],
           avatar_url: d.avatar_url ?? null,
           city: d.city ?? null,
           state: d.state ?? null,
