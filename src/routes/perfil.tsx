@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
-  Loader2, ShieldCheck, FileText, Save, Star,
+  Loader2, ShieldCheck, FileText, Star,
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
   Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
@@ -1072,16 +1072,9 @@ function DoctorRegistration({
 
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <BackButton to="/dashboard" label="Voltar ao dashboard" />
-                <div className="flex items-center gap-3">
-                  {autoSavedAt && (
-                    <span className="text-xs text-gray-500 inline-flex items-center gap-1">
-                      <Save className="h-3 w-3" /> Rascunho salvo {autoSavedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  )}
-                  <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
-                    {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
-                  </Button>
-                </div>
+                <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                  {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
+                </Button>
               </div>
             </>
           )}
