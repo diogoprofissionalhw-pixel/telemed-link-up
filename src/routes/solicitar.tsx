@@ -304,6 +304,7 @@ function SolicitarPage() {
                     d={d}
                     onInvite={() => setInviteDoctor(d)}
                     onView={() => setProfileDoctorId(d.id)}
+                    onMessage={() => setChatDoctorId(d.id)}
                   />
                 ))}
               </div>
