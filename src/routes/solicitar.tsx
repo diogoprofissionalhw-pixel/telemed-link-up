@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   Search, MapPin, Clock, Filter, X,
-  ShieldCheck, ShieldQuestion, Send, Sun, Moon, DollarSign,
+  ShieldCheck, ShieldQuestion, Send, Sun, Moon, DollarSign, MessageCircle,
 } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { StarRating } from "@/components/star-rating";
@@ -20,6 +20,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { DoctorProfileDialog } from "@/components/doctor-profile-dialog";
+import { ChatPanel } from "@/components/chat-panel";
 import logo from "@/assets/connect-med-logo.webp";
 
 export const Route = createFileRoute("/solicitar")({
