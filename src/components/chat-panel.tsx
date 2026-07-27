@@ -169,7 +169,7 @@ export function ChatPanel({ open, onOpenChange, currentUserId, otherUserId, othe
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-          <SheetHeader className="border-b bg-card px-4 py-3">
+          <SheetHeader className="border-b bg-card px-4 py-3 pr-12">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-10 w-10 border">
