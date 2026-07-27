@@ -143,14 +143,28 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               </Avatar>
               <div className="flex-1">
                 <h3 className="text-lg font-bold">{doctor.full_name}</h3>
+                {doctor.headline && <p className="text-sm text-foreground/80">{doctor.headline}</p>}
                 <p className="text-sm text-muted-foreground">
                   {doctor.specialty} · CRM {doctor.crm}/{doctor.crm_uf}
                 </p>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <StarRating value={avg} readonly size={16} />
                   <span className="text-xs text-muted-foreground">
                     {ratings.length > 0 ? `${avg.toFixed(1)} (${ratings.length})` : "Sem avaliações"}
                   </span>
+                  {doctor.crm_status === "verified" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <BadgeCheck className="h-3 w-3" /> CRM verificado
+                    </span>
+                  )}
+                  {doctor.identity_verified && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <BadgeCheck className="h-3 w-3" /> Identidade verificada
+                    </span>
+                  )}
+                  {doctor.is_premium && (
+                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600">Premium</span>
+                  )}
                 </div>
               </div>
               {user && user.id !== doctor.id && (
@@ -159,6 +173,14 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                 </Button>
               )}
             </div>
+
+            {doctor.specialties.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {doctor.specialties.map((s) => (
+                  <span key={s} className="rounded-full bg-accent px-2 py-0.5 text-[11px] text-accent-foreground">{s}</span>
+                ))}
+              </div>
+            )}
 
             {doctor.cv_pdf_url && (
               <div className="rounded-lg border bg-primary/5 p-3">
@@ -185,14 +207,36 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={MapPin} label="Localização">
                 {[doctor.city, doctor.state, doctor.country].filter(Boolean).join(" • ") || "—"}
               </CvRow>
+              <CvRow icon={Clock} label="Fuso horário">{doctor.timezone || "—"}</CvRow>
               <CvRow icon={Award} label="Experiência">
                 {doctor.years_experience ? `${doctor.years_experience} anos` : "—"}
               </CvRow>
+              <CvRow icon={DollarSign} label="Valor por hora">
+                {doctor.consultation_fee != null ? `R$ ${doctor.consultation_fee}` : "A combinar"}
+              </CvRow>
               <CvRow icon={GraduationCap} label="Formação">{doctor.education || "—"}</CvRow>
               <CvRow icon={BadgeCheck} label="Certificações">{doctor.certifications || "—"}</CvRow>
+              <CvRow icon={Stethoscope} label="Experiência médica">{doctor.medical_experience || "—"}</CvRow>
               <CvRow icon={Languages} label="Idiomas">{doctor.languages || "—"}</CvRow>
               <CvRow icon={FileText} label="Bio">{doctor.bio || "—"}</CvRow>
+              {(doctor.linkedin_url || doctor.lattes_url) && (
+                <CvRow icon={LinkIcon} label="Links">
+                  <span className="flex flex-wrap gap-3">
+                    {doctor.linkedin_url && (
+                      <a href={doctor.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">LinkedIn</a>
+                    )}
+                    {doctor.lattes_url && (
+                      <a href={doctor.lattes_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Lattes</a>
+                    )}
+                  </span>
+                </CvRow>
+              )}
+              <CvRow icon={Calendar} label="Na plataforma desde">
+                {doctor.created_at ? new Date(doctor.created_at).toLocaleDateString("pt-BR") : "—"}
+              </CvRow>
+              {doctor.public_id && <CvRow icon={BadgeCheck} label="ID público">#{doctor.public_id}</CvRow>}
             </div>
+
 
             <NetworkDoctorTagPanel doctorId={doctor.id} />
 
