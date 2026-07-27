@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Eye,
-  MessageCircle, Clock, DollarSign, Link as LinkIcon, Calendar, CalendarClock, Briefcase, ShieldCheck, Star,
+  Clock, DollarSign, Link as LinkIcon, Calendar, CalendarClock, Briefcase, ShieldCheck, Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -11,8 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
-
-import { ChatPanel } from "@/components/chat-panel";
 
 interface DoctorFull {
   id: string;
