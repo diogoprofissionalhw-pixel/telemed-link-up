@@ -880,6 +880,7 @@ export type Database = {
           crm: string
           crm_status: Database["public"]["Enums"]["crm_status"]
           crm_uf: string
+          cv_pdf_url: string
           education: string
           full_name: string
           headline: string

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Eye, MessageCircle } from "lucide-react";
+import { Stethoscope, Award, GraduationCap, Languages, BadgeCheck, FileText, ExternalLink, MapPin, Eye, MessageCircle, Clock, DollarSign, Link as LinkIcon, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -12,14 +12,26 @@ import { ChatPanel } from "@/components/chat-panel";
 
 interface DoctorFull {
   id: string;
+  public_id: string | null;
   specialty: string;
+  specialties: string[];
   crm: string;
   crm_uf: string;
+  crm_status: string | null;
+  headline: string | null;
   bio: string | null;
   years_experience: number | null;
+  consultation_fee: number | null;
   education: string | null;
   certifications: string | null;
+  medical_experience: string | null;
   languages: string | null;
+  linkedin_url: string | null;
+  lattes_url: string | null;
+  is_premium: boolean;
+  identity_verified: boolean;
+  timezone: string | null;
+  created_at: string | null;
   full_name: string;
   avatar_url: string | null;
   cv_pdf_url: string | null;
@@ -27,6 +39,7 @@ interface DoctorFull {
   state: string | null;
   country: string | null;
 }
+
 
 interface RatingItem {
   id: string;
@@ -55,7 +68,6 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
       const [{ data: d }, { data: r }] = await Promise.all([
         supabase
           .rpc("doctors_directory")
-          .select("id, specialty, crm, crm_uf, bio, years_experience, education, certifications, languages, avatar_url, cv_pdf_url, city, state, country, full_name")
           .eq("id", doctorId)
           .maybeSingle(),
         supabase
@@ -65,7 +77,8 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           .order("created_at", { ascending: false }),
       ]);
       if (d) {
-        let cvUrl: string | null = (d as any).cv_pdf_url ?? null;
+        const row = d as any;
+        let cvUrl: string | null = row.cv_pdf_url ?? null;
         if (cvUrl) {
           const marker = "/storage/v1/object/public/cvs/";
           const idx = cvUrl.indexOf(marker);
@@ -74,23 +87,36 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
           cvUrl = signed?.signedUrl ?? null;
         }
         setDoctor({
-          id: (d as any).id,
-          specialty: (d as any).specialty,
-          crm: (d as any).crm,
-          crm_uf: (d as any).crm_uf,
-          bio: (d as any).bio,
-          years_experience: (d as any).years_experience,
-          education: (d as any).education,
-          certifications: (d as any).certifications,
-          languages: (d as any).languages,
-          avatar_url: (d as any).avatar_url ?? null,
+          id: row.id,
+          public_id: row.public_id ?? null,
+          specialty: row.specialty,
+          specialties: (row.specialties as string[] | null) ?? [],
+          crm: row.crm,
+          crm_uf: row.crm_uf,
+          crm_status: row.crm_status ?? null,
+          headline: row.headline ?? null,
+          bio: row.bio ?? null,
+          years_experience: row.years_experience ?? null,
+          consultation_fee: row.consultation_fee ?? null,
+          education: row.education ?? null,
+          certifications: row.certifications ?? null,
+          medical_experience: row.medical_experience ?? null,
+          languages: row.languages ?? null,
+          linkedin_url: row.linkedin_url ?? null,
+          lattes_url: row.lattes_url ?? null,
+          is_premium: !!row.is_premium,
+          identity_verified: !!row.identity_verified,
+          timezone: row.timezone ?? null,
+          created_at: row.created_at ?? null,
+          avatar_url: row.avatar_url ?? null,
           cv_pdf_url: cvUrl,
-          city: (d as any).city ?? null,
-          state: (d as any).state ?? null,
-          country: (d as any).country ?? null,
-          full_name: (d as any).full_name ?? "Médico",
+          city: row.city ?? null,
+          state: row.state ?? null,
+          country: row.country ?? null,
+          full_name: row.full_name ?? "Médico",
         });
       }
+
       setRatings((r ?? []) as RatingItem[]);
       setLoading(false);
     })();
@@ -117,14 +143,28 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               </Avatar>
               <div className="flex-1">
                 <h3 className="text-lg font-bold">{doctor.full_name}</h3>
+                {doctor.headline && <p className="text-sm text-foreground/80">{doctor.headline}</p>}
                 <p className="text-sm text-muted-foreground">
                   {doctor.specialty} · CRM {doctor.crm}/{doctor.crm_uf}
                 </p>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-1 flex flex-wrap items-center gap-2">
                   <StarRating value={avg} readonly size={16} />
                   <span className="text-xs text-muted-foreground">
                     {ratings.length > 0 ? `${avg.toFixed(1)} (${ratings.length})` : "Sem avaliações"}
                   </span>
+                  {doctor.crm_status === "verified" && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <BadgeCheck className="h-3 w-3" /> CRM verificado
+                    </span>
+                  )}
+                  {doctor.identity_verified && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                      <BadgeCheck className="h-3 w-3" /> Identidade verificada
+                    </span>
+                  )}
+                  {doctor.is_premium && (
+                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600">Premium</span>
+                  )}
                 </div>
               </div>
               {user && user.id !== doctor.id && (
@@ -133,6 +173,14 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                 </Button>
               )}
             </div>
+
+            {doctor.specialties.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {doctor.specialties.map((s) => (
+                  <span key={s} className="rounded-full bg-accent px-2 py-0.5 text-[11px] text-accent-foreground">{s}</span>
+                ))}
+              </div>
+            )}
 
             {doctor.cv_pdf_url && (
               <div className="rounded-lg border bg-primary/5 p-3">
@@ -159,14 +207,36 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
               <CvRow icon={MapPin} label="Localização">
                 {[doctor.city, doctor.state, doctor.country].filter(Boolean).join(" • ") || "—"}
               </CvRow>
+              <CvRow icon={Clock} label="Fuso horário">{doctor.timezone || "—"}</CvRow>
               <CvRow icon={Award} label="Experiência">
                 {doctor.years_experience ? `${doctor.years_experience} anos` : "—"}
               </CvRow>
+              <CvRow icon={DollarSign} label="Valor por hora">
+                {doctor.consultation_fee != null ? `R$ ${doctor.consultation_fee}` : "A combinar"}
+              </CvRow>
               <CvRow icon={GraduationCap} label="Formação">{doctor.education || "—"}</CvRow>
               <CvRow icon={BadgeCheck} label="Certificações">{doctor.certifications || "—"}</CvRow>
+              <CvRow icon={Stethoscope} label="Experiência médica">{doctor.medical_experience || "—"}</CvRow>
               <CvRow icon={Languages} label="Idiomas">{doctor.languages || "—"}</CvRow>
               <CvRow icon={FileText} label="Bio">{doctor.bio || "—"}</CvRow>
+              {(doctor.linkedin_url || doctor.lattes_url) && (
+                <CvRow icon={LinkIcon} label="Links">
+                  <span className="flex flex-wrap gap-3">
+                    {doctor.linkedin_url && (
+                      <a href={doctor.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">LinkedIn</a>
+                    )}
+                    {doctor.lattes_url && (
+                      <a href={doctor.lattes_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Lattes</a>
+                    )}
+                  </span>
+                </CvRow>
+              )}
+              <CvRow icon={Calendar} label="Na plataforma desde">
+                {doctor.created_at ? new Date(doctor.created_at).toLocaleDateString("pt-BR") : "—"}
+              </CvRow>
+              {doctor.public_id && <CvRow icon={BadgeCheck} label="ID público">#{doctor.public_id}</CvRow>}
             </div>
+
 
             <NetworkDoctorTagPanel doctorId={doctor.id} />
 
