@@ -419,6 +419,11 @@ function FilterPanel({
         </div>
       </div>
 
+      <label className="flex cursor-pointer items-center gap-2 text-sm">
+        <Checkbox checked={onlyCfmVerified} onCheckedChange={(v) => setOnlyCfmVerified(!!v)} />
+        <span>CFM verificado</span>
+      </label>
+
       <div>
         <p className="mb-2 font-medium">Avaliação mínima</p>
         <div className="flex flex-wrap gap-1.5">
