@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Camera, Trash2, Plus, Linkedin, Check, Upload,
-  Loader2, ShieldCheck, FileText, Save, Star,
+  Loader2, ShieldCheck, FileText, Star,
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
   Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
