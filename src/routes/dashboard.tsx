@@ -785,8 +785,8 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
 
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <div>
-          <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="flex flex-col">
+          <div className="mb-4 flex min-h-[72px] flex-col justify-between gap-3 sm:flex-row sm:items-end">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Especialidade</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight">Médicos a serem solicitados</h2>
@@ -858,8 +858,8 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           )}
         </div>
 
-        <div>
-          <div className="mb-4 flex items-end justify-between gap-3">
+        <div className="flex flex-col">
+          <div className="mb-4 flex min-h-[72px] items-end justify-between gap-3">
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Aceitos</p>
               <h2 className="mt-1 text-lg font-semibold tracking-tight">Solicitações em andamento</h2>
@@ -889,6 +889,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
           )}
         </div>
       </section>
+
 
       {chatReq && (
         <ChatPanel
