@@ -93,6 +93,7 @@ function SolicitarPage() {
   const [search, setSearch] = useState("");
   const [specs, setSpecs] = useState<string[]>([]);
   const [ufs, setUfs] = useState<string[]>([]);
+  const [onlyCfmVerified, setOnlyCfmVerified] = useState(false);
   const [minRating, setMinRating] = useState(0);
   const [minYears, setMinYears] = useState(0);
   const [maxFee, setMaxFee] = useState(1000);
