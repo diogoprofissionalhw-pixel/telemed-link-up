@@ -6,9 +6,10 @@ import {
   Loader2, ShieldCheck, FileText, Star,
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
-  Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
+  Wallet, ChevronLeft, ChevronRight, ChevronsUpDown,
   Crown, Sparkles, TrendingUp, Eye, Zap,
 } from "lucide-react";
+
 import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
