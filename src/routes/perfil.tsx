@@ -956,7 +956,7 @@ function DoctorRegistration({
                           <Button
                             type="button"
                             onClick={verifyCfmWithPayment}
-                            disabled={verifyingCfm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                            disabled={verifyingCfm || !/^\d{4,10}$/.test(onlyDigits(cfm)) || !UF_LIST.includes(cfmUf as any)}
                             className="mt-3 gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
                           >
                             {verifyingCfm
