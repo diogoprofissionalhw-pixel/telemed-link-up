@@ -237,7 +237,9 @@ export type Database = {
           bank_name: string | null
           bio: string | null
           certifications: string | null
+          cfm: string | null
           cfm_status: Database["public"]["Enums"]["cfm_status"]
+          cfm_uf: string | null
           city: string | null
           consultation_fee: number | null
           country: string | null
@@ -286,7 +288,9 @@ export type Database = {
           bank_name?: string | null
           bio?: string | null
           certifications?: string | null
+          cfm?: string | null
           cfm_status?: Database["public"]["Enums"]["cfm_status"]
+          cfm_uf?: string | null
           city?: string | null
           consultation_fee?: number | null
           country?: string | null
@@ -335,7 +339,9 @@ export type Database = {
           bank_name?: string | null
           bio?: string | null
           certifications?: string | null
+          cfm?: string | null
           cfm_status?: Database["public"]["Enums"]["cfm_status"]
+          cfm_uf?: string | null
           city?: string | null
           consultation_fee?: number | null
           country?: string | null
