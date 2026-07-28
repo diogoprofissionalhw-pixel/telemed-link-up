@@ -198,9 +198,6 @@ function DoctorRegistration({
   const [fee, setFee] = useState<number | "">("");
 
   // Documents
-  const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
-  const [crmDocUrl, setCrmDocUrl] = useState<string | null>(null);
-  const [rgUrl, setRgUrl] = useState<string | null>(null);
   const [cvUrl, setCvUrl] = useState<string | null>(null);
 
   // Extra professional fields
@@ -208,14 +205,12 @@ function DoctorRegistration({
   const [lattesUrl, setLattesUrl] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
 
-  // CRM / Identity verification
+  // CRM / CFM verification
   const [crmStatus, setCrmStatus] = useState<string>("pending");
-  const [identityVerified, setIdentityVerified] = useState(false);
-  const [identityVerifiedAt, setIdentityVerifiedAt] = useState<string | null>(null);
-  const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
-  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
-  const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+  const [cfmStatus, setCfmStatus] = useState<string>("pending");
   const [verifyingCrm, setVerifyingCrm] = useState(false);
+  const [verifyingCfm, setVerifyingCfm] = useState(false);
+
 
   // Premium seal (mock)
   const [isPremium, setIsPremium] = useState(false);
