@@ -504,6 +504,7 @@ interface NetDoctor {
   specialty: string;
   crm: string;
   crm_uf: string;
+  crm_status?: string | null;
   avatar_url: string | null;
   city: string | null;
   state: string | null;
