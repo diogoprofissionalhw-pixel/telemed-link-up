@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StarRating } from "@/components/star-rating";
 import { DoctorPortfolio } from "@/components/doctor-portfolio";
+import { getDoctorDocuments, type DoctorDocument } from "@/lib/doctor-documents.functions";
+
 
 interface DoctorFull {
   id: string;
@@ -95,8 +97,21 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
   const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
   const [weekly, setWeekly] = useState<WeeklyAvailability | null>(null);
   const [availabilities, setAvailabilities] = useState<AvailabilityItem[]>([]);
+  const [documents, setDocuments] = useState<DoctorDocument[]>([]);
+  const [docsLoading, setDocsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<string>("dados");
+
+  useEffect(() => {
+    if (!open) return;
+    setDocsLoading(true);
+    setDocuments([]);
+    getDoctorDocuments({ data: { doctorId } })
+      .then((docs) => setDocuments(docs ?? []))
+      .catch(() => setDocuments([]))
+      .finally(() => setDocsLoading(false));
+  }, [open, doctorId]);
+
 
   useEffect(() => {
     if (!open) return;
