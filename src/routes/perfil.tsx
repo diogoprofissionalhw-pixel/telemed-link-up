@@ -248,7 +248,8 @@ function DoctorRegistration({
         setLocation([doc.city, doc.state, doc.country].filter(Boolean).join(", "));
         setCrm(doc.crm ?? "");
         setCrmUf(doc.crm_uf ?? "");
-        setCpf(doc.cpf ? maskCPF(doc.cpf) : "");
+        setCfm((doc as any).cfm ?? "");
+        setCfmUf((doc as any).cfm_uf ?? "");
         setPrimarySpecialty(doc.specialty ?? "");
         setBio(doc.bio ?? "");
         setYearsExp(doc.years_experience ?? "");
