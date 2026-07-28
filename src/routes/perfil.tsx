@@ -6,9 +6,10 @@ import {
   Loader2, ShieldCheck, FileText, Star,
   BadgeCheck, User, Phone, Languages as LanguagesIcon, Stethoscope,
   GraduationCap, Briefcase, Award, BookOpen, FileEdit, CalendarClock,
-  Wallet, FileCheck2, ChevronLeft, ChevronRight, ChevronsUpDown,
+  Wallet, ChevronLeft, ChevronRight, ChevronsUpDown,
   Crown, Sparkles, TrendingUp, Eye, Zap,
 } from "lucide-react";
+
 import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
@@ -198,9 +199,6 @@ function DoctorRegistration({
   const [fee, setFee] = useState<number | "">("");
 
   // Documents
-  const [diplomaUrl, setDiplomaUrl] = useState<string | null>(null);
-  const [crmDocUrl, setCrmDocUrl] = useState<string | null>(null);
-  const [rgUrl, setRgUrl] = useState<string | null>(null);
   const [cvUrl, setCvUrl] = useState<string | null>(null);
 
   // Extra professional fields
@@ -208,14 +206,12 @@ function DoctorRegistration({
   const [lattesUrl, setLattesUrl] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
 
-  // CRM / Identity verification
+  // CRM / CFM verification
   const [crmStatus, setCrmStatus] = useState<string>("pending");
-  const [identityVerified, setIdentityVerified] = useState(false);
-  const [identityVerifiedAt, setIdentityVerifiedAt] = useState<string | null>(null);
-  const [idDocumentUrl, setIdDocumentUrl] = useState<string | null>(null);
-  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
-  const [verifyingIdentity, setVerifyingIdentity] = useState(false);
+  const [cfmStatus, setCfmStatus] = useState<string>("pending");
   const [verifyingCrm, setVerifyingCrm] = useState(false);
+  const [verifyingCfm, setVerifyingCfm] = useState(false);
+
 
   // Premium seal (mock)
   const [isPremium, setIsPremium] = useState(false);
@@ -260,21 +256,16 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setDiplomaUrl(doc.diploma_url);
-        setCrmDocUrl(doc.crm_document_url);
-        setRgUrl((doc as any).rg_document_url ?? null);
         setCvUrl(doc.cv_pdf_url);
         setTimezone(doc.timezone ?? "America/Sao_Paulo");
         setMedicalExperience((doc as any).medical_experience ?? "");
         setLattesUrl((doc as any).lattes_url ?? "");
         setLinkedinUrl((doc as any).linkedin_url ?? "");
         setCrmStatus(doc.crm_status ?? "pending");
-        setIdentityVerified(!!(doc as any).identity_verified);
-        setIdentityVerifiedAt((doc as any).identity_verified_at ?? null);
-        setIdDocumentUrl((doc as any).id_document_url ?? null);
-        setSelfieUrl((doc as any).selfie_url ?? null);
+        setCfmStatus((doc as any).cfm_status ?? "pending");
         setIsPremium(!!(doc as any).is_premium);
         setPremiumUntil((doc as any).premium_until ?? null);
+
         if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
@@ -318,33 +309,13 @@ function DoctorRegistration({
     }, 1100);
   };
 
-  /* ---------- Identity verification (mock CFM / KYC) ---------- */
-  const verifyIdentity = async () => {
-    if (!idDocumentUrl || !selfieUrl) {
-      return toast.error("Envie o documento e a selfie antes de verificar.");
-    }
-    setVerifyingIdentity(true);
-    // Simulação de análise (futura integração com API do CFM e provedor de KYC)
-    await new Promise((r) => setTimeout(r, 1500));
-    const verifiedAtIso = new Date().toISOString();
-    const { error } = await supabase.from("doctors").update({
-      identity_verified: true,
-      identity_verified_at: verifiedAtIso,
-    } as any).eq("id", userId);
-    setVerifyingIdentity(false);
-    if (error) return toast.error(error.message);
-    setIdentityVerified(true);
-    setIdentityVerifiedAt(verifiedAtIso);
-    toast.success("Identidade verificada com sucesso!");
-  };
-
   /* ---------- CRM verification with payment (mock R$ 150 single payment) ---------- */
   const verifyCrmWithPayment = async () => {
     if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
       return toast.error("Informe um número de CRM e UF válidos antes de validar.");
     }
     setVerifyingCrm(true);
-    // Mock: processamento do pagamento + consulta ao CFM
+    // Mock: processamento do pagamento + consulta ao CRM
     await new Promise((r) => setTimeout(r, 1500));
     const { error } = await supabase.from("doctors").update({
       crm_status: "verified",
@@ -352,8 +323,26 @@ function DoctorRegistration({
     setVerifyingCrm(false);
     if (error) return toast.error(error.message);
     setCrmStatus("verified");
-    toast.success("Pagamento aprovado! Selo de Informações Verificadas por CRM ativado.");
+    toast.success("Pagamento aprovado! Selo CRM verificado ativado.");
   };
+
+  /* ---------- CFM verification with payment (mock R$ 150 single payment) ---------- */
+  const verifyCfmWithPayment = async () => {
+    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
+      return toast.error("Informe um CRM válido para ativar a validação CFM.");
+    }
+    setVerifyingCfm(true);
+    // Mock: processamento do pagamento + consulta ao CFM
+    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await supabase.from("doctors").update({
+      cfm_status: "verified",
+    } as any).eq("id", userId);
+    setVerifyingCfm(false);
+    if (error) return toast.error(error.message);
+    setCfmStatus("verified");
+    toast.success("Pagamento aprovado! Selo CFM verificado ativado.");
+  };
+
 
   const activatePremium = async () => {
     setPremiumLoading(true);
@@ -401,10 +390,10 @@ function DoctorRegistration({
     { ok: isValidPhone(phone), label: "Telefone válido", tab: "dados" as TabKey },
     { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta", tab: "agenda" as TabKey },
     { ok: weekdays.length >= 1, label: "Dias da semana", tab: "agenda" as TabKey },
-    { ok: !!diplomaUrl, label: "Diploma enviado", tab: "verificacao" as TabKey },
-    { ok: !!crmDocUrl, label: "Documento do CRM", tab: "verificacao" as TabKey },
-    { ok: !!rgUrl, label: "Documento de identidade", tab: "verificacao" as TabKey },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
+    { ok: crmStatus === "verified", label: "CRM verificado", tab: "verificacao" as TabKey },
+    { ok: cfmStatus === "verified", label: "CFM verificado", tab: "verificacao" as TabKey },
+  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
+
 
   const completedCount = checklist.filter(c => c.ok).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
@@ -460,10 +449,8 @@ function DoctorRegistration({
     if (!isValidPhone(phone)) errs.push("Telefone");
     if (typeof fee !== "number" || fee < 50) errs.push("Taxa");
     if (weekdays.length < 1) errs.push("Disponibilidade");
-    if (!diplomaUrl) errs.push("Diploma");
-    if (!crmDocUrl) errs.push("Documento do CRM");
-    if (!rgUrl) errs.push("Documento de identidade");
     if (errs.length) return toast.error(`Campos pendentes: ${errs.join(", ")}`);
+
 
     setSaving(true);
     try {
@@ -491,11 +478,9 @@ function DoctorRegistration({
         education: education || null,
         languages: languages || null,
         consultation_fee: fee,
-        diploma_url: diplomaUrl,
-        crm_document_url: crmDocUrl,
-        rg_document_url: rgUrl,
         cv_pdf_url: cvUrl,
         timezone,
+
         medical_experience: medicalExperience.trim() || null,
         lattes_url: lattesUrl.trim() || null,
         linkedin_url: linkedinUrl.trim() || null,
@@ -880,67 +865,16 @@ function DoctorRegistration({
 
                 {/* ===================== TAB 4: VERIFICAÇÃO E SELOS ===================== */}
                 <TabsContent value="verificacao" className="mt-4 space-y-6">
-                  <Section icon={FileCheck2} step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
+                  <Section icon={BadgeCheck} step={12} of={14} title="Validação CRM" subtitle="Selo verificado pelo Conselho Regional de Medicina">
                     <FieldGroup>
-                      <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
-                      <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
-                      <DocUploader userId={userId} label="Documento de Identidade (RG/CNH) *" url={rgUrl} folder="rg" onChange={setRgUrl} />
-                      <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
-                    </FieldGroup>
-                  </Section>
-
-                  <Section icon={ShieldCheck} step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
-                    <FieldGroup>
-                      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500 max-w-md">
-                            Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
-                            A análise é simulada e prepara a estrutura para integração com a API do CFM.
-                          </p>
-                        </div>
-                        {identityVerified ? (
-                          <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
-                            <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-                            Não verificada
-                          </Badge>
-                        )}
-                      </div>
-
-                      {identityVerified && identityVerifiedAt && (
-                        <p className="text-xs text-sky-700">
-                          Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
-                        </p>
-                      )}
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
-                        <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
-                      </div>
-
-                      {!identityVerified && (
-                        <Button type="button" onClick={verifyIdentity}
-                          disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
-                          className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
-                          {verifyingIdentity
-                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
-                            : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
-                        </Button>
-                      )}
-
-                      <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                      <div className={`rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="max-w-md">
                             <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
-                              <BadgeCheck className="h-4 w-4" /> Selo de Informações Verificadas por CRM
+                              <BadgeCheck className="h-4 w-4" /> Selo CRM Verificado
                             </p>
                             <p className="mt-1 text-xs text-emerald-900/80">
-                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho e ativamos o selo verde permanente no diretório <span className="font-semibold">/medicos</span>.
+                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho regional e ativamos o selo verde permanente.
                             </p>
                           </div>
                           {crmStatus === "verified" ? (
@@ -967,7 +901,49 @@ function DoctorRegistration({
                           </Button>
                         )}
                         <p className="mt-2 text-[11px] text-emerald-900/60">
-                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway (Stripe).
+                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway.
+                        </p>
+                      </div>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={ShieldCheck} step={13} of={14} title="Validação CFM" subtitle="Selo verificado pelo Conselho Federal de Medicina">
+                    <FieldGroup>
+                      <div className={`rounded-lg border p-4 ${cfmStatus === "verified" ? "border-sky-200 bg-sky-50/60" : "border-sky-100 bg-sky-50/40"}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="max-w-md">
+                            <p className="text-sm font-semibold text-sky-900 flex items-center gap-1.5">
+                              <ShieldCheck className="h-4 w-4" /> Selo CFM Verificado
+                            </p>
+                            <p className="mt-1 text-xs text-sky-900/80">
+                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu registro junto ao Conselho Federal de Medicina.
+                            </p>
+                          </div>
+                          {cfmStatus === "verified" ? (
+                            <Badge className="gap-1 bg-sky-600 text-white hover:bg-sky-600">
+                              <ShieldCheck className="h-3.5 w-3.5" /> Verificado
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                              {cfmStatus === "invalid" ? "CFM inválido" : "Não verificado"}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {cfmStatus !== "verified" && (
+                          <Button
+                            type="button"
+                            onClick={verifyCfmWithPayment}
+                            disabled={verifyingCfm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                            className="mt-3 gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+                          >
+                            {verifyingCfm
+                              ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                              : <><ShieldCheck className="h-4 w-4" /> Validar CFM · R$ 150,00</>}
+                          </Button>
+                        )}
+                        <p className="mt-2 text-[11px] text-sky-900/60">
+                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway.
                         </p>
                       </div>
                     </FieldGroup>
@@ -1063,6 +1039,7 @@ function DoctorRegistration({
 
                   <TabNav onPrev={goPrevTab} onNext={null} />
                 </TabsContent>
+
               </Tabs>
 
 
@@ -1440,74 +1417,8 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
   );
 }
 
-function DocUploader({ userId, label, url, folder, onChange, bucket = "documents" }: {
-  userId: string; label: string; url: string | null; folder: string;
-  onChange: (url: string | null) => void; bucket?: "documents" | "cvs";
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const upload = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) return toast.error("Arquivo muito grande (máx 10MB)");
-    setBusy(true);
-    const ext = file.name.split(".").pop() ?? "pdf";
-    const path = `${userId}/${folder}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-    if (error) { setBusy(false); return toast.error(error.message); }
-    if (bucket === "cvs") {
-      const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(pub.publicUrl);
-    } else {
-      // private bucket — store the path; signed URL can be generated when needed
-      onChange(path);
-    }
-    setBusy(false);
-    toast.success("Arquivo enviado!");
-  };
-  const remove = () => { onChange(null); toast.success("Removido"); };
-
-  const isImage = !!url && /\.(png|jpe?g|webp|gif)$/i.test(url);
-  const isPublic = bucket === "cvs" || (url?.startsWith("http") ?? false);
-  return (
-    <div className={cn(
-      "rounded-lg border p-3 flex items-center gap-3 transition",
-      url ? "border-emerald-300 bg-emerald-50/40" : "border-gray-200"
-    )}>
-      <div className={cn(
-        "flex h-12 w-12 shrink-0 items-center justify-center rounded-md overflow-hidden",
-        url ? "bg-emerald-100 text-emerald-700" : "bg-emerald-50 text-emerald-600"
-      )}>
-        {url && isImage && isPublic ? (
-          <img src={url} alt="" className="h-full w-full object-cover" />
-        ) : url ? (
-          <FileCheck2 className="h-5 w-5" />
-        ) : (
-          <FileText className="h-5 w-5" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-700">{label}</p>
-        <p className={cn("text-xs truncate", url ? "text-emerald-700 font-medium" : "text-gray-500")}>
-          {url ? "✓ Arquivo pronto" : "PDF, JPG ou PNG (máx 10MB)"}
-        </p>
-      </div>
-      {url && (
-        <Button type="button" size="sm" variant="ghost" onClick={remove} className="text-red-600 hover:bg-red-50">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      )}
-      <Button type="button" size="sm" variant="outline" disabled={busy}
-        onClick={() => inputRef.current?.click()}
-        className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-      </Button>
-      <input ref={inputRef} type="file" accept=".pdf,image/*" hidden
-        onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-    </div>
-  );
-}
-
-
 /* ================== SIDEBAR CARDS ================== */
+
 
 function SummaryCard({ avatarUrl, name, headline, extras, progressPct }: {
   avatarUrl: string | null; name: string; headline: string; extras: string[]; progressPct: number;
