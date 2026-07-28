@@ -448,10 +448,8 @@ function DoctorRegistration({
     if (!isValidPhone(phone)) errs.push("Telefone");
     if (typeof fee !== "number" || fee < 50) errs.push("Taxa");
     if (weekdays.length < 1) errs.push("Disponibilidade");
-    if (!diplomaUrl) errs.push("Diploma");
-    if (!crmDocUrl) errs.push("Documento do CRM");
-    if (!rgUrl) errs.push("Documento de identidade");
     if (errs.length) return toast.error(`Campos pendentes: ${errs.join(", ")}`);
+
 
     setSaving(true);
     try {
