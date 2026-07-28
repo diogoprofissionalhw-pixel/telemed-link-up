@@ -378,28 +378,40 @@ export function DoctorProfileDialog({ open, onOpenChange, doctorId }: Props) {
                   </CvRow>
                 </div>
 
-                {doctor.cv_pdf_url ? (
-                  <div className="rounded-lg border bg-primary/5 p-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 text-sm font-medium text-primary">
-                        <FileText className="h-4 w-4" /> Currículo em PDF
-                      </span>
-                      <div className="flex gap-1">
-                        <a href={doctor.cv_pdf_url} target="_blank" rel="noopener noreferrer"
-                           className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
-                          <Eye className="h-3 w-3" /> Visualizar
-                        </a>
-                        <a href={doctor.cv_pdf_url} download
-                           className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
-                          <ExternalLink className="h-3 w-3" /> Baixar
-                        </a>
-                      </div>
+                <div>
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+                    <FileText className="h-4 w-4 text-primary" /> Documentação
+                  </h4>
+                  {docsLoading ? (
+                    <p className="text-sm text-muted-foreground">Carregando documentos...</p>
+                  ) : documents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhum documento enviado pelo médico.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {documents.map((doc) => (
+                        <div key={doc.key} className="rounded-lg border bg-primary/5 p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-sm font-medium text-primary">
+                              <FileText className="h-4 w-4" /> {doc.label}
+                            </span>
+                            <div className="flex gap-1">
+                              <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                                 className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                                <Eye className="h-3 w-3" /> Visualizar
+                              </a>
+                              <a href={doc.url} download
+                                 className="inline-flex items-center gap-1 rounded-md border border-primary/30 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10">
+                                <ExternalLink className="h-3 w-3" /> Baixar
+                              </a>
+                            </div>
+                          </div>
+                          <iframe src={doc.url} className="mt-2 h-72 w-full rounded-md border bg-white" title={doc.label} />
+                        </div>
+                      ))}
                     </div>
-                    <iframe src={doctor.cv_pdf_url} className="mt-2 h-72 w-full rounded-md border bg-white" title="Currículo em PDF" />
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Currículo em PDF não enviado.</p>
-                )}
+                  )}
+                </div>
+
               </TabsContent>
             </Tabs>
           </div>
