@@ -388,6 +388,7 @@ function DoctorRegistration({
     { ok: isValidEmail(emailVal), label: "Email válido", tab: "dados" as TabKey },
     { ok: /^\d{4,7}$/.test(onlyDigits(crm)), label: "CRM válido", tab: "carreira" as TabKey },
     { ok: UF_LIST.includes(crmUf as any), label: "UF do CRM", tab: "carreira" as TabKey },
+    { ok: /^\d{4,10}$/.test(onlyDigits(cfm)) && UF_LIST.includes(cfmUf as any), label: "CFM informado", tab: "carreira" as TabKey },
     { ok: isValidCPF(cpf), label: "CPF válido", tab: "carreira" as TabKey },
     { ok: !!primarySpecialty, label: "Especialidade principal", tab: "carreira" as TabKey },
     { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)", tab: "carreira" as TabKey },
