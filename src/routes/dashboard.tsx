@@ -504,6 +504,7 @@ interface NetDoctor {
   specialty: string;
   crm: string;
   crm_uf: string;
+  crm_status?: string | null;
   avatar_url: string | null;
   city: string | null;
   state: string | null;
@@ -573,7 +574,7 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
         .select("status, agreed_value, duration_hours, created_at, responded_at")
         .eq("network_id", userId)
         .gte("created_at", since),
-      supabase.rpc("doctors_directory").select("id, specialty, crm, crm_uf, avatar_url, city, state, full_name").limit(200),
+      supabase.rpc("doctors_directory").select("id, specialty, crm, crm_uf, crm_status, avatar_url, city, state, full_name").limit(200),
       supabase.from("ratings").select("doctor_id, stars"),
       supabase.from("network_doctor_tags").select("doctor_id").eq("network_id", userId).eq("is_favorite", true),
     ]);
@@ -587,16 +588,19 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
       c.sum += r.stars; c.n += 1;
       ratingMap.set(r.doctor_id, c);
     });
-    const docs: NetDoctor[] = (docRes.data ?? []).map((d: any) => {
-      const ag = ratingMap.get(d.id);
-      return {
-        id: d.id, specialty: d.specialty, crm: d.crm, crm_uf: d.crm_uf,
-        avatar_url: d.avatar_url ?? null, city: d.city ?? null, state: d.state ?? null,
-        full_name: d.full_name ?? "Médico",
-        avg_stars: ag ? ag.sum / ag.n : 0,
-        rating_count: ag?.n ?? 0,
-      };
-    });
+    const docs: NetDoctor[] = (docRes.data ?? [])
+      .filter((d: any) => d.crm_status === "verified")
+      .map((d: any) => {
+        const ag = ratingMap.get(d.id);
+        return {
+          id: d.id, specialty: d.specialty, crm: d.crm, crm_uf: d.crm_uf,
+          crm_status: d.crm_status ?? null,
+          avatar_url: d.avatar_url ?? null, city: d.city ?? null, state: d.state ?? null,
+          full_name: d.full_name ?? "Médico",
+          avg_stars: ag ? ag.sum / ag.n : 0,
+          rating_count: ag?.n ?? 0,
+        };
+      });
     setDoctors(docs);
     setFavoriteIds(new Set(((favRes.data ?? []) as Array<{ doctor_id: string }>).map(f => f.doctor_id)));
     setLoading(false);
