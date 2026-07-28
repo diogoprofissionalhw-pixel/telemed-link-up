@@ -397,7 +397,7 @@ function DoctorRegistration({
     { ok: weekdays.length >= 1, label: "Dias da semana", tab: "agenda" as TabKey },
     { ok: crmStatus === "verified", label: "CRM verificado", tab: "verificacao" as TabKey },
     { ok: cfmStatus === "verified", label: "CFM verificado", tab: "verificacao" as TabKey },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
+  ], [avatarUrl, name, emailVal, crm, crmUf, cfm, cfmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
 
 
   const completedCount = checklist.filter(c => c.ok).length;
