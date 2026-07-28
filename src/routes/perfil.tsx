@@ -447,6 +447,8 @@ function DoctorRegistration({
     if (!isValidEmail(emailVal)) errs.push("Email");
     if (!/^\d{4,7}$/.test(onlyDigits(crm))) errs.push("CRM");
     if (!UF_LIST.includes(crmUf as any)) errs.push("UF do CRM");
+    if (!/^\d{4,10}$/.test(onlyDigits(cfm))) errs.push("CFM");
+    if (!UF_LIST.includes(cfmUf as any)) errs.push("UF do CFM");
     if (!isValidCPF(cpf)) errs.push("CPF");
     if (!primarySpecialty) errs.push("Especialidade");
     if (bio.trim().length < 50) errs.push("Descrição");
