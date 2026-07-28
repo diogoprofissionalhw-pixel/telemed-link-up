@@ -168,6 +168,8 @@ function DoctorRegistration({
   // Medical
   const [crm, setCrm] = useState("");
   const [crmUf, setCrmUf] = useState("");
+  const [cfm, setCfm] = useState("");
+  const [cfmUf, setCfmUf] = useState("");
   const [cpf, setCpf] = useState("");
   const [primarySpecialty, setPrimarySpecialty] = useState("");
   const [bio, setBio] = useState("");
@@ -246,6 +248,8 @@ function DoctorRegistration({
         setLocation([doc.city, doc.state, doc.country].filter(Boolean).join(", "));
         setCrm(doc.crm ?? "");
         setCrmUf(doc.crm_uf ?? "");
+        setCfm((doc as any).cfm ?? "");
+        setCfmUf((doc as any).cfm_uf ?? "");
         setCpf(doc.cpf ? maskCPF(doc.cpf) : "");
         setPrimarySpecialty(doc.specialty ?? "");
         setBio(doc.bio ?? "");
@@ -328,8 +332,8 @@ function DoctorRegistration({
 
   /* ---------- CFM verification with payment (mock R$ 150 single payment) ---------- */
   const verifyCfmWithPayment = async () => {
-    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
-      return toast.error("Informe um CRM válido para ativar a validação CFM.");
+    if (!/^\d{4,10}$/.test(onlyDigits(cfm)) || !UF_LIST.includes(cfmUf as any)) {
+      return toast.error("Informe o número e a UF do CFM na aba Carreira antes de validar.");
     }
     setVerifyingCfm(true);
     // Mock: processamento do pagamento + consulta ao CFM
@@ -384,6 +388,7 @@ function DoctorRegistration({
     { ok: isValidEmail(emailVal), label: "Email válido", tab: "dados" as TabKey },
     { ok: /^\d{4,7}$/.test(onlyDigits(crm)), label: "CRM válido", tab: "carreira" as TabKey },
     { ok: UF_LIST.includes(crmUf as any), label: "UF do CRM", tab: "carreira" as TabKey },
+    { ok: /^\d{4,10}$/.test(onlyDigits(cfm)) && UF_LIST.includes(cfmUf as any), label: "CFM informado", tab: "carreira" as TabKey },
     { ok: isValidCPF(cpf), label: "CPF válido", tab: "carreira" as TabKey },
     { ok: !!primarySpecialty, label: "Especialidade principal", tab: "carreira" as TabKey },
     { ok: bio.trim().length >= 50, label: "Descrição (mín. 50)", tab: "carreira" as TabKey },
@@ -392,7 +397,7 @@ function DoctorRegistration({
     { ok: weekdays.length >= 1, label: "Dias da semana", tab: "agenda" as TabKey },
     { ok: crmStatus === "verified", label: "CRM verificado", tab: "verificacao" as TabKey },
     { ok: cfmStatus === "verified", label: "CFM verificado", tab: "verificacao" as TabKey },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
+  ], [avatarUrl, name, emailVal, crm, crmUf, cfm, cfmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
 
 
   const completedCount = checklist.filter(c => c.ok).length;
@@ -443,6 +448,8 @@ function DoctorRegistration({
     if (!isValidEmail(emailVal)) errs.push("Email");
     if (!/^\d{4,7}$/.test(onlyDigits(crm))) errs.push("CRM");
     if (!UF_LIST.includes(crmUf as any)) errs.push("UF do CRM");
+    if (!/^\d{4,10}$/.test(onlyDigits(cfm))) errs.push("CFM");
+    if (!UF_LIST.includes(cfmUf as any)) errs.push("UF do CFM");
     if (!isValidCPF(cpf)) errs.push("CPF");
     if (!primarySpecialty) errs.push("Especialidade");
     if (bio.trim().length < 50) errs.push("Descrição");
@@ -468,6 +475,8 @@ function DoctorRegistration({
         country: "Brasil",
         crm: onlyDigits(crm),
         crm_uf: crmUf.toUpperCase(),
+        cfm: onlyDigits(cfm) || null,
+        cfm_uf: cfmUf ? cfmUf.toUpperCase() : null,
         cpf: onlyDigits(cpf),
         specialty: primarySpecialty,
         specialties: extraSpecs,
@@ -679,6 +688,19 @@ function DoctorRegistration({
                           <Select value={crmUf} onValueChange={setCrmUf}>
                             <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
                             <SelectContent>{UF_LIST.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </Field>
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="sm:col-span-2">
+                          <Field label="CFM" required hint="Número de registro no Conselho Federal de Medicina — usado na verificação automática">
+                            <Input value={cfm} onChange={(e) => setCfm(onlyDigits(e.target.value).slice(0, 10))} placeholder="Ex: 123456" />
+                          </Field>
+                        </div>
+                        <Field label="UF do CFM" required>
+                          <Select value={cfmUf} onValueChange={setCfmUf}>
+                            <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
+                            <SelectContent>{UF_LIST.map(u => <SelectItem key={`cfm-${u}`} value={u}>{u}</SelectItem>)}</SelectContent>
                           </Select>
                         </Field>
                       </div>
@@ -934,7 +956,7 @@ function DoctorRegistration({
                           <Button
                             type="button"
                             onClick={verifyCfmWithPayment}
-                            disabled={verifyingCfm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                            disabled={verifyingCfm || !/^\d{4,10}$/.test(onlyDigits(cfm)) || !UF_LIST.includes(cfmUf as any)}
                             className="mt-3 gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
                           >
                             {verifyingCfm
