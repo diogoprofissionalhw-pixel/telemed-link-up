@@ -472,6 +472,8 @@ function DoctorRegistration({
         country: "Brasil",
         crm: onlyDigits(crm),
         crm_uf: crmUf.toUpperCase(),
+        cfm: onlyDigits(cfm) || null,
+        cfm_uf: cfmUf ? cfmUf.toUpperCase() : null,
         cpf: onlyDigits(cpf),
         specialty: primarySpecialty,
         specialties: extraSpecs,
