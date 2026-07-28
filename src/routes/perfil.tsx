@@ -477,11 +477,9 @@ function DoctorRegistration({
         education: education || null,
         languages: languages || null,
         consultation_fee: fee,
-        diploma_url: diplomaUrl,
-        crm_document_url: crmDocUrl,
-        rg_document_url: rgUrl,
         cv_pdf_url: cvUrl,
         timezone,
+
         medical_experience: medicalExperience.trim() || null,
         lattes_url: lattesUrl.trim() || null,
         linkedin_url: linkedinUrl.trim() || null,
