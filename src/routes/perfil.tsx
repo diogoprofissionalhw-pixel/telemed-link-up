@@ -168,6 +168,8 @@ function DoctorRegistration({
   // Medical
   const [crm, setCrm] = useState("");
   const [crmUf, setCrmUf] = useState("");
+  const [cfm, setCfm] = useState("");
+  const [cfmUf, setCfmUf] = useState("");
   const [cpf, setCpf] = useState("");
   const [primarySpecialty, setPrimarySpecialty] = useState("");
   const [bio, setBio] = useState("");
