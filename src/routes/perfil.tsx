@@ -308,33 +308,13 @@ function DoctorRegistration({
     }, 1100);
   };
 
-  /* ---------- Identity verification (mock CFM / KYC) ---------- */
-  const verifyIdentity = async () => {
-    if (!idDocumentUrl || !selfieUrl) {
-      return toast.error("Envie o documento e a selfie antes de verificar.");
-    }
-    setVerifyingIdentity(true);
-    // Simulação de análise (futura integração com API do CFM e provedor de KYC)
-    await new Promise((r) => setTimeout(r, 1500));
-    const verifiedAtIso = new Date().toISOString();
-    const { error } = await supabase.from("doctors").update({
-      identity_verified: true,
-      identity_verified_at: verifiedAtIso,
-    } as any).eq("id", userId);
-    setVerifyingIdentity(false);
-    if (error) return toast.error(error.message);
-    setIdentityVerified(true);
-    setIdentityVerifiedAt(verifiedAtIso);
-    toast.success("Identidade verificada com sucesso!");
-  };
-
   /* ---------- CRM verification with payment (mock R$ 150 single payment) ---------- */
   const verifyCrmWithPayment = async () => {
     if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
       return toast.error("Informe um número de CRM e UF válidos antes de validar.");
     }
     setVerifyingCrm(true);
-    // Mock: processamento do pagamento + consulta ao CFM
+    // Mock: processamento do pagamento + consulta ao CRM
     await new Promise((r) => setTimeout(r, 1500));
     const { error } = await supabase.from("doctors").update({
       crm_status: "verified",
@@ -342,8 +322,26 @@ function DoctorRegistration({
     setVerifyingCrm(false);
     if (error) return toast.error(error.message);
     setCrmStatus("verified");
-    toast.success("Pagamento aprovado! Selo de Informações Verificadas por CRM ativado.");
+    toast.success("Pagamento aprovado! Selo CRM verificado ativado.");
   };
+
+  /* ---------- CFM verification with payment (mock R$ 150 single payment) ---------- */
+  const verifyCfmWithPayment = async () => {
+    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
+      return toast.error("Informe um CRM válido para ativar a validação CFM.");
+    }
+    setVerifyingCfm(true);
+    // Mock: processamento do pagamento + consulta ao CFM
+    await new Promise((r) => setTimeout(r, 1500));
+    const { error } = await supabase.from("doctors").update({
+      cfm_status: "verified",
+    } as any).eq("id", userId);
+    setVerifyingCfm(false);
+    if (error) return toast.error(error.message);
+    setCfmStatus("verified");
+    toast.success("Pagamento aprovado! Selo CFM verificado ativado.");
+  };
+
 
   const activatePremium = async () => {
     setPremiumLoading(true);
