@@ -1417,74 +1417,8 @@ function AvatarUploader({ userId, url, fallback, onChange }: {
   );
 }
 
-function DocUploader({ userId, label, url, folder, onChange, bucket = "documents" }: {
-  userId: string; label: string; url: string | null; folder: string;
-  onChange: (url: string | null) => void; bucket?: "documents" | "cvs";
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const upload = async (file: File) => {
-    if (file.size > 10 * 1024 * 1024) return toast.error("Arquivo muito grande (máx 10MB)");
-    setBusy(true);
-    const ext = file.name.split(".").pop() ?? "pdf";
-    const path = `${userId}/${folder}-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: true });
-    if (error) { setBusy(false); return toast.error(error.message); }
-    if (bucket === "cvs") {
-      const { data: pub } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(pub.publicUrl);
-    } else {
-      // private bucket — store the path; signed URL can be generated when needed
-      onChange(path);
-    }
-    setBusy(false);
-    toast.success("Arquivo enviado!");
-  };
-  const remove = () => { onChange(null); toast.success("Removido"); };
-
-  const isImage = !!url && /\.(png|jpe?g|webp|gif)$/i.test(url);
-  const isPublic = bucket === "cvs" || (url?.startsWith("http") ?? false);
-  return (
-    <div className={cn(
-      "rounded-lg border p-3 flex items-center gap-3 transition",
-      url ? "border-emerald-300 bg-emerald-50/40" : "border-gray-200"
-    )}>
-      <div className={cn(
-        "flex h-12 w-12 shrink-0 items-center justify-center rounded-md overflow-hidden",
-        url ? "bg-emerald-100 text-emerald-700" : "bg-emerald-50 text-emerald-600"
-      )}>
-        {url && isImage && isPublic ? (
-          <img src={url} alt="" className="h-full w-full object-cover" />
-        ) : url ? (
-          <FileCheck2 className="h-5 w-5" />
-        ) : (
-          <FileText className="h-5 w-5" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-700">{label}</p>
-        <p className={cn("text-xs truncate", url ? "text-emerald-700 font-medium" : "text-gray-500")}>
-          {url ? "✓ Arquivo pronto" : "PDF, JPG ou PNG (máx 10MB)"}
-        </p>
-      </div>
-      {url && (
-        <Button type="button" size="sm" variant="ghost" onClick={remove} className="text-red-600 hover:bg-red-50">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      )}
-      <Button type="button" size="sm" variant="outline" disabled={busy}
-        onClick={() => inputRef.current?.click()}
-        className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-      </Button>
-      <input ref={inputRef} type="file" accept=".pdf,image/*" hidden
-        onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
-    </div>
-  );
-}
-
-
 /* ================== SIDEBAR CARDS ================== */
+
 
 function SummaryCard({ avatarUrl, name, headline, extras, progressPct }: {
   avatarUrl: string | null; name: string; headline: string; extras: string[]; progressPct: number;
