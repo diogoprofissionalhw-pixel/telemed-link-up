@@ -691,6 +691,19 @@ function DoctorRegistration({
                           </Select>
                         </Field>
                       </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="sm:col-span-2">
+                          <Field label="CFM" required hint="Número de registro no Conselho Federal de Medicina — usado na verificação automática">
+                            <Input value={cfm} onChange={(e) => setCfm(onlyDigits(e.target.value).slice(0, 10))} placeholder="Ex: 123456" />
+                          </Field>
+                        </div>
+                        <Field label="UF do CFM" required>
+                          <Select value={cfmUf} onValueChange={setCfmUf}>
+                            <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
+                            <SelectContent>{UF_LIST.map(u => <SelectItem key={`cfm-${u}`} value={u}>{u}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </Field>
+                      </div>
                       <Field label="CPF" required>
                         <Input value={cpf} onChange={(e) => setCpf(maskCPF(e.target.value))} placeholder="000.000.000-00" />
                       </Field>
