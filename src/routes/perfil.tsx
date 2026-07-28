@@ -332,8 +332,8 @@ function DoctorRegistration({
 
   /* ---------- CFM verification with payment (mock R$ 150 single payment) ---------- */
   const verifyCfmWithPayment = async () => {
-    if (!/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)) {
-      return toast.error("Informe um CRM válido para ativar a validação CFM.");
+    if (!/^\d{4,10}$/.test(onlyDigits(cfm)) || !UF_LIST.includes(cfmUf as any)) {
+      return toast.error("Informe o número e a UF do CFM na aba Carreira antes de validar.");
     }
     setVerifyingCfm(true);
     // Mock: processamento do pagamento + consulta ao CFM
