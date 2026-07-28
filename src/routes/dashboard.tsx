@@ -531,23 +531,28 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
   const isTestNetwork = userEmail === TEST_NETWORK_EMAIL;
 
   useEffect(() => {
-    supabase.from("networks").select("is_verified, qualification_status").eq("id", userId).maybeSingle()
+    supabase.rpc("get_my_network")
       .then(({ data }) => {
-        setNetworkVerified(!!(data as any)?.is_verified);
+        const row = Array.isArray(data) ? (data as any[])[0] : (data as any);
+        setNetworkVerified(!!row?.is_verified);
         const pending = (() => { try { return localStorage.getItem("network_qualification_pending"); } catch { return null; } })();
-        if (!pending || !data) return;
-        const status = (data as any).qualification_status as string | undefined;
+        if (!pending || !row) return;
+        const status = row.qualification_status as string | undefined;
         // Aguarda a validação assíncrona terminar
         if (!status || status === "pending") {
           setTimeout(() => {
-            supabase.from("networks").select("qualification_status").eq("id", userId).maybeSingle()
-              .then(({ data: d2 }) => showQualificationToast((d2 as any)?.qualification_status));
+            supabase.rpc("get_my_network")
+              .then(({ data: d2 }) => {
+                const r2 = Array.isArray(d2) ? (d2 as any[])[0] : (d2 as any);
+                showQualificationToast(r2?.qualification_status);
+              });
           }, 1500);
           return;
         }
         showQualificationToast(status);
       });
   }, [userId]);
+
 
   function showQualificationToast(status: string | undefined) {
     try { localStorage.removeItem("network_qualification_pending"); } catch {}
