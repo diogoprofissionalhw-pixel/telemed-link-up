@@ -864,67 +864,16 @@ function DoctorRegistration({
 
                 {/* ===================== TAB 4: VERIFICAÇÃO E SELOS ===================== */}
                 <TabsContent value="verificacao" className="mt-4 space-y-6">
-                  <Section icon={FileCheck2} step={12} of={14} title="Documentos" subtitle="Verificação profissional (privados)">
+                  <Section icon={BadgeCheck} step={12} of={14} title="Validação CRM" subtitle="Selo verificado pelo Conselho Regional de Medicina">
                     <FieldGroup>
-                      <DocUploader userId={userId} label="Diploma de Medicina *" url={diplomaUrl} folder="diplomas" onChange={setDiplomaUrl} />
-                      <DocUploader userId={userId} label="Documento do CRM *" url={crmDocUrl} folder="crm" onChange={setCrmDocUrl} />
-                      <DocUploader userId={userId} label="Documento de Identidade (RG/CNH) *" url={rgUrl} folder="rg" onChange={setRgUrl} />
-                      <DocUploader userId={userId} label="Currículo (PDF)" url={cvUrl} folder="cvs" onChange={setCvUrl} bucket="cvs" />
-                    </FieldGroup>
-                  </Section>
-
-                  <Section icon={ShieldCheck} step={14} of={14} title="Verificação de Identidade" subtitle="Selo de confiança estilo LinkedIn — análise de documento + selfie">
-                    <FieldGroup>
-                      <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-gray-50/60 p-4">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-emerald-600" /> Status
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500 max-w-md">
-                            Envie uma foto do seu documento oficial (RG/CNH) e uma selfie segurando-o.
-                            A análise é simulada e prepara a estrutura para integração com a API do CFM.
-                          </p>
-                        </div>
-                        {identityVerified ? (
-                          <Badge className="gap-1 bg-sky-100 text-sky-700 hover:bg-sky-100">
-                            <ShieldCheck className="h-3.5 w-3.5" /> Identidade Verificada
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-                            Não verificada
-                          </Badge>
-                        )}
-                      </div>
-
-                      {identityVerified && identityVerifiedAt && (
-                        <p className="text-xs text-sky-700">
-                          Verificada em {new Date(identityVerifiedAt).toLocaleDateString("pt-BR")}
-                        </p>
-                      )}
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <DocUploader userId={userId} label="Documento oficial (RG/CNH)" url={idDocumentUrl} folder="kyc-doc" onChange={setIdDocumentUrl} />
-                        <DocUploader userId={userId} label="Selfie segurando o documento" url={selfieUrl} folder="kyc-selfie" onChange={setSelfieUrl} />
-                      </div>
-
-                      {!identityVerified && (
-                        <Button type="button" onClick={verifyIdentity}
-                          disabled={verifyingIdentity || !idDocumentUrl || !selfieUrl}
-                          className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white">
-                          {verifyingIdentity
-                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Analisando…</>
-                            : <><ShieldCheck className="h-4 w-4" /> Solicitar selo de identidade</>}
-                        </Button>
-                      )}
-
-                      <div id="crm-validation-card" className={`mt-2 rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
+                      <div className={`rounded-lg border p-4 ${crmStatus === "verified" ? "border-emerald-200 bg-emerald-50/60" : "border-emerald-100 bg-emerald-50/40"}`}>
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div className="max-w-md">
                             <p className="text-sm font-semibold text-emerald-900 flex items-center gap-1.5">
-                              <BadgeCheck className="h-4 w-4" /> Selo de Informações Verificadas por CRM
+                              <BadgeCheck className="h-4 w-4" /> Selo CRM Verificado
                             </p>
                             <p className="mt-1 text-xs text-emerald-900/80">
-                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho e ativamos o selo verde permanente no diretório <span className="font-semibold">/medicos</span>.
+                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu CRM junto ao conselho regional e ativamos o selo verde permanente.
                             </p>
                           </div>
                           {crmStatus === "verified" ? (
@@ -951,7 +900,49 @@ function DoctorRegistration({
                           </Button>
                         )}
                         <p className="mt-2 text-[11px] text-emerald-900/60">
-                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway (Stripe).
+                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway.
+                        </p>
+                      </div>
+                    </FieldGroup>
+                  </Section>
+
+                  <Section icon={ShieldCheck} step={13} of={14} title="Validação CFM" subtitle="Selo verificado pelo Conselho Federal de Medicina">
+                    <FieldGroup>
+                      <div className={`rounded-lg border p-4 ${cfmStatus === "verified" ? "border-sky-200 bg-sky-50/60" : "border-sky-100 bg-sky-50/40"}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="max-w-md">
+                            <p className="text-sm font-semibold text-sky-900 flex items-center gap-1.5">
+                              <ShieldCheck className="h-4 w-4" /> Selo CFM Verificado
+                            </p>
+                            <p className="mt-1 text-xs text-sky-900/80">
+                              Pagamento único de <span className="font-semibold">R$ 150,00</span>. Validamos seu registro junto ao Conselho Federal de Medicina.
+                            </p>
+                          </div>
+                          {cfmStatus === "verified" ? (
+                            <Badge className="gap-1 bg-sky-600 text-white hover:bg-sky-600">
+                              <ShieldCheck className="h-3.5 w-3.5" /> Verificado
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                              {cfmStatus === "invalid" ? "CFM inválido" : "Não verificado"}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {cfmStatus !== "verified" && (
+                          <Button
+                            type="button"
+                            onClick={verifyCfmWithPayment}
+                            disabled={verifyingCfm || !/^\d{4,7}$/.test(onlyDigits(crm)) || !UF_LIST.includes(crmUf as any)}
+                            className="mt-3 gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+                          >
+                            {verifyingCfm
+                              ? <><Loader2 className="h-4 w-4 animate-spin" /> Processando pagamento…</>
+                              : <><ShieldCheck className="h-4 w-4" /> Validar CFM · R$ 150,00</>}
+                          </Button>
+                        )}
+                        <p className="mt-2 text-[11px] text-sky-900/60">
+                          Pagamento único (simulação). Em produção a cobrança seguirá via gateway.
                         </p>
                       </div>
                     </FieldGroup>
@@ -1047,6 +1038,7 @@ function DoctorRegistration({
 
                   <TabNav onPrev={goPrevTab} onNext={null} />
                 </TabsContent>
+
               </Tabs>
 
 
