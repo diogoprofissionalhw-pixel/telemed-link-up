@@ -255,21 +255,16 @@ function DoctorRegistration({
         setEducation(doc.education ?? "");
         setLanguages(doc.languages ?? "");
         setFee(doc.consultation_fee ? Number(doc.consultation_fee) : "");
-        setDiplomaUrl(doc.diploma_url);
-        setCrmDocUrl(doc.crm_document_url);
-        setRgUrl((doc as any).rg_document_url ?? null);
         setCvUrl(doc.cv_pdf_url);
         setTimezone(doc.timezone ?? "America/Sao_Paulo");
         setMedicalExperience((doc as any).medical_experience ?? "");
         setLattesUrl((doc as any).lattes_url ?? "");
         setLinkedinUrl((doc as any).linkedin_url ?? "");
         setCrmStatus(doc.crm_status ?? "pending");
-        setIdentityVerified(!!(doc as any).identity_verified);
-        setIdentityVerifiedAt((doc as any).identity_verified_at ?? null);
-        setIdDocumentUrl((doc as any).id_document_url ?? null);
-        setSelfieUrl((doc as any).selfie_url ?? null);
+        setCfmStatus((doc as any).cfm_status ?? "pending");
         setIsPremium(!!(doc as any).is_premium);
         setPremiumUntil((doc as any).premium_until ?? null);
+
         if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
