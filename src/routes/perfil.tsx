@@ -389,10 +389,10 @@ function DoctorRegistration({
     { ok: isValidPhone(phone), label: "Telefone válido", tab: "dados" as TabKey },
     { ok: typeof fee === "number" && fee >= 50, label: "Taxa de consulta", tab: "agenda" as TabKey },
     { ok: weekdays.length >= 1, label: "Dias da semana", tab: "agenda" as TabKey },
-    { ok: !!diplomaUrl, label: "Diploma enviado", tab: "verificacao" as TabKey },
-    { ok: !!crmDocUrl, label: "Documento do CRM", tab: "verificacao" as TabKey },
-    { ok: !!rgUrl, label: "Documento de identidade", tab: "verificacao" as TabKey },
-  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, diplomaUrl, crmDocUrl, rgUrl]);
+    { ok: crmStatus === "verified", label: "CRM verificado", tab: "verificacao" as TabKey },
+    { ok: cfmStatus === "verified", label: "CFM verificado", tab: "verificacao" as TabKey },
+  ], [avatarUrl, name, emailVal, crm, crmUf, cpf, primarySpecialty, bio, phone, fee, weekdays, crmStatus, cfmStatus]);
+
 
   const completedCount = checklist.filter(c => c.ok).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
