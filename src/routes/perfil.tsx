@@ -138,9 +138,12 @@ function PageHeader() {
   return (
     <header className="border-b bg-white sticky top-0 z-30">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
-          <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
-        </Link>
+        <div className="flex items-center gap-3">
+          <BackButton to="/dashboard" label="Voltar ao dashboard" />
+          <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
+            <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
+          </Link>
+        </div>
       </div>
     </header>
   );
