@@ -10,6 +10,7 @@ import {
   Crown, Sparkles, TrendingUp, Eye, Zap,
 } from "lucide-react";
 
+import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
