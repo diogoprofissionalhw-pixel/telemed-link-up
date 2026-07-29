@@ -10,7 +10,6 @@ import {
   Crown, Sparkles, TrendingUp, Eye, Zap,
 } from "lucide-react";
 
-import { BackButton } from "@/components/back-button";
 import { MunicipioSelect } from "@/components/municipio-select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -141,7 +140,6 @@ function PageHeader() {
         <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
         </Link>
-        <BackButton to="/dashboard" label="Voltar ao dashboard" />
       </div>
     </header>
   );
@@ -1069,8 +1067,7 @@ function DoctorRegistration({
 
 
 
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <BackButton to="/dashboard" label="Voltar ao dashboard" />
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
                   {saving ? <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Salvando…</> : <><Check className="mr-1 h-4 w-4" /> Salvar Perfil</>}
                 </Button>
