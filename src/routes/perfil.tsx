@@ -140,7 +140,6 @@ function PageHeader() {
         <Link to="/dashboard" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-10 w-auto object-contain" />
         </Link>
-        <BackButton to="/dashboard" label="Voltar ao dashboard" />
       </div>
     </header>
   );
