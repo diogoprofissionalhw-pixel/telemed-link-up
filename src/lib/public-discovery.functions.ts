@@ -77,3 +77,35 @@ export const listPublicNetworks = createServerFn({ method: "GET" })
       error: null,
     };
   });
+
+// Listagem pública de redes com apenas colunas seguras (sem CNPJ, razão social,
+// endereço, CNAE ou status de qualificação). Roda no servidor, sem exigir login.
+const SAFE_NETWORK_COLUMNS =
+  "id, network_name, city, state, avatar_url, is_verified, cnpj_activity, linkedin_url, website_url, description, created_at";
+
+export const listPublicNetworkCards = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ limit: z.number().int().min(1).max(120).optional() }).optional().parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("networks")
+      .select(SAFE_NETWORK_COLUMNS)
+      .order("is_verified", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(data?.limit ?? 120);
+    if (error) return { items: [], error: "Não foi possível carregar as redes." };
+    return { items: rows ?? [], error: null };
+  });
+
+export const getPublicNetwork = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("networks")
+      .select(SAFE_NETWORK_COLUMNS)
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) return { network: null, error: "Não foi possível carregar a rede." };
+    return { network: row ?? null, error: null };
+  });
