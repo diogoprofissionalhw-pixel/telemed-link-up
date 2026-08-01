@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
+import { getPublicNetwork } from "@/lib/public-discovery.functions";
 import { useAuth } from "@/lib/auth-context";
 
 type PublicNetwork = {
@@ -53,21 +53,23 @@ function NetworkDetailPage() {
     let cancelled = false;
     setLoading(true);
     setNotFound(false);
-    supabase
-      .from("networks_public")
-      .select("id, network_name, city, state, avatar_url, is_verified, cnpj_activity, linkedin_url, website_url, description")
-      .eq("id", networkId)
-      .maybeSingle()
-      .then(({ data }) => {
+    getPublicNetwork({ data: { id: networkId } })
+      .then(({ network: data }) => {
         if (cancelled) return;
         if (!data) setNotFound(true);
         else setNetwork(data as PublicNetwork);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setNotFound(true);
         setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [networkId]);
+
 
   if (loading) {
     return (
