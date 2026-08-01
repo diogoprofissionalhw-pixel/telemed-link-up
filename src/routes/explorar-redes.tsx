@@ -6,7 +6,7 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlansDialog } from "@/components/plans-dialog";
-import { supabase } from "@/integrations/supabase/client";
+import { listPublicNetworkCards } from "@/lib/public-discovery.functions";
 import { useAuth } from "@/lib/auth-context";
 
 type PublicNetwork = {
@@ -41,17 +41,14 @@ function ExplorarRedesPage() {
   const [plansOpen, setPlansOpen] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("networks_public")
-      .select("id, network_name, city, state, avatar_url, is_verified, cnpj_activity")
-      .order("is_verified", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(120)
-      .then(({ data }) => {
-        setNetworks((data as PublicNetwork[] | null) ?? []);
+    listPublicNetworkCards({ data: { limit: 120 } })
+      .then(({ items }) => {
+        setNetworks((items as PublicNetwork[] | null) ?? []);
         setLoading(false);
-      });
+      })
+      .catch(() => setLoading(false));
   }, []);
+
 
   const handleSeeMore = (id: string) => {
     if (user) navigate({ to: "/rede/$networkId", params: { networkId: id } });
