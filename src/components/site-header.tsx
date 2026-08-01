@@ -26,12 +26,12 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex items-center gap-2 rounded-md px-2 py-1 font-bold text-xl text-foreground" activeOptions={{ exact: true }} activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Med">
+          <Link to="/" className="flex items-center gap-2 rounded-md px-2 py-1 text-xl font-bold text-blue-900" activeOptions={{ exact: true }} activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Med">
             <img src={logo} alt="Connect-Med" className="h-14 w-auto" />
             <span>Connect-Med</span>
           </Link>
           <div className="h-8 w-px bg-border" aria-hidden="true" />
-          <Link to="/academy" className="rounded-md px-2 py-1 text-sm font-semibold text-foreground hover:text-primary transition-colors" activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Academy">
+          <Link to="/academy" className="rounded-md px-2 py-1 text-xl font-bold text-blue-900 hover:text-blue-800 transition-colors" activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Academy">
             Connect-Academy
           </Link>
         </div>
