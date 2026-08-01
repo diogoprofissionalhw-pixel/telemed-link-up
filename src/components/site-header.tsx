@@ -25,10 +25,16 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-bold text-xl" aria-label="Connect-Med">
-          <img src={logo} alt="Connect-Med" className="h-14 w-auto" />
-          <span className="text-primary">Connect-Med</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-2 font-bold text-xl" aria-label="Connect-Med">
+            <img src={logo} alt="Connect-Med" className="h-14 w-auto" />
+            <span className="text-primary">Connect-Med</span>
+          </Link>
+          <div className="h-8 w-px bg-border" aria-hidden="true" />
+          <Link to="/academy" className="text-sm font-semibold text-foreground hover:text-primary transition-colors" aria-label="Connect-Academy">
+            Connect-Academy
+          </Link>
+        </div>
         <nav className="flex items-center gap-2">
           {user ? (
             <>
