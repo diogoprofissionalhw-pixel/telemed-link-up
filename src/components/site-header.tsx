@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import logoAcademy from "@/assets/connect-academy-logo.png.asset.json";
+import academyIcon from "@/assets/connect-academy-icon.png";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,11 +35,12 @@ export function SiteHeader() {
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-16 items-center gap-2 rounded-md px-2 py-1 transition-colors hover:opacity-80"
+            className="flex h-16 items-center gap-2 rounded-md px-2 text-xl font-bold text-primary transition-colors hover:opacity-80"
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
-            <img src={logoAcademy.url} alt="Connect-Academy" className="h-14 w-auto" />
+            <img src={academyIcon} alt="" className="h-14 w-auto" />
+            <span>Connect-Academy</span>
           </Link>
         </div>
         <nav className="flex items-center gap-2">
