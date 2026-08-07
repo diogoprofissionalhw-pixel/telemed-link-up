@@ -1,7 +1,6 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
-import logo from "@/assets/connect-med-logo.webp";
-
+import logoMedHorizontal from "@/assets/connect-med-horizontal-logo.png.asset.json";
 import logoAcademyHorizontal from "@/assets/connect-academy-horizontal-logo.png.asset.json";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,14 +27,13 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <Link to="/" className="flex h-16 items-center gap-2 rounded-md px-2 py-1 text-xl font-bold text-primary transition-colors hover:text-primary/80" activeOptions={{ exact: true }} activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Med">
-            <img src={logo} alt="Connect-Med" className="h-14 w-auto" />
-            <span>Connect-Med</span>
+          <Link to="/" className="flex h-16 items-center rounded-md px-2 py-1 transition-colors hover:opacity-80" activeOptions={{ exact: true }} activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Med">
+            <img src={logoMedHorizontal.url} alt="Connect-Med" className="h-14 w-auto" />
           </Link>
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-16 items-center rounded-md px-2 py-1 text-xl font-bold text-primary transition-colors hover:opacity-80"
+            className="flex h-16 items-center rounded-md px-2 py-1 transition-colors hover:opacity-80"
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
