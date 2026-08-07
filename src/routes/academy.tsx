@@ -185,6 +185,24 @@ function AcademyPage() {
           </div>
         </section>
 
+        {/* Explicação institucional */}
+        <section className="bg-muted/40 px-4 py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl">
+            <h2 className="mb-4 text-center text-xl font-bold text-royal sm:text-2xl">
+              Por que escolher a Connect-Academy?
+            </h2>
+            <p className="text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Nossa metodologia une teoria e prática desde o primeiro dia de aula. Com corpo docente formado por
+              especialistas atuantes e infraestrutura inspirada nos grandes centros de saúde, preparamos o aluno para
+              os desafios reais da profissão. Aqui, cada trilha de ensino é desenhada para acompanhar o estudante em
+              cada fase da carreira — da formação técnica à vida profissional.
+            </p>
+            <p className="mt-4 text-center text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Em breve você confere datas, investimentos, grade curricular e informações detalhadas de cada curso.
+            </p>
+          </div>
+        </section>
+
         <section className="px-4 pb-16 text-center">
           <BackButton to="/" label="Voltar ao Connect-Med" className="mx-auto" />
         </section>
