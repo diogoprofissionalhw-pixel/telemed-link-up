@@ -13,6 +13,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import logoAcademy from "@/assets/connect-academy-logo.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
@@ -117,9 +118,7 @@ function AcademyPage() {
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
           <div className="mx-auto max-w-4xl">
             <div className="mb-6 flex justify-center">
-              <div className="grid h-16 w-16 place-items-center rounded-full bg-navy shadow-lg">
-                <GraduationCap className="h-8 w-8 text-navy-foreground" />
-              </div>
+              <img src={logoAcademy.url} alt="Connect-Academy" className="h-24 w-auto drop-shadow-lg" />
             </div>
             <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tight text-royal sm:text-5xl">
               O Ensino Connect
