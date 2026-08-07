@@ -42,6 +42,16 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-royal: var(--royal);
+  --color-cat-orange: var(--cat-orange);
+  --color-cat-purple: var(--cat-purple);
+  --color-cat-sky: var(--cat-sky);
+  --color-cat-green: var(--cat-green);
+  --color-cat-lime: var(--cat-lime);
+  --color-cat-gold: var(--cat-gold);
+  --color-cat-navy: var(--cat-navy);
 }
 
 :root {
