@@ -39,7 +39,7 @@ export function SiteHeader() {
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
-            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-14 w-auto" />
+            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-14 w-auto bg-white" />
           </Link>
         </div>
         <nav className="flex items-center gap-2">
