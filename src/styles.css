@@ -65,6 +65,19 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.20 0.04 230);
 
+  /* Institucional (Connect-Academy) — derivado da paleta teal/azul do site */
+  --navy: oklch(0.28 0.06 230);
+  --navy-foreground: oklch(0.99 0 0);
+  --royal: oklch(0.40 0.11 240);
+  --cat-orange: oklch(0.70 0.16 55);
+  --cat-purple: oklch(0.52 0.16 300);
+  --cat-sky: oklch(0.72 0.13 195);
+  --cat-green: oklch(0.68 0.14 150);
+  --cat-lime: oklch(0.80 0.16 130);
+  --cat-gold: oklch(0.78 0.10 85);
+  --cat-navy: oklch(0.45 0.10 235);
+
+
   /* Teal/azul médico, calmo e moderno */
   --primary: oklch(0.58 0.13 200);
   --primary-foreground: oklch(0.99 0 0);
