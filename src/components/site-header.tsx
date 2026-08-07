@@ -2,7 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import logoAcademy from "@/assets/connect-academy-logo.png.asset.json";
-import academyIcon from "@/assets/connect-academy-icon.png";
+import logoAcademyHorizontal from "@/assets/connect-academy-horizontal-logo.png.asset.json";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
