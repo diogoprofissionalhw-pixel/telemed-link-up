@@ -35,11 +35,11 @@ export function SiteHeader() {
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-16 items-center rounded-md px-2 text-xl font-bold text-primary transition-colors hover:opacity-80"
+            className="flex h-16 items-center rounded-md px-2 py-1 text-xl font-bold text-primary transition-colors hover:opacity-80"
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
-            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-16 w-auto" />
+            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-14 w-auto" />
           </Link>
         </div>
         <nav className="flex items-center gap-2">
