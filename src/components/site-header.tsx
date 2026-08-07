@@ -28,7 +28,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <Link to="/" className="flex h-16 items-center rounded-md px-2 py-1 transition-colors hover:opacity-80" activeOptions={{ exact: true }} activeProps={{ className: "ring-1 ring-black" }} aria-label="Connect-Med">
-            <img src={logoMedHorizontal.url} alt="Connect-Med" className="h-14 w-auto" />
+            <img src={logoMedHorizontal.url} alt="Connect-Med" className="h-16 w-auto" />
           </Link>
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <Link
@@ -37,7 +37,7 @@ export function SiteHeader() {
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
-            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-14 w-auto" />
+            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-16 w-auto" />
           </Link>
         </div>
         <nav className="flex items-center gap-2">
