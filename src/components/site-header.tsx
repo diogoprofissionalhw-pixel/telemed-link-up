@@ -33,7 +33,7 @@ export function SiteHeader() {
           <div className="h-8 w-px bg-border" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-16 items-center rounded-md px-2 py-1 text-xl font-bold text-primary transition-colors hover:opacity-80"
+            className="flex h-16 items-center rounded-md px-2 py-1 transition-colors hover:opacity-80"
             activeProps={{ className: "ring-1 ring-black" }}
             aria-label="Connect-Academy"
           >
