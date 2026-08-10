@@ -940,6 +940,22 @@ export type Database = {
       }
       is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
       is_verified_network: { Args: { _uid: string }; Returns: boolean }
+      networks_directory: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          city: string
+          cnpj_activity: string
+          created_at: string
+          description: string
+          id: string
+          is_verified: boolean
+          linkedin_url: string
+          network_name: string
+          state: string
+          website_url: string
+        }[]
+      }
       send_shift_reminders: { Args: never; Returns: undefined }
     }
     Enums: {

@@ -88,7 +88,7 @@ function MensagensPage() {
         const [{ data: profiles }, { data: docs }, { data: nets }] = await Promise.all([
           supabase.from("profiles").select("id, full_name").in("id", peerIds),
           supabase.rpc("doctors_directory").select("id, avatar_url").in("id", peerIds),
-          supabase.from("networks").select("id, network_name, avatar_url").in("id", peerIds),
+          supabase.rpc("networks_directory").select("id, network_name, avatar_url").in("id", peerIds),
         ]);
         const profMap = new Map((profiles ?? []).map((p: any) => [p.id, p.full_name]));
         const docMap = new Map((docs ?? []).map((d: any) => [d.id, d.avatar_url]));
