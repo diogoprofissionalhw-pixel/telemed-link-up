@@ -37,7 +37,7 @@ export function SiteHeader() {
             <img
               src={logoMedHorizontal.url}
               alt="Connect-Med"
-              className="h-[110%] w-auto max-w-none object-contain"
+              className="h-[170%] w-auto max-w-none object-contain"
             />
           </Link>
           <div className="h-8 w-px bg-border/60" aria-hidden="true" />
@@ -51,7 +51,7 @@ export function SiteHeader() {
             <img
               src={logoAcademyHorizontal.url}
               alt="Connect-Academy"
-              className="h-[110%] w-auto max-w-none object-contain"
+              className="h-[170%] w-auto max-w-none object-contain"
             />
           </Link>
         </div>
