@@ -138,15 +138,25 @@ export function AppSidebar({ userType }: { userType: UserType }) {
     <>
       {/* Mobile top bar */}
       <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background px-4 md:hidden">
-        {hideSidebar ? <div className="w-9" /> : (
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="rounded-md p-2 hover:bg-muted"
-            aria-label="Abrir menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          {userType === "doctor" ? (
+            <Link to="/" aria-label="Página inicial">
+              <Button variant="ghost" size="icon">
+                <Home className="h-5 w-5" />
+              </Button>
+            </Link>
+          ) : hideSidebar ? (
+            <div className="w-9" />
+          ) : (
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="rounded-md p-2 hover:bg-muted"
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
+        </div>
         <Link to="/" className="flex items-center" aria-label="Connect-Med">
           <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
@@ -250,12 +260,23 @@ export function AppShell({ userType, children }: { userType: UserType; children:
     <div className="min-h-screen" style={{ background: "var(--gradient-soft)" }}>
       <AppSidebar userType={userType} />
       <div className={hideSidebar ? "" : "md:ml-60"}>
-        {/* Desktop top bar with profile + bell */}
-        <div className="sticky top-0 z-20 hidden h-14 items-center justify-end gap-1 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
-          <HeaderProfile />
-          {user && <NotificationsBell userId={user.id} />}
-          {user && <MessagesButton />}
-          {hideSidebar && <HeaderActions onSignOut={signOut} />}
+        {/* Desktop top bar with home + profile + bell */}
+        <div className="sticky top-0 z-20 hidden h-14 items-center justify-between gap-1 border-b bg-background/80 px-6 backdrop-blur-md md:flex">
+          <div className="flex items-center">
+            {userType === "doctor" && (
+              <Link to="/" aria-label="Página inicial">
+                <Button variant="ghost" size="icon">
+                  <Home className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            <HeaderProfile />
+            {user && <NotificationsBell userId={user.id} />}
+            {user && <MessagesButton />}
+            {hideSidebar && <HeaderActions onSignOut={signOut} />}
+          </div>
         </div>
         <div>{children}</div>
       </div>
