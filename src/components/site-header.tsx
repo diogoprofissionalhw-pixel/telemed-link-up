@@ -1,7 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
-import logoMedHorizontal from "@/assets/connect-med-horizontal-logo.png.asset.json";
-import logoAcademyHorizontal from "@/assets/connect-academy-horizontal-logo.png.asset.json";
+import logoMedHorizontal from "@/assets/connect-med-horizontal-logo-v2.png.asset.json";
+import logoAcademyHorizontal from "@/assets/connect-academy-horizontal-logo-v2.png.asset.json";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
