@@ -26,12 +26,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-1 rounded-xl border bg-white/60 px-2 py-1 backdrop-blur-sm">
+        <div className="flex items-center gap-1 rounded-xl border bg-muted/70 px-3 py-2 shadow-sm">
           <Link
             to="/"
-            className="flex h-12 items-center justify-center rounded-lg px-2 transition-colors hover:bg-accent/40"
+            className="flex h-12 items-center justify-center rounded-lg px-2 transition-colors hover:bg-accent/50"
             activeOptions={{ exact: true }}
-            activeProps={{ className: "bg-accent/40" }}
+            activeProps={{ className: "bg-accent/50" }}
             aria-label="Connect-Med"
           >
             <img
@@ -43,15 +43,15 @@ export function SiteHeader() {
           <div className="h-8 w-px bg-border/60" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-12 items-center justify-center rounded-lg px-2 transition-colors hover:bg-accent/40"
+            className="flex h-12 items-center justify-center rounded-lg px-2 transition-colors hover:bg-accent/50"
             activeOptions={{ exact: true }}
-            activeProps={{ className: "bg-accent/40" }}
+            activeProps={{ className: "bg-accent/50" }}
             aria-label="Connect-Academy"
           >
             <img
               src={logoAcademyHorizontal.url}
               alt="Connect-Academy"
-              className="h-10 w-auto max-w-[150px] object-contain"
+              className="h-11 w-auto max-w-[170px] object-contain"
             />
           </Link>
         </div>
