@@ -29,7 +29,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             to="/"
-            className="flex h-12 w-40 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
+            className="flex h-14 w-44 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
             activeOptions={{ exact: true }}
             activeProps={{ className: "bg-accent/40" }}
             aria-label="Connect-Med"
@@ -37,13 +37,13 @@ export function SiteHeader() {
             <img
               src={logoMedHorizontal.url}
               alt="Connect-Med"
-              className="max-h-full max-w-full object-contain"
+              className="h-full w-auto max-w-full object-contain"
             />
           </Link>
           <div className="h-8 w-px bg-border/60" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-12 w-40 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
+            className="flex h-14 w-44 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
             activeOptions={{ exact: true }}
             activeProps={{ className: "bg-accent/40" }}
             aria-label="Connect-Academy"
@@ -51,7 +51,7 @@ export function SiteHeader() {
             <img
               src={logoAcademyHorizontal.url}
               alt="Connect-Academy"
-              className="max-h-full max-w-full object-contain"
+              className="h-full w-auto max-w-full object-contain"
             />
           </Link>
         </div>
