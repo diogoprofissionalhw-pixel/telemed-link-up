@@ -26,17 +26,30 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-3">
-          <Link to="/" className="flex h-16 items-center rounded-md px-2 transition-colors hover:opacity-80" activeOptions={{ exact: true }} aria-label="Connect-Med">
-            <img src={logoMedHorizontal.url} alt="Connect-Med" className="h-16 w-auto" />
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            className="flex h-14 items-center justify-center rounded-md px-2 transition-colors hover:opacity-80"
+            activeOptions={{ exact: true }}
+            aria-label="Connect-Med"
+          >
+            <img
+              src={logoMedHorizontal.url}
+              alt="Connect-Med"
+              className="h-12 w-auto max-w-[150px] object-contain"
+            />
           </Link>
-          <div className="h-8 w-px bg-border" aria-hidden="true" />
+          <div className="h-8 w-px bg-border/60" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-16 items-center rounded-md px-2 transition-colors hover:opacity-80"
+            className="flex h-14 items-center justify-center rounded-md px-2 transition-colors hover:opacity-80"
             aria-label="Connect-Academy"
           >
-            <img src={logoAcademyHorizontal.url} alt="Connect-Academy" className="h-16 w-auto" />
+            <img
+              src={logoAcademyHorizontal.url}
+              alt="Connect-Academy"
+              className="h-12 w-auto max-w-[150px] object-contain"
+            />
           </Link>
         </div>
         <nav className="flex items-center gap-2">
