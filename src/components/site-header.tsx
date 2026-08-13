@@ -29,8 +29,9 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           <Link
             to="/"
-            className="flex h-12 w-40 items-center justify-center"
+            className="flex h-12 w-40 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
             activeOptions={{ exact: true }}
+            activeProps={{ className: "bg-accent/40" }}
             aria-label="Connect-Med"
           >
             <img
@@ -42,8 +43,9 @@ export function SiteHeader() {
           <div className="h-8 w-px bg-border/60" aria-hidden="true" />
           <Link
             to="/academy"
-            className="flex h-12 w-40 items-center justify-center"
+            className="flex h-12 w-40 items-center justify-center rounded-full border bg-background px-3 transition-colors hover:bg-accent/40"
             activeOptions={{ exact: true }}
+            activeProps={{ className: "bg-accent/40" }}
             aria-label="Connect-Academy"
           >
             <img
