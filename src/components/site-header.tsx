@@ -31,9 +31,13 @@ export function SiteHeader() {
         <div className="flex items-center gap-6">
           <nav className="hidden items-center gap-5 md:flex">
             <Link to="/explorar-medicos" className={linkClass("/explorar-medicos")}>Médicos</Link>
+            <span className="text-sm text-muted-foreground">/</span>
             <Link to="/explorar-redes" className={linkClass("/explorar-redes")}>Empresas</Link>
+            <span className="text-sm text-muted-foreground">/</span>
             <Link to="/academy" className={linkClass("/academy")}>Academy</Link>
+            <span className="text-sm text-muted-foreground">/</span>
             <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
+            <span className="text-sm text-muted-foreground">/</span>
             <a
               href="https://bot-atendimento.vercel.app"
               target="_blank"
