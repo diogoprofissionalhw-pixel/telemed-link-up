@@ -23,39 +23,37 @@ export function SiteHeader() {
     });
   }, [user, profile]);
 
+  const isActive = (path: string) => location.pathname === path;
+  const linkClass = (path: string) =>
+    `text-sm font-medium transition-colors hover:text-primary ${isActive(path) ? "text-primary" : "text-muted-foreground"}`;
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className="flex h-14 w-44 items-center justify-center rounded-full border px-2 transition-colors hover:bg-accent/40"
-            activeOptions={{ exact: true }}
-            activeProps={{ className: "bg-accent/40" }}
-            aria-label="Connect-Med"
-          >
+        <div className="flex items-center gap-6">
+          <Link to="/" aria-label="Connect-Med" className="flex items-center">
             <img
               src={logoMedHorizontal.url}
               alt="Connect-Med"
-              className="h-[170%] w-auto max-w-none object-contain"
+              className="h-9 w-auto object-contain"
             />
           </Link>
-          <div className="h-8 w-px bg-border/60" aria-hidden="true" />
-          <Link
-            to="/academy"
-            className="flex h-14 w-44 items-center justify-center rounded-full border px-2 transition-colors hover:bg-accent/40"
-            activeOptions={{ exact: true }}
-            activeProps={{ className: "bg-accent/40" }}
-            aria-label="Connect-Academy"
-          >
-            <img
-              src={logoAcademyHorizontal.url}
-              alt="Connect-Academy"
-              className="h-[170%] w-auto max-w-none object-contain"
-            />
-          </Link>
+          <nav className="hidden items-center gap-5 md:flex">
+            <Link to="/explorar-medicos" className={linkClass("/explorar-medicos")}>Médicos</Link>
+            <Link to="/explorar-redes" className={linkClass("/explorar-redes")}>Empresas</Link>
+            <Link to="/academy" className={linkClass("/academy")}>Academy</Link>
+            <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
+            <a
+              href="https://bot-atendimento.vercel.app"
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+            >
+              Central de ajuda
+            </a>
+          </nav>
         </div>
-        <nav className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           {user ? (
             <>
               {user && <NotificationsBell userId={user.id} />}
@@ -89,7 +87,7 @@ export function SiteHeader() {
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );
