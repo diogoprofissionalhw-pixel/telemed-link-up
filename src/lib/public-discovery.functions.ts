@@ -84,17 +84,36 @@ const SAFE_NETWORK_COLUMNS =
   "id, network_name, city, state, avatar_url, is_verified, cnpj_activity, linkedin_url, website_url, description, created_at";
 
 export const listPublicNetworkCards = createServerFn({ method: "GET" })
-  .inputValidator((input) => z.object({ limit: z.number().int().min(1).max(120).optional() }).optional().parse(input))
+  .inputValidator((input) =>
+    z
+      .object({
+        limit: z.number().int().min(1).max(120).optional(),
+        page: z.number().int().min(1).optional(),
+      })
+      .optional()
+      .parse(input),
+  )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const limit = data?.limit ?? 120;
+    const page = data?.page ?? 1;
+    const offset = (page - 1) * limit;
+
     const { data: rows, error } = await supabaseAdmin
       .from("networks")
       .select(SAFE_NETWORK_COLUMNS)
       .order("is_verified", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(data?.limit ?? 120);
-    if (error) return { items: [], error: "Não foi possível carregar as redes." };
-    return { items: rows ?? [], error: null };
+      .range(offset, offset + limit - 1)
+      .limit(limit);
+    if (error) return { items: [], total: 0, error: "Não foi possível carregar as redes." };
+
+    const { count, error: countErr } = await supabaseAdmin
+      .from("networks")
+      .select("*", { count: "exact", head: true });
+    if (countErr) return { items: [], total: 0, error: "Não foi possível carregar as redes." };
+
+    return { items: rows ?? [], total: count ?? 0, error: null };
   });
 
 export const getPublicNetwork = createServerFn({ method: "GET" })
