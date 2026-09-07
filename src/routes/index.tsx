@@ -402,6 +402,17 @@ function Footer() {
             <li className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>João Pessoa, PB — Brasil</span></li>
           </ul>
         </div>
+        <div>
+          <h3 className="text-sm font-semibold">Suporte</h3>
+          <a
+            href="https://bot-atendimento.vercel.app"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-background/10 px-4 py-2 text-sm font-medium text-background hover:bg-background/20 transition-colors"
+          >
+            Central de ajuda
+          </a>
+        </div>
       </div>
       <div className="border-t border-background/10 py-5 text-center text-xs text-background/60">
         © {new Date().getFullYear()} Connect-Med · Todos os direitos reservados
