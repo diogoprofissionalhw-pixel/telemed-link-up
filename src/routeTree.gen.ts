@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ValoresRouteImport } from './routes/valores'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SolicitarRouteImport } from './routes/solicitar'
 import { Route as SolicitacoesRouteImport } from './routes/solicitacoes'
@@ -35,6 +36,11 @@ import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 
+const ValoresRoute = ValoresRouteImport.update({
+  id: '/valores',
+  path: '/valores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
+  '/valores': typeof ValoresRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesByTo {
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
+  '/valores': typeof ValoresRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRoutesById {
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/solicitacoes': typeof SolicitacoesRoute
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
+  '/valores': typeof ValoresRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
 }
 export interface FileRouteTypes {
@@ -270,6 +279,7 @@ export interface FileRouteTypes {
     | '/solicitacoes'
     | '/solicitar'
     | '/termos'
+    | '/valores'
     | '/rede/$networkId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/solicitacoes'
     | '/solicitar'
     | '/termos'
+    | '/valores'
     | '/rede/$networkId'
   id:
     | '__root__'
@@ -324,6 +335,7 @@ export interface FileRouteTypes {
     | '/solicitacoes'
     | '/solicitar'
     | '/termos'
+    | '/valores'
     | '/rede/$networkId'
   fileRoutesById: FileRoutesById
 }
@@ -352,11 +364,19 @@ export interface RootRouteChildren {
   SolicitacoesRoute: typeof SolicitacoesRoute
   SolicitarRoute: typeof SolicitarRoute
   TermosRoute: typeof TermosRoute
+  ValoresRoute: typeof ValoresRoute
   RedeNetworkIdRoute: typeof RedeNetworkIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/valores': {
+      id: '/valores'
+      path: '/valores'
+      fullPath: '/valores'
+      preLoaderRoute: typeof ValoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/termos': {
       id: '/termos'
       path: '/termos'
@@ -560,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   SolicitacoesRoute: SolicitacoesRoute,
   SolicitarRoute: SolicitarRoute,
   TermosRoute: TermosRoute,
+  ValoresRoute: ValoresRoute,
   RedeNetworkIdRoute: RedeNetworkIdRoute,
 }
 export const routeTree = rootRouteImport
