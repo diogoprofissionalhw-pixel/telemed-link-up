@@ -1,7 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, MessageCircle, UserCircle2 } from "lucide-react";
-import logoMedHorizontal from "@/assets/connect-med-horizontal-logo-v3.png.asset.json";
-import logoAcademyHorizontal from "@/assets/connect-academy-horizontal-logo-v3.png.asset.json";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,13 +29,6 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link to="/" aria-label="Connect-Med" className="flex items-center">
-            <img
-              src={logoMedHorizontal.url}
-              alt="Connect-Med"
-              className="h-9 w-auto object-contain"
-            />
-          </Link>
           <nav className="hidden items-center gap-5 md:flex">
             <Link to="/explorar-medicos" className={linkClass("/explorar-medicos")}>Médicos</Link>
             <Link to="/explorar-redes" className={linkClass("/explorar-redes")}>Empresas</Link>
