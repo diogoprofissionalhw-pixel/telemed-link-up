@@ -7,6 +7,7 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterEmail } from "@/lib/master-access";
 import { toEmbedUrl, formatDuration } from "@/lib/video-embed";
 import {
   getAcademyAccess,
@@ -95,8 +96,11 @@ function CoursePage() {
       .catch(() => setAccess({ canWatch: false, isMaster: false }));
   }, [user, fetchAccess]);
 
+  const isMaster = access.isMaster || isMasterEmail(user?.email);
+  const locked = !access.canWatch && !isMaster;
+
   useEffect(() => {
-    if (!current || !access.canWatch) {
+    if (!current || locked) {
       setPlayback(null);
       return;
     }
@@ -105,9 +109,7 @@ function CoursePage() {
       .then((r) => setPlayback({ kind: r.kind, src: r.src }))
       .catch(() => setPlayback(null))
       .finally(() => setLoadingVideo(false));
-  }, [current, access.canWatch, fetchPlayback]);
-
-  const locked = !access.canWatch;
+  }, [current, locked, fetchPlayback]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -123,7 +125,7 @@ function CoursePage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {access.isMaster && (
+            {isMaster && (
               <Button
                 variant="outline"
                 className="gap-2"
