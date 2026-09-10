@@ -176,11 +176,16 @@ function AcademyPage() {
                     <p className="text-sm leading-relaxed text-navy-foreground/85">{t.description}</p>
                   </div>
                 </div>
-                <Link to="/auth" search={{ mode: "signup" }} className="mt-3">
+                <Link
+                  to="/academy/$courseSlug"
+                  params={{ courseSlug: t.slug }}
+                  className="mt-3"
+                >
                   <Button className="w-full rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
                     Conhecer
                   </Button>
                 </Link>
+
               </article>
             ))}
           </div>
