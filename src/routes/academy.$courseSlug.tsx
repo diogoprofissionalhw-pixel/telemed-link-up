@@ -108,7 +108,8 @@ function CoursePage() {
       .finally(() => setLoadingVideo(false));
   }, [current, access.canWatch, fetchPlayback]);
 
-  const locked = !access.canWatch;
+  const isMaster = access.isMaster || isMasterEmail(user?.email);
+  const locked = !access.canWatch && !isMaster;
 
   return (
     <div className="min-h-screen bg-background">
