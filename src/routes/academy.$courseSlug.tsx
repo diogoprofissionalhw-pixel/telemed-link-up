@@ -96,8 +96,11 @@ function CoursePage() {
       .catch(() => setAccess({ canWatch: false, isMaster: false }));
   }, [user, fetchAccess]);
 
+  const isMaster = access.isMaster || isMasterEmail(user?.email);
+  const locked = !access.canWatch && !isMaster;
+
   useEffect(() => {
-    if (!current || !access.canWatch) {
+    if (!current || locked) {
       setPlayback(null);
       return;
     }
@@ -106,10 +109,7 @@ function CoursePage() {
       .then((r) => setPlayback({ kind: r.kind, src: r.src }))
       .catch(() => setPlayback(null))
       .finally(() => setLoadingVideo(false));
-  }, [current, access.canWatch, fetchPlayback]);
-
-  const isMaster = access.isMaster || isMasterEmail(user?.email);
-  const locked = !access.canWatch && !isMaster;
+  }, [current, locked, fetchPlayback]);
 
   return (
     <div className="min-h-screen bg-background">
