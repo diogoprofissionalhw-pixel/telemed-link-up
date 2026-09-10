@@ -18,7 +18,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
 
-export const Route = createFileRoute("/academy")({
+export const Route = createFileRoute("/academy/")({
   head: () => ({
     meta: [
       { title: "Connect-Academy — Formação e Capacitação em Saúde" },
