@@ -176,7 +176,15 @@ function CoursePage() {
                     Carregando aula...
                   </div>
                 ) : playback?.kind === "file" && playback.src ? (
-                  <video src={playback.src} controls className="h-full w-full" />
+                  <video
+                    src={playback.src}
+                    controls
+                    controlsList="nodownload"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    onContextMenu={(e) => e.preventDefault()}
+                    className="h-full w-full"
+                  />
                 ) : playback?.kind === "embed" && playback.src ? (
                   <iframe
                     src={toEmbedUrl(playback.src) ?? undefined}
