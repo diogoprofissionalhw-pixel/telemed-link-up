@@ -37,7 +37,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AcademyIndexRouteImport } from './routes/academy.index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 import { Route as AcademyCourseSlugRouteImport } from './routes/academy.$courseSlug'
-import { Route as AcademyCourseSlugGerenciarRouteImport } from './routes/academy.$courseSlug.gerenciar'
+import { Route as AcademyGerenciarCourseSlugRouteImport } from './routes/academy.gerenciar.$courseSlug'
 
 const ValoresRoute = ValoresRouteImport.update({
   id: '/valores',
@@ -179,11 +179,11 @@ const AcademyCourseSlugRoute = AcademyCourseSlugRouteImport.update({
   path: '/$courseSlug',
   getParentRoute: () => AcademyRoute,
 } as any)
-const AcademyCourseSlugGerenciarRoute =
-  AcademyCourseSlugGerenciarRouteImport.update({
-    id: '/gerenciar',
-    path: '/gerenciar',
-    getParentRoute: () => AcademyCourseSlugRoute,
+const AcademyGerenciarCourseSlugRoute =
+  AcademyGerenciarCourseSlugRouteImport.update({
+    id: '/gerenciar/$courseSlug',
+    path: '/gerenciar/$courseSlug',
+    getParentRoute: () => AcademyRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -212,10 +212,10 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
+  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy/': typeof AcademyIndexRoute
-  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
+  '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -242,10 +242,10 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
+  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy': typeof AcademyIndexRoute
-  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
+  '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -274,10 +274,10 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
+  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy/': typeof AcademyIndexRoute
-  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
+  '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -310,7 +310,7 @@ export interface FileRouteTypes {
     | '/academy/$courseSlug'
     | '/rede/$networkId'
     | '/academy/'
-    | '/academy/$courseSlug/gerenciar'
+    | '/academy/gerenciar/$courseSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -340,7 +340,7 @@ export interface FileRouteTypes {
     | '/academy/$courseSlug'
     | '/rede/$networkId'
     | '/academy'
-    | '/academy/$courseSlug/gerenciar'
+    | '/academy/gerenciar/$courseSlug'
   id:
     | '__root__'
     | '/'
@@ -371,7 +371,7 @@ export interface FileRouteTypes {
     | '/academy/$courseSlug'
     | '/rede/$networkId'
     | '/academy/'
-    | '/academy/$courseSlug/gerenciar'
+    | '/academy/gerenciar/$courseSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -601,35 +601,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcademyCourseSlugRouteImport
       parentRoute: typeof AcademyRoute
     }
-    '/academy/$courseSlug/gerenciar': {
-      id: '/academy/$courseSlug/gerenciar'
-      path: '/gerenciar'
-      fullPath: '/academy/$courseSlug/gerenciar'
-      preLoaderRoute: typeof AcademyCourseSlugGerenciarRouteImport
-      parentRoute: typeof AcademyCourseSlugRoute
+    '/academy/gerenciar/$courseSlug': {
+      id: '/academy/gerenciar/$courseSlug'
+      path: '/gerenciar/$courseSlug'
+      fullPath: '/academy/gerenciar/$courseSlug'
+      preLoaderRoute: typeof AcademyGerenciarCourseSlugRouteImport
+      parentRoute: typeof AcademyRoute
     }
   }
 }
 
-interface AcademyCourseSlugRouteChildren {
-  AcademyCourseSlugGerenciarRoute: typeof AcademyCourseSlugGerenciarRoute
-}
-
-const AcademyCourseSlugRouteChildren: AcademyCourseSlugRouteChildren = {
-  AcademyCourseSlugGerenciarRoute: AcademyCourseSlugGerenciarRoute,
-}
-
-const AcademyCourseSlugRouteWithChildren =
-  AcademyCourseSlugRoute._addFileChildren(AcademyCourseSlugRouteChildren)
-
 interface AcademyRouteChildren {
-  AcademyCourseSlugRoute: typeof AcademyCourseSlugRouteWithChildren
+  AcademyCourseSlugRoute: typeof AcademyCourseSlugRoute
   AcademyIndexRoute: typeof AcademyIndexRoute
+  AcademyGerenciarCourseSlugRoute: typeof AcademyGerenciarCourseSlugRoute
 }
 
 const AcademyRouteChildren: AcademyRouteChildren = {
-  AcademyCourseSlugRoute: AcademyCourseSlugRouteWithChildren,
+  AcademyCourseSlugRoute: AcademyCourseSlugRoute,
   AcademyIndexRoute: AcademyIndexRoute,
+  AcademyGerenciarCourseSlugRoute: AcademyGerenciarCourseSlugRoute,
 }
 
 const AcademyRouteWithChildren =

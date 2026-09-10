@@ -131,7 +131,7 @@ function CoursePage() {
                 className="gap-2"
                 onClick={() =>
                   navigate({
-                    to: "/academy/$courseSlug/gerenciar",
+                    to: "/academy/gerenciar/$courseSlug",
                     params: { courseSlug: course.slug },
                   })
                 }

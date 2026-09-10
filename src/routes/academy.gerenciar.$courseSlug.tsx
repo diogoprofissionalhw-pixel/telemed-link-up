@@ -42,7 +42,7 @@ type ManagedLesson = {
   is_published: boolean;
 };
 
-export const Route = createFileRoute("/academy/$courseSlug/gerenciar")({
+export const Route = createFileRoute("/academy/gerenciar/$courseSlug")({
   loader: async ({ params }) => {
     const res = await getAcademyCourse({ data: { slug: params.courseSlug } });
     if (res.error) throw new Error(res.error);
