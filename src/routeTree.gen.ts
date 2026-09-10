@@ -32,6 +32,7 @@ import { Route as ConsultasRouteImport } from './routes/consultas'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgendaRouteImport } from './routes/agenda'
+import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AcademyIndexRouteImport } from './routes/academy.index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
@@ -153,15 +154,20 @@ const AgendaRoute = AgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcademyRoute = AcademyRouteImport.update({
+  id: '/academy',
+  path: '/academy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcademyIndexRoute = AcademyIndexRouteImport.update({
-  id: '/academy/',
-  path: '/academy/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AcademyRoute,
 } as any)
 const RedeNetworkIdRoute = RedeNetworkIdRouteImport.update({
   id: '/rede/$networkId',
@@ -169,9 +175,9 @@ const RedeNetworkIdRoute = RedeNetworkIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AcademyCourseSlugRoute = AcademyCourseSlugRouteImport.update({
-  id: '/academy/$courseSlug',
-  path: '/academy/$courseSlug',
-  getParentRoute: () => rootRouteImport,
+  id: '/$courseSlug',
+  path: '/$courseSlug',
+  getParentRoute: () => AcademyRoute,
 } as any)
 const AcademyCourseSlugGerenciarRoute =
   AcademyCourseSlugGerenciarRouteImport.update({
@@ -182,6 +188,7 @@ const AcademyCourseSlugGerenciarRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/agenda': typeof AgendaRoute
   '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/academy': typeof AcademyRouteWithChildren
   '/agenda': typeof AgendaRoute
   '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -275,6 +283,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/academy'
     | '/agenda'
     | '/auth'
     | '/configuracoes'
@@ -335,6 +344,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/academy'
     | '/agenda'
     | '/auth'
     | '/configuracoes'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AcademyRoute: typeof AcademyRouteWithChildren
   AgendaRoute: typeof AgendaRoute
   AuthRoute: typeof AuthRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
@@ -389,9 +400,7 @@ export interface RootRouteChildren {
   SolicitarRoute: typeof SolicitarRoute
   TermosRoute: typeof TermosRoute
   ValoresRoute: typeof ValoresRoute
-  AcademyCourseSlugRoute: typeof AcademyCourseSlugRouteWithChildren
   RedeNetworkIdRoute: typeof RedeNetworkIdRoute
-  AcademyIndexRoute: typeof AcademyIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -557,6 +566,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgendaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/academy': {
+      id: '/academy'
+      path: '/academy'
+      fullPath: '/academy'
+      preLoaderRoute: typeof AcademyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -566,10 +582,10 @@ declare module '@tanstack/react-router' {
     }
     '/academy/': {
       id: '/academy/'
-      path: '/academy'
+      path: '/'
       fullPath: '/academy/'
       preLoaderRoute: typeof AcademyIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AcademyRoute
     }
     '/rede/$networkId': {
       id: '/rede/$networkId'
@@ -580,10 +596,10 @@ declare module '@tanstack/react-router' {
     }
     '/academy/$courseSlug': {
       id: '/academy/$courseSlug'
-      path: '/academy/$courseSlug'
+      path: '/$courseSlug'
       fullPath: '/academy/$courseSlug'
       preLoaderRoute: typeof AcademyCourseSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AcademyRoute
     }
     '/academy/$courseSlug/gerenciar': {
       id: '/academy/$courseSlug/gerenciar'
@@ -606,8 +622,22 @@ const AcademyCourseSlugRouteChildren: AcademyCourseSlugRouteChildren = {
 const AcademyCourseSlugRouteWithChildren =
   AcademyCourseSlugRoute._addFileChildren(AcademyCourseSlugRouteChildren)
 
+interface AcademyRouteChildren {
+  AcademyCourseSlugRoute: typeof AcademyCourseSlugRouteWithChildren
+  AcademyIndexRoute: typeof AcademyIndexRoute
+}
+
+const AcademyRouteChildren: AcademyRouteChildren = {
+  AcademyCourseSlugRoute: AcademyCourseSlugRouteWithChildren,
+  AcademyIndexRoute: AcademyIndexRoute,
+}
+
+const AcademyRouteWithChildren =
+  AcademyRoute._addFileChildren(AcademyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AcademyRoute: AcademyRouteWithChildren,
   AgendaRoute: AgendaRoute,
   AuthRoute: AuthRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
@@ -631,9 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   SolicitarRoute: SolicitarRoute,
   TermosRoute: TermosRoute,
   ValoresRoute: ValoresRoute,
-  AcademyCourseSlugRoute: AcademyCourseSlugRouteWithChildren,
   RedeNetworkIdRoute: RedeNetworkIdRoute,
-  AcademyIndexRoute: AcademyIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
