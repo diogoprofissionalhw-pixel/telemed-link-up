@@ -1,67 +1,42 @@
-# Plano: Página de detalhes da rede + LinkedIn
+# Aulas em vídeo na Connect-Academy
 
-## 1. Banco de dados (migração)
+Cada trilha da Academy passa a ter sua própria página de curso com um vídeo de introdução em destaque e a lista de aulas numeradas ao lado, como no seu rascunho. Somente você (conta mestre) publica as aulas; para assistir é preciso ter conta e estar no plano Pro.
 
-Adicionar campos públicos ao perfil da rede:
+## Como fica para o visitante
 
-- `networks.linkedin_url` (text, nullable) — link do LinkedIn da empresa
-- `networks.website_url` (text, nullable) — site institucional (opcional, complementa autoridade)
-- `networks.description` (text, nullable) — breve descrição pública da rede
+- Na página Academy, o botão "Conhecer" de cada card leva à página da trilha (hoje ele manda para o cadastro).
+- Página da trilha: título, descrição, player grande com a aula selecionada (começa na "Introdução") e, ao lado, a lista "1º vídeo, 2º vídeo, 3º vídeo..." em ordem, com duração e marca de aula atual.
+- Quem não tem conta vê a lista de aulas com o player bloqueado e um convite para criar conta.
+- Quem tem conta mas não é Pro vê o mesmo bloqueio com o botão de planos (mesma janela de planos já usada no site).
+- Quem é Pro (ou a conta mestre) assiste normalmente.
 
-Atualizar a view `networks_public` para incluir esses três campos novos, mantendo restrita a leitura por `anon` apenas às colunas seguras (sem CNPJ, sem endereço completo, sem dados sensíveis).
+## Como você publica as aulas
 
-Colunas expostas na view pública (consumidas por médicos logados e visitantes):
-`id, network_name, city, state, avatar_url, is_verified, cnpj_activity, linkedin_url, website_url, description`.
+- Na página da trilha, aparece só para a conta mestre um botão "Gerenciar aulas".
+- No painel de gestão você pode: criar trilha/curso, adicionar aula com título, descrição, ordem e duração, escolher entre **colar um link do YouTube/Vimeo** ou **enviar o arquivo de vídeo**, marcar uma aula como "Introdução", reordenar, editar e remover.
+- O envio de arquivo mostra progresso e aceita vídeos grandes (limite configurado no armazenamento).
 
-CNPJ continua **fora** da view pública — apenas a própria rede vê o próprio CNPJ.
+## Detalhes técnicos
 
-## 2. Edição: `/perfil-empresa`
+Banco (migração):
+- `academy_courses`: id, slug, título, descrição, cor/ícone da trilha, ordem, `is_published`, timestamps.
+- `academy_lessons`: id, `course_id`, título, descrição, `position`, `is_intro`, `duration_seconds`, `source_type` ('url' | 'upload'), `video_url` (link externo), `video_path` (caminho no bucket), timestamps.
+- GRANTs: `SELECT` para `anon`/`authenticated` (apenas metadados), `ALL` para `service_role`. RLS ligada.
+- Políticas: leitura pública de cursos/aulas publicados (sem URL de vídeo sensível); escrita apenas via server functions com service role após verificação da conta mestre.
+- A URL/caminho do vídeo nunca é exposta na listagem pública: a listagem retorna somente metadados.
 
-Adicionar três campos novos no formulário da rede:
+Armazenamento:
+- Bucket privado `academy-videos`, com políticas de `storage.objects` permitindo INSERT/UPDATE/DELETE apenas ao dono mestre e SELECT apenas via URL assinada gerada no servidor.
 
-- **LinkedIn da empresa** — input com validação simples (precisa começar com `https://www.linkedin.com/` ou `https://linkedin.com/`)
-- **Site institucional** — input URL (opcional)
-- **Sobre a rede** — textarea curta (até 500 caracteres) com descrição pública
+Server functions (`src/lib/academy.functions.ts`):
+- `listCourses` / `getCourseWithLessons` — públicos, metadados apenas.
+- `getLessonPlayback` — autenticado (`requireSupabaseAuth`); confere acesso Pro (`doctors.is_premium` ou conta mestre) e retorna o link do YouTube/Vimeo ou uma URL assinada de curta duração do bucket. Sem acesso, retorna `{ locked: true }`.
+- `upsertCourse` / `upsertLesson` / `deleteLesson` / `reorderLessons` / `createVideoUploadUrl` — verificam a conta mestre no servidor antes de usar o cliente administrativo.
 
-Salvar via `update` na tabela `networks` (RLS já permite a rede atualizar a si mesma).
+Rotas:
+- `src/routes/academy.$courseSlug.tsx` — página do curso (player + lista), com `head()` próprio (título/descrição/og).
+- `src/routes/academy.$courseSlug.gerenciar.tsx` — painel de gestão, visível apenas à conta mestre.
+- `src/routes/academy.tsx` — cards passam a linkar para a trilha; trilhas vindas do banco, com as atuais mantidas como conteúdo inicial via INSERT na migração.
+- `BackButton` em ambas as páginas, conforme o padrão do projeto.
 
-## 3. Nova rota pública: `/rede/$networkId`
-
-Criar `src/routes/rede.$networkId.tsx`:
-
-- `loader` busca a rede em `networks_public` por id.
-- Header com avatar, nome, cidade/UF, badge "Rede Verificada" se `is_verified`.
-- Seção "Sobre" com `description`.
-- Seção "Atividade" com `cnpj_activity` (atividade econômica genérica, já pública).
-- Botões/links:
-  - **LinkedIn** (abre em nova aba, `rel="noopener noreferrer"`) — só aparece se preenchido
-  - **Site** (abre em nova aba) — só aparece se preenchido
-- Botão "Voltar" usando `BackButton` apontando para `/` (ou `/dashboard` se logado).
-- Se a rede não for encontrada → `notFoundComponent`.
-- `errorComponent` padrão.
-- `head()` dinâmico com título "{network_name} — Connect-Med".
-
-Esta rota é **pública** (qualquer visitante e qualquer médico logado pode ver), mas só mostra dados seguros da view.
-
-## 4. Landing: seção "Conheça nossas redes"
-
-Em `src/routes/index.tsx`, alterar o comportamento do clique em uma rede:
-
-- **Visitante (não logado)** → continua abrindo o diálogo de planos (comportamento atual mantido).
-- **Médico logado** (`profile.account_type === "doctor"`) → navega para `/rede/{id}` (página pública da rede).
-- **Rede logada** → também navega para `/rede/{id}` (visualização pública, sem dados sensíveis).
-
-Remover o diálogo de "detalhes mínimos" inline para usuários logados — agora todos os logados vão para a página dedicada, que tem mais informação (incl. LinkedIn).
-
-## 5. Segurança
-
-- Nenhum dado sensível novo é exposto: CNPJ, endereço completo, e-mail, telefone continuam fora da view pública.
-- LinkedIn/site/descrição são informações que a própria rede preenche voluntariamente para divulgação.
-- Links externos sempre com `target="_blank"` e `rel="noopener noreferrer"`.
-- Validação client-side da URL do LinkedIn para evitar links arbitrários (defesa em profundidade — RLS já restringe quem grava).
-
-## Resumo de arquivos
-
-- **Migração**: ALTER TABLE `networks` + recriar view `networks_public`.
-- **Editar**: `src/routes/perfil-empresa.tsx` (3 campos novos), `src/routes/index.tsx` (redirect logado → `/rede/$id`), `src/integrations/supabase/types.ts` (regenerado automaticamente).
-- **Criar**: `src/routes/rede.$networkId.tsx`.
+Player: `<video controls>` para arquivos enviados; iframe responsivo para YouTube/Vimeo, com o id extraído do link colado.
