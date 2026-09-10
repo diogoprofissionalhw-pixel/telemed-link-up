@@ -125,7 +125,7 @@ function CoursePage() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {access.isMaster && (
+            {isMaster && (
               <Button
                 variant="outline"
                 className="gap-2"
