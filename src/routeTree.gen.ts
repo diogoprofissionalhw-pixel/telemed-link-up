@@ -34,6 +34,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AgendaRouteImport } from './routes/agenda'
 import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AcademyIndexRouteImport } from './routes/academy.index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 import { Route as AcademyCourseSlugRouteImport } from './routes/academy.$courseSlug'
 import { Route as AcademyCourseSlugGerenciarRouteImport } from './routes/academy.$courseSlug.gerenciar'
@@ -163,6 +164,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AcademyIndexRoute = AcademyIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AcademyRoute,
+} as any)
 const RedeNetworkIdRoute = RedeNetworkIdRouteImport.update({
   id: '/rede/$networkId',
   path: '/rede/$networkId',
@@ -208,11 +214,11 @@ export interface FileRoutesByFullPath {
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy/': typeof AcademyIndexRoute
   '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/academy': typeof AcademyRouteWithChildren
   '/agenda': typeof AgendaRoute
   '/auth': typeof AuthRoute
   '/configuracoes': typeof ConfiguracoesRoute
@@ -238,6 +244,7 @@ export interface FileRoutesByTo {
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy': typeof AcademyIndexRoute
   '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRoutesById {
@@ -269,6 +276,7 @@ export interface FileRoutesById {
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy/': typeof AcademyIndexRoute
   '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRouteTypes {
@@ -301,11 +309,11 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy/'
     | '/academy/$courseSlug/gerenciar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/academy'
     | '/agenda'
     | '/auth'
     | '/configuracoes'
@@ -331,6 +339,7 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy'
     | '/academy/$courseSlug/gerenciar'
   id:
     | '__root__'
@@ -361,6 +370,7 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy/'
     | '/academy/$courseSlug/gerenciar'
   fileRoutesById: FileRoutesById
 }
@@ -570,6 +580,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/academy/': {
+      id: '/academy/'
+      path: '/'
+      fullPath: '/academy/'
+      preLoaderRoute: typeof AcademyIndexRouteImport
+      parentRoute: typeof AcademyRoute
+    }
     '/rede/$networkId': {
       id: '/rede/$networkId'
       path: '/rede/$networkId'
@@ -607,10 +624,12 @@ const AcademyCourseSlugRouteWithChildren =
 
 interface AcademyRouteChildren {
   AcademyCourseSlugRoute: typeof AcademyCourseSlugRouteWithChildren
+  AcademyIndexRoute: typeof AcademyIndexRoute
 }
 
 const AcademyRouteChildren: AcademyRouteChildren = {
   AcademyCourseSlugRoute: AcademyCourseSlugRouteWithChildren,
+  AcademyIndexRoute: AcademyIndexRoute,
 }
 
 const AcademyRouteWithChildren =
