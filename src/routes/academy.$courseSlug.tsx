@@ -1,14 +1,14 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Clock3, Lock, PlayCircle, Settings, Sparkles } from "lucide-react";
+import { Lock, PlayCircle, Settings, Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
 import { isMasterEmail } from "@/lib/master-access";
-import { toEmbedUrl, formatDuration, formatTrackDuration } from "@/lib/video-embed";
+import { toEmbedUrl, formatDuration } from "@/lib/video-embed";
 import {
   getAcademyAccess,
   getAcademyCourse,
@@ -98,9 +98,6 @@ function CoursePage() {
 
   const isMaster = access.isMaster || isMasterEmail(user?.email);
   const locked = !access.canWatch && !isMaster;
-  const totalDuration = formatTrackDuration(
-    lessons.reduce((total, lesson) => total + (lesson.duration_seconds ?? 0), 0),
-  );
 
   useEffect(() => {
     if (!current || locked) {
@@ -125,11 +122,6 @@ function CoursePage() {
             <h1 className="text-2xl font-bold text-royal sm:text-3xl">{course.title}</h1>
             {course.description && (
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{course.description}</p>
-            )}
-            {totalDuration && (
-              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
-                <Clock3 className="h-4 w-4" /> Duração total: {totalDuration}
-              </p>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -244,9 +236,14 @@ function CoursePage() {
                             {l.is_intro ? "Introdução" : l.title}
                           </span>
                           <span className="block truncate text-xs text-muted-foreground">
-                            {l.is_intro ? l.title : dur ? dur : "Aula em vídeo"}
+                            {l.is_intro ? l.title : l.description ?? "Aula em vídeo"}
                           </span>
                         </span>
+                        {dur && (
+                          <span className="ml-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground">
+                            {dur}
+                          </span>
+                        )}
                         {locked ? (
                           <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                         ) : (
