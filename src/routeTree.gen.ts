@@ -36,6 +36,7 @@ import { Route as AcademyRouteImport } from './routes/academy'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 import { Route as AcademyCourseSlugRouteImport } from './routes/academy.$courseSlug'
+import { Route as AcademyCourseSlugGerenciarRouteImport } from './routes/academy.$courseSlug.gerenciar'
 
 const ValoresRoute = ValoresRouteImport.update({
   id: '/valores',
@@ -172,6 +173,12 @@ const AcademyCourseSlugRoute = AcademyCourseSlugRouteImport.update({
   path: '/$courseSlug',
   getParentRoute: () => AcademyRoute,
 } as any)
+const AcademyCourseSlugGerenciarRoute =
+  AcademyCourseSlugGerenciarRouteImport.update({
+    id: '/gerenciar',
+    path: '/gerenciar',
+    getParentRoute: () => AcademyCourseSlugRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -199,8 +206,9 @@ export interface FileRoutesByFullPath {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -228,8 +236,9 @@ export interface FileRoutesByTo {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -258,8 +267,9 @@ export interface FileRoutesById {
   '/solicitar': typeof SolicitarRoute
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
-  '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/$courseSlug': typeof AcademyCourseSlugRouteWithChildren
   '/rede/$networkId': typeof RedeNetworkIdRoute
+  '/academy/$courseSlug/gerenciar': typeof AcademyCourseSlugGerenciarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy/$courseSlug/gerenciar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy/$courseSlug/gerenciar'
   id:
     | '__root__'
     | '/'
@@ -349,6 +361,7 @@ export interface FileRouteTypes {
     | '/valores'
     | '/academy/$courseSlug'
     | '/rede/$networkId'
+    | '/academy/$courseSlug/gerenciar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -571,15 +584,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcademyCourseSlugRouteImport
       parentRoute: typeof AcademyRoute
     }
+    '/academy/$courseSlug/gerenciar': {
+      id: '/academy/$courseSlug/gerenciar'
+      path: '/gerenciar'
+      fullPath: '/academy/$courseSlug/gerenciar'
+      preLoaderRoute: typeof AcademyCourseSlugGerenciarRouteImport
+      parentRoute: typeof AcademyCourseSlugRoute
+    }
   }
 }
 
+interface AcademyCourseSlugRouteChildren {
+  AcademyCourseSlugGerenciarRoute: typeof AcademyCourseSlugGerenciarRoute
+}
+
+const AcademyCourseSlugRouteChildren: AcademyCourseSlugRouteChildren = {
+  AcademyCourseSlugGerenciarRoute: AcademyCourseSlugGerenciarRoute,
+}
+
+const AcademyCourseSlugRouteWithChildren =
+  AcademyCourseSlugRoute._addFileChildren(AcademyCourseSlugRouteChildren)
+
 interface AcademyRouteChildren {
-  AcademyCourseSlugRoute: typeof AcademyCourseSlugRoute
+  AcademyCourseSlugRoute: typeof AcademyCourseSlugRouteWithChildren
 }
 
 const AcademyRouteChildren: AcademyRouteChildren = {
-  AcademyCourseSlugRoute: AcademyCourseSlugRoute,
+  AcademyCourseSlugRoute: AcademyCourseSlugRouteWithChildren,
 }
 
 const AcademyRouteWithChildren =
