@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { Clock3, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { isMasterEmail } from "@/lib/master-access";
-import { formatDuration } from "@/lib/video-embed";
+import { formatDuration, formatTrackDuration } from "@/lib/video-embed";
 import {
   createVideoUploadUrl,
   deleteAcademyLesson,
@@ -96,7 +96,7 @@ function ManageLessonsPage() {
     description: "",
     position: 1,
     isIntro: false,
-    durationMinutes: "",
+    durationSeconds: null as number | null,
     sourceType: "url" as "url" | "upload",
     videoUrl: "",
     videoPath: "",
@@ -153,7 +153,7 @@ function ManageLessonsPage() {
       description: "",
       position: lessons.length + 1,
       isIntro: false,
-      durationMinutes: "",
+      durationSeconds: null,
       sourceType: "url",
       videoUrl: "",
       videoPath: "",
@@ -162,13 +162,34 @@ function ManageLessonsPage() {
   const handleUpload = async (file: File) => {
     setUploading(true);
     try {
+      const durationSeconds = await new Promise<number | null>((resolve) => {
+        const video = document.createElement("video");
+        const objectUrl = URL.createObjectURL(file);
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+          const duration = Number.isFinite(video.duration) ? Math.round(video.duration) : null;
+          URL.revokeObjectURL(objectUrl);
+          resolve(duration);
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          resolve(null);
+        };
+        video.src = objectUrl;
+      });
       const prep = await uploadUrlFn({ data: { courseId: course.id, fileName: file.name } });
       if (prep.error || !prep.path || !prep.token) throw new Error(prep.error ?? "Falha ao preparar envio");
       const { error } = await supabase.storage
         .from("academy-videos")
         .uploadToSignedUrl(prep.path, prep.token, file);
       if (error) throw error;
-      setForm((f) => ({ ...f, sourceType: "upload", videoPath: prep.path!, videoUrl: "" }));
+      setForm((f) => ({
+        ...f,
+        sourceType: "upload",
+        videoPath: prep.path ?? "",
+        videoUrl: "",
+        durationSeconds,
+      }));
       toast.success("Vídeo enviado. Agora salve a aula.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro no envio do vídeo");
@@ -192,7 +213,6 @@ function ManageLessonsPage() {
     }
     setBusy(true);
     try {
-      const minutes = Number(form.durationMinutes);
       const res = await upsertFn({
         data: {
           ...(form.id ? { id: form.id } : {}),
@@ -201,7 +221,7 @@ function ManageLessonsPage() {
           description: form.description.trim() || null,
           position: Number(form.position) || 0,
           isIntro: form.isIntro,
-          durationSeconds: Number.isFinite(minutes) && minutes > 0 ? Math.round(minutes * 60) : null,
+          durationSeconds: form.durationSeconds,
           sourceType: form.sourceType,
           videoUrl: form.sourceType === "url" ? form.videoUrl.trim() : null,
           videoPath: form.sourceType === "upload" ? form.videoPath : null,
@@ -225,7 +245,7 @@ function ManageLessonsPage() {
       description: l.description ?? "",
       position: l.position,
       isIntro: l.is_intro,
-      durationMinutes: l.duration_seconds ? String(Math.round(l.duration_seconds / 60)) : "",
+      durationSeconds: l.duration_seconds,
       sourceType: l.source_type === "upload" ? "upload" : "url",
       videoUrl: l.video_url ?? "",
       videoPath: l.video_path ?? "",
@@ -246,6 +266,10 @@ function ManageLessonsPage() {
     }
   };
 
+  const totalDuration = formatTrackDuration(
+    lessons.reduce((total, lesson) => total + (lesson.duration_seconds ?? 0), 0),
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -254,6 +278,11 @@ function ManageLessonsPage() {
           <div>
             <h1 className="text-2xl font-bold text-royal">Gerenciar aulas</h1>
             <p className="mt-1 text-sm text-muted-foreground">{course.title}</p>
+            {totalDuration && (
+              <p className="mt-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                <Clock3 className="h-4 w-4" /> Duração total da trilha: {totalDuration}
+              </p>
+            )}
           </div>
           <BackButton to="/academy" label="Voltar à Academy" />
         </div>
@@ -286,27 +315,15 @@ function ManageLessonsPage() {
                 />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="pos">Ordem</Label>
-                  <Input
-                    id="pos"
-                    type="number"
-                    min={0}
-                    value={form.position}
-                    onChange={(e) => setForm((f) => ({ ...f, position: Number(e.target.value) }))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dur">Duração (minutos)</Label>
-                  <Input
-                    id="dur"
-                    type="number"
-                    min={0}
-                    value={form.durationMinutes}
-                    onChange={(e) => setForm((f) => ({ ...f, durationMinutes: e.target.value }))}
-                  />
-                </div>
+              <div>
+                <Label htmlFor="pos">Ordem</Label>
+                <Input
+                  id="pos"
+                  type="number"
+                  min={0}
+                  value={form.position}
+                  onChange={(e) => setForm((f) => ({ ...f, position: Number(e.target.value) }))}
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border p-3">
@@ -366,7 +383,10 @@ function ManageLessonsPage() {
                       </>
                     ) : form.videoPath ? (
                       <>
-                        <Upload className="h-3 w-3" /> Vídeo pronto para salvar.
+                        <Upload className="h-3 w-3" /> Vídeo pronto para salvar
+                        {formatDuration(form.durationSeconds)
+                          ? ` · duração detectada: ${formatDuration(form.durationSeconds)}`
+                          : ""}
                       </>
                     ) : (
                       "Até 500 MB por arquivo."
