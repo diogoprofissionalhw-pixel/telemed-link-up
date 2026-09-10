@@ -7,6 +7,7 @@ import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { PlansDialog } from "@/components/plans-dialog";
 import { useAuth } from "@/lib/auth-context";
+import { isMasterEmail } from "@/lib/master-access";
 import { toEmbedUrl, formatDuration } from "@/lib/video-embed";
 import {
   getAcademyAccess,
