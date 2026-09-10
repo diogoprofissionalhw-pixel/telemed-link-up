@@ -42,6 +42,7 @@ export const Route = createFileRoute("/academy")({
 
 interface TrackCard {
   title: string;
+  slug: string;
   description: string;
   icon: LucideIcon;
   bar: string;
@@ -51,6 +52,7 @@ interface TrackCard {
 const tracks: TrackCard[] = [
   {
     title: "Ensino Médio Técnico",
+    slug: "ensino-medio-tecnico",
     description: "Educação da base curricular do MEC e sólida formação técnica na área da saúde.",
     icon: BookOpen,
     bar: "bg-cat-orange",
@@ -58,6 +60,7 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Curso Técnico",
+    slug: "curso-tecnico",
     description: "As melhores metodologias e estrutura voltadas para a prática e a empregabilidade.",
     icon: GraduationCap,
     bar: "bg-cat-purple",
@@ -65,6 +68,7 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Pós-Graduação",
+    slug: "pos-graduacao",
     description: "Tradição e pioneirismo junto com as mais modernas práticas em saúde.",
     icon: ScrollText,
     bar: "bg-cat-sky",
@@ -72,6 +76,7 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Residência e Aprimoramento",
+    slug: "residencia-e-aprimoramento",
     description: "Aprendizado em serviço, com estrutura de ponta e supervisão dos melhores especialistas.",
     icon: Hospital,
     bar: "bg-cat-green",
@@ -79,6 +84,7 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Cursos de Atualização",
+    slug: "cursos-de-atualizacao",
     description: "Experiências inovadoras para aprimorar habilidades em diversas áreas.",
     icon: Award,
     bar: "bg-cat-lime",
@@ -86,6 +92,7 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Comunidade e Mentoria",
+    slug: "comunidade-e-mentoria",
     description: "Conteúdo em alta transformação e conhecimento compartilhado entre profissionais.",
     icon: Users,
     bar: "bg-cat-gold",
@@ -93,12 +100,14 @@ const tracks: TrackCard[] = [
   },
   {
     title: "Preparatório Residência",
+    slug: "preparatorio-residencia",
     description: "Curso preparatório para conquistar vagas nas melhores residências médicas.",
     icon: Stethoscope,
     bar: "bg-cat-navy",
     photo: "from-cat-navy/70 to-navy",
   },
 ];
+
 
 function AcademyPage() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -167,11 +176,16 @@ function AcademyPage() {
                     <p className="text-sm leading-relaxed text-navy-foreground/85">{t.description}</p>
                   </div>
                 </div>
-                <Link to="/auth" search={{ mode: "signup" }} className="mt-3">
+                <Link
+                  to="/academy/$courseSlug"
+                  params={{ courseSlug: t.slug }}
+                  className="mt-3"
+                >
                   <Button className="w-full rounded-full bg-navy text-navy-foreground hover:bg-navy/90">
                     Conhecer
                   </Button>
                 </Link>
+
               </article>
             ))}
           </div>
