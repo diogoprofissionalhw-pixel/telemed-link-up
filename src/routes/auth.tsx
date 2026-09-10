@@ -120,6 +120,9 @@ function AuthPage() {
 function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
+  const masterMode = isMasterEmail(email);
+
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
