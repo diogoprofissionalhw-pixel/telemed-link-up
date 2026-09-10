@@ -19,3 +19,13 @@ export function formatDuration(seconds: number | null | undefined): string | nul
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
+
+/** Formata a soma das aulas para o resumo da trilha. */
+export function formatTrackDuration(seconds: number): string | null {
+  if (seconds <= 0) return "0 min";
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.ceil((seconds % 3600) / 60);
+  if (hours > 0 && minutes > 0) return `${hours}h ${minutes}min`;
+  if (hours > 0) return `${hours}h`;
+  return `${minutes} min`;
+}
