@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
 import networkBuilding from "@/assets/network-building.avif";
-import academyLogo from "@/assets/connect-academy-logo-v4.png.asset.json";
+import academyLogo from "@/assets/connect-academy-logo-hq.png.asset.json";
 
 
 export const Route = createFileRoute("/")({
