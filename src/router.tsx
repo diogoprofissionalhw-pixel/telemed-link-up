@@ -3,6 +3,7 @@ import { routeTree } from "./routeTree.gen";
 
 function DefaultErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
+  const errorMessage = error instanceof Error ? error.message : String(error);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
