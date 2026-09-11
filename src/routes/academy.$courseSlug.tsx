@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -41,11 +42,11 @@ export const Route = createFileRoute("/academy/$courseSlug")({
       ],
     };
   },
-  errorComponent: ({ error }: { error: Error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="text-destructive">Erro ao carregar a trilha: {error.message}</p>
+        <p className="text-destructive">Erro ao carregar a trilha: {(error instanceof Error ? error.message : String(error))}</p>
         <div className="mt-6 flex justify-center">
           <Link to="/academy">
             <Button>Voltar à Academy</Button>

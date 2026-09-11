@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Lock, SearchX, Stethoscope, X } from "lucide-react";
@@ -77,12 +78,12 @@ export const Route = createFileRoute("/explorar-medicos")({
       },
     ],
   }),
-  errorComponent: ({ error }: { error: Error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10 text-center">
         <p className="text-destructive">
-          Erro ao carregar médicos: {error.message}
+          Erro ao carregar médicos: {(error instanceof Error ? error.message : String(error))}
         </p>
         <div className="mt-4 flex justify-center gap-3">
           <Button

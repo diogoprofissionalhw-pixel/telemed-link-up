@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,11 +60,11 @@ export const Route = createFileRoute("/academy/gerenciar/$courseSlug")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  errorComponent: ({ error }: { error: Error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="text-destructive">{error.message}</p>
+        <p className="text-destructive">{(error instanceof Error ? error.message : String(error))}</p>
       </main>
     </div>
   ),
