@@ -123,6 +123,10 @@ function AcademyPage() {
       <SiteHeader />
 
       <main>
+        <div className="mx-auto max-w-6xl px-4 pt-6">
+          <BackButton to="/" label="Voltar ao Connect-Med" />
+        </div>
+
         {/* Hero */}
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
           <div className="mx-auto max-w-4xl">
