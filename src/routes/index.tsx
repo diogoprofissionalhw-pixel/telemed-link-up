@@ -417,7 +417,7 @@ function ExploreAcademy() {
               </div>
               <p className="mt-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Exemplo ilustrativo</p>
             </div>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
+            <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
               <Users className="h-4 w-4 text-primary" /> Aprenda com especialistas
             </div>
           </div>
