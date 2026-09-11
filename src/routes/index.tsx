@@ -41,6 +41,7 @@ function LandingPage() {
         <Benefits />
         <ExploreDoctors />
         <ExploreNetworks />
+        <ExploreAcademy />
         <FinalCTA />
       </main>
       <Footer />
