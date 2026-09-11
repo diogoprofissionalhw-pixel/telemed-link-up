@@ -133,7 +133,7 @@ function AcademyPage() {
             <div className="mb-6 flex justify-center">
               <img src={logoAcademy.url} alt="Connect-Academy" className="h-36 w-auto drop-shadow-lg sm:h-44" />
             </div>
-            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tight text-royal sm:text-5xl">
+            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tight text-primary sm:text-5xl">
               O Ensino Connect
               <br className="hidden sm:block" /> em toda
               <br /> a sua jornada
