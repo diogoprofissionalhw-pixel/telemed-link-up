@@ -13,7 +13,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import logoAcademy from "@/assets/connect-academy-logo-spaced.png.asset.json";
+import logoAcademy from "@/assets/connect-academy-logo-v5.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
