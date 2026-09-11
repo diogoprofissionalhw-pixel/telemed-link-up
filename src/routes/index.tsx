@@ -349,15 +349,15 @@ function ExploreAcademy() {
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             <div className="mb-6">
-              <img
-                src={academyLogo.url}
-                alt="Connect-Academy"
-                width="200"
-                height="200"
-                fetchPriority="high"
-                decoding="async"
-                className="h-28 w-auto sm:h-36 lg:h-44 drop-shadow-sm"
-              />
+                <img
+                  src={academyLogo.url}
+                  alt="Connect-Academy"
+                  width="200"
+                  height="200"
+                  fetchPriority="high"
+                  decoding="async"
+                  className="h-32 w-auto sm:h-40 lg:h-48 drop-shadow-sm"
+                />
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <GraduationCap className="h-3.5 w-3.5 text-primary" /> Educação continuada em saúde
