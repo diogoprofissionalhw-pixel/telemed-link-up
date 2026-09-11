@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Stethoscope, Building2, CheckCircle2, ArrowRight, ShieldCheck, Clock,
-  Mail, MapPin, Users,
+  Mail, MapPin, Users, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
 import networkBuilding from "@/assets/network-building.avif";
+import academyLogo from "@/assets/connect-academy-logo.png.asset.json";
 
 
 export const Route = createFileRoute("/")({
