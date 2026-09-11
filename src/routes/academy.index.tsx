@@ -133,11 +133,13 @@ function AcademyPage() {
             <div className="mb-6 flex justify-center">
               <img src={logoAcademy.url} alt="Connect-Academy" className="h-44 w-auto drop-shadow-lg sm:h-52" />
             </div>
-            <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tight text-primary sm:text-5xl">
+            <h1
+              className="text-center text-4xl font-bold leading-[1.1] tracking-tight text-primary sm:text-5xl md:text-6xl"
+              style={{ fontFamily: "'Quicksand', sans-serif" }}
+            >
               O Ensino Connect
-              <br className="hidden sm:block" /> em toda
-              <br /> a sua jornada
-              <br /> profissional
+              <br className="hidden md:block" /> em toda a sua
+              <br className="hidden md:block" /> jornada profissional
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-center text-sm text-muted-foreground sm:text-base">
               Trilhas de formação para cada etapa da carreira em saúde — da base técnica à especialização.
