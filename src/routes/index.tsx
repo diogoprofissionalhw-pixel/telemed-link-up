@@ -348,17 +348,6 @@ function ExploreAcademy() {
       <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <div className="mb-6">
-                <img
-                  src={academyLogo.url}
-                  alt="Connect-Academy"
-                  width="1920"
-                  height="640"
-                  fetchPriority="high"
-                  decoding="async"
-                  className="h-28 w-auto max-w-full origin-left drop-shadow-sm sm:h-36 lg:h-44"
-                />
-            </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <GraduationCap className="h-3.5 w-3.5 text-primary" /> Educação continuada em saúde
             </div>
