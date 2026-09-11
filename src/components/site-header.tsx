@@ -60,7 +60,7 @@ export function SiteHeader() {
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Painel</Button>
               </Link>
-              <Link to="/profile" className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent">
+              <Link to="/profile" aria-label="Meu perfil" className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-accent">
                 <Avatar className="h-8 w-8">
                   {avatarUrl && <AvatarImage src={avatarUrl} alt={profile?.full_name ?? ""} />}
                   <AvatarFallback className="bg-accent text-xs">
@@ -69,7 +69,7 @@ export function SiteHeader() {
                 </Avatar>
                 <span className="hidden sm:inline text-sm font-medium">{profile?.full_name}</span>
               </Link>
-              <Button variant="outline" size="sm" onClick={() => signOut()}>
+              <Button variant="outline" size="sm" onClick={() => signOut()} aria-label="Sair da conta">
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">Sair</span>
               </Button>
