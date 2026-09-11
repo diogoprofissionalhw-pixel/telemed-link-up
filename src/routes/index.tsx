@@ -379,7 +379,7 @@ function ExploreAcademy() {
             </div>
           </div>
 
-          <div className="relative group">
+          <div className="relative group mt-8 lg:mt-12">
             <div
               className="rounded-3xl border bg-card p-6 shadow-xl transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
               style={{ boxShadow: "var(--shadow-elegant)" }}
