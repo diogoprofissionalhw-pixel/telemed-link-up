@@ -49,4 +49,5 @@ export const Route = createFileRoute("/sitemap.xml")({
       },
     },
   },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any);
