@@ -337,6 +337,52 @@ function ExploreNetworks() {
   );
 }
 
+/* ====================== Explore Academy ====================== */
+function ExploreAcademy() {
+  return (
+    <section className="bg-card">
+      <div className="mx-auto max-w-6xl px-4 py-20">
+        <div className="rounded-3xl border bg-background p-8 sm:p-12" style={{ boxShadow: "var(--shadow-card)" }}>
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <div className="flex justify-center lg:justify-start">
+              <div
+                className="relative aspect-square w-64 sm:w-80 lg:w-full lg:max-w-md overflow-hidden rounded-full border-4 border-accent bg-white"
+                style={{ boxShadow: "var(--shadow-elegant)" }}
+              >
+                <img
+                  src={academyLogo.url}
+                  alt="Connect-Academy"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-contain p-6"
+                />
+              </div>
+            </div>
+            <div className="text-center lg:text-left">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-semibold text-primary">
+                <GraduationCap className="h-3.5 w-3.5" /> Educação
+              </div>
+              <h2 className="text-3xl font-bold sm:text-4xl">
+                Conhecendo a <span className="text-primary">Connect-Academy</span>
+              </h2>
+              <p className="mt-3 text-muted-foreground lg:max-w-md">
+                Trilhas de formação para cada etapa da carreira em saúde — da base técnica à especialização. Conheça nossos cursos e capacitações.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
+                <Link to="/academy">
+                  <Button size="lg" className="gap-2">
+                    Conhecer trilhas <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 
 
