@@ -8,7 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import logo from "@/assets/connect-med-logo.webp";
 import doctorPortrait from "@/assets/doctor-portrait.png";
 import networkBuilding from "@/assets/network-building.avif";
-import academyLogo from "@/assets/connect-academy-logo-spaced.png.asset.json";
+import academyLogo from "@/assets/connect-academy-logo-v5.png.asset.json";
 
 
 export const Route = createFileRoute("/")({
@@ -352,11 +352,11 @@ function ExploreAcademy() {
                 <img
                   src={academyLogo.url}
                   alt="Connect-Academy"
-                  width="200"
-                  height="200"
+                  width="1920"
+                  height="640"
                   fetchPriority="high"
                   decoding="async"
-                  className="h-36 w-auto origin-left scale-x-[1.15] drop-shadow-sm sm:h-44 lg:h-52"
+                  className="h-28 w-auto max-w-full origin-left drop-shadow-sm sm:h-36 lg:h-44"
                 />
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
