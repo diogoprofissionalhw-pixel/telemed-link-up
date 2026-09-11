@@ -348,21 +348,21 @@ function ExploreAcademy() {
       <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <div className="mb-6 flex items-center gap-4">
+            <div className="mb-6">
               <img
                 src={academyLogo.url}
                 alt="Connect-Academy"
-                width="160"
-                height="160"
+                width="200"
+                height="200"
                 fetchPriority="high"
                 decoding="async"
                 className="h-28 w-auto sm:h-36 lg:h-44 drop-shadow-sm"
               />
-              <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary tracking-tight">Connect-Academy</span>
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <GraduationCap className="h-3.5 w-3.5 text-primary" /> Educação continuada em saúde
             </div>
+
             <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
               Capacitação para quem cuida da <span className="text-primary underline decoration-primary/40 underline-offset-4">saúde</span>
             </h2>
