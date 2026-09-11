@@ -77,7 +77,7 @@ export const Route = createFileRoute("/explorar-medicos")({
       },
     ],
   }),
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: { error: Error }) => (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10 text-center">

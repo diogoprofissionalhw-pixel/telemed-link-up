@@ -59,7 +59,7 @@ export const Route = createFileRoute("/academy/gerenciar/$courseSlug")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: { error: Error }) => (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-4 py-16 text-center">
