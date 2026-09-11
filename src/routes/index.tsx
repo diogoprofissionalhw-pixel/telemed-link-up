@@ -39,10 +39,11 @@ function LandingPage() {
         <HowItWorksDoctors />
         <HowItWorksNetworks />
         <Benefits />
+        <ExploreAcademy />
         <ExploreDoctors />
         <ExploreNetworks />
-        <ExploreAcademy />
         <FinalCTA />
+
       </main>
       <Footer />
     </div>
@@ -340,41 +341,84 @@ function ExploreNetworks() {
 /* ====================== Explore Academy ====================== */
 function ExploreAcademy() {
   return (
-    <section className="bg-card">
-      <div className="mx-auto max-w-6xl px-4 py-20">
-        <div className="rounded-3xl border bg-background p-8 sm:p-12" style={{ boxShadow: "var(--shadow-card)" }}>
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="flex justify-center lg:justify-start">
-              <div
-                className="relative aspect-square w-64 sm:w-80 lg:w-full lg:max-w-md overflow-hidden rounded-full border-4 border-accent bg-white"
-                style={{ boxShadow: "var(--shadow-elegant)" }}
-              >
-                <img
-                  src={academyLogo.url}
-                  alt="Connect-Academy"
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-contain p-6"
-                />
-              </div>
+    <section
+      className="relative overflow-hidden"
+      style={{ background: "linear-gradient(180deg, var(--background) 0%, color-mix(in oklab, var(--primary) 8%, var(--background)) 100%)" }}
+    >
+      <div className="mx-auto max-w-6xl px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <div className="mb-6 flex items-center gap-4">
+              <img
+                src={academyLogo.url}
+                alt="Connect-Academy"
+                width="160"
+                height="160"
+                fetchPriority="high"
+                decoding="async"
+                className="h-28 w-auto sm:h-36 lg:h-44 drop-shadow-sm"
+              />
+              <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary tracking-tight">Connect-Academy</span>
             </div>
-            <div className="text-center lg:text-left">
-              <div className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-4 py-1.5 text-xs font-semibold text-primary">
-                <GraduationCap className="h-3.5 w-3.5" /> Educação
+            <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+              <GraduationCap className="h-3.5 w-3.5 text-primary" /> Educação continuada em saúde
+            </div>
+            <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+              Capacitação para quem cuida da <span className="text-primary underline decoration-primary/40 underline-offset-4">saúde</span>
+            </h2>
+            <p className="mt-5 max-w-xl text-lg text-muted-foreground">
+              A Connect-Academy oferece trilhas de formação práticas e direcionadas para médicos, enfermeiros e gestores de saúde.
+              Da base técnica à especialização, você estuda no seu ritmo e aplica o conhecimento no dia a dia profissional.
+            </p>
+            <ul className="mt-6 space-y-2 text-sm">
+              {[
+                "Trilhas organizadas por especialidade e nível",
+                "Videoaulas com experts da área da saúde",
+                "Certificados e conteúdos atualizados",
+              ].map((b) => (
+                <li key={b} className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0" /> {b}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/academy">
+                <Button size="lg" className="gap-2">
+                  Conhecer trilhas <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative group">
+            <div
+              className="rounded-3xl border bg-card p-6 shadow-xl transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
+              style={{ boxShadow: "var(--shadow-elegant)" }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-accent transition-transform group-hover:scale-110">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Trilha: Urgência e Emergência</p>
+                    <p className="text-xs text-muted-foreground">12 aulas · 4h 30min</p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-3 py-1 text-xs font-medium text-success">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Disponível
+                </span>
               </div>
-              <h2 className="text-3xl font-bold sm:text-4xl">
-                Conhecendo a <span className="text-primary">Connect-Academy</span>
-              </h2>
-              <p className="mt-3 text-muted-foreground lg:max-w-md">
-                Trilhas de formação para cada etapa da carreira em saúde — da base técnica à especialização. Conheça nossos cursos e capacitações.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
-                <Link to="/academy">
-                  <Button size="lg" className="gap-2">
-                    Conhecer trilhas <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
+              <div className="mt-5 aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
+                <GraduationCap className="h-12 w-12 text-muted-foreground/40" />
               </div>
+              <div className="mt-5 flex gap-2" aria-hidden="true">
+                <Button type="button" disabled tabIndex={-1} className="flex-1 disabled:opacity-100 disabled:cursor-default">Assistir aula 1</Button>
+              </div>
+              <p className="mt-2 text-center text-[10px] uppercase tracking-wider text-muted-foreground">Exemplo ilustrativo</p>
+            </div>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
+              <Users className="h-4 w-4 text-primary" /> Aprenda com especialistas
             </div>
           </div>
         </div>
@@ -382,6 +426,7 @@ function ExploreAcademy() {
     </section>
   );
 }
+
 
 
 
