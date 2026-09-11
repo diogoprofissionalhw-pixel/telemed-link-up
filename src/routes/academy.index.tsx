@@ -131,7 +131,7 @@ function AcademyPage() {
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
           <div className="mx-auto max-w-4xl">
             <div className="mb-6 flex justify-center">
-              <img src={logoAcademy.url} alt="Connect-Academy" className="h-36 w-auto drop-shadow-lg sm:h-44" />
+              <img src={logoAcademy.url} alt="Connect-Academy" className="h-44 w-auto drop-shadow-lg sm:h-52" />
             </div>
             <h1 className="text-center text-3xl font-extrabold leading-tight tracking-tight text-primary sm:text-5xl">
               O Ensino Connect
