@@ -9,6 +9,8 @@ interface SitemapEntry {
   priority?: string;
 }
 
+// O bloco `server` é estendido via module augmentation do TanStack Start;
+// o cast preserva o comportamento em runtime.
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
