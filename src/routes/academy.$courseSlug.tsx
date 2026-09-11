@@ -224,7 +224,7 @@ function CoursePage() {
               </div>
             ) : (
               <ul className="flex flex-col gap-2">
-                {lessons.map((l, i) => {
+                {lessons.map((l: AcademyLessonMeta, i: number) => {
                   const isCurrent = current?.id === l.id;
                   const dur = formatDuration(l.duration_seconds);
                   return (
