@@ -356,7 +356,7 @@ function ExploreAcademy() {
                   height="200"
                   fetchPriority="high"
                   decoding="async"
-                  className="h-32 w-auto sm:h-40 lg:h-48 drop-shadow-sm"
+                  className="h-36 w-auto sm:h-44 lg:h-52 drop-shadow-sm"
                 />
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
