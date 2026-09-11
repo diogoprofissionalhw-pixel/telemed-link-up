@@ -134,7 +134,7 @@ function AcademyPage() {
               <img src={logoAcademy.url} alt="Connect-Academy" className="h-44 w-auto drop-shadow-lg sm:h-52" />
             </div>
             <h1
-              className="text-center text-4xl font-bold leading-[1.1] tracking-tight text-primary sm:text-5xl md:text-6xl"
+              className="text-center text-3xl font-bold leading-[1.15] tracking-tight text-primary sm:text-4xl md:text-5xl"
               style={{ fontFamily: "'Quicksand', sans-serif" }}
             >
               O Ensino Connect
