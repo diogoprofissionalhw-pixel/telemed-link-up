@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import type {} from "@tanstack/react-start";
+
 
 const BASE_URL = "https://telemed-link-up.lovable.app";
 
@@ -9,6 +9,8 @@ interface SitemapEntry {
   priority?: string;
 }
 
+// O bloco `server` é estendido via module augmentation do TanStack Start;
+// o cast preserva o comportamento em runtime.
 export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
@@ -47,4 +49,5 @@ export const Route = createFileRoute("/sitemap.xml")({
       },
     },
   },
-});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any);

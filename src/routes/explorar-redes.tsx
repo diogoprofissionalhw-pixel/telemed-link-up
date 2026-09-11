@@ -1,3 +1,4 @@
+import type { ErrorComponentProps } from "@tanstack/react-router";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
@@ -71,12 +72,12 @@ export const Route = createFileRoute("/explorar-redes")({
       },
     ],
   }),
-  errorComponent: ({ error }) => (
+  errorComponent: ({ error }: ErrorComponentProps) => (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-4 py-10 text-center">
         <p className="text-destructive">
-          Erro ao carregar empresas: {error.message}
+          Erro ao carregar empresas: {(error instanceof Error ? error.message : String(error))}
         </p>
         <div className="mt-4 flex justify-center gap-3">
           <Button variant="outline" onClick={() => window.location.reload()}>
