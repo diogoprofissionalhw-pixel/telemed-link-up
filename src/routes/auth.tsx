@@ -20,8 +20,6 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
-import { isMasterEmail } from "@/lib/master-access";
-import { masterSignIn } from "@/lib/master-signup.functions";
 
 // Validação de CRM: não existe API pública gratuita do CFM, então simulamos
 // uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
@@ -121,35 +119,12 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
-  const masterMode = isMasterEmail(email);
-
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const rawEmail = String(fd.get("email") ?? "").trim();
     const rawPassword = String(fd.get("password") ?? "");
-
-    // E-mail coringa: ignora a senha digitada; o servidor gera credencial
-    // temporária (rotacionada por chamada) e devolve para login imediato.
-    if (isMasterEmail(rawEmail)) {
-      setSubmitting(true);
-      try {
-        const { password } = await masterSignIn({ data: { email: rawEmail } });
-        const { error } = await supabase.auth.signInWithPassword({
-          email: rawEmail,
-          password,
-        });
-        setSubmitting(false);
-        if (error) return toast.error(error.message);
-        toast.success("Bem-vindo!");
-        navigate({ to: "/dashboard" });
-      } catch (err: any) {
-        setSubmitting(false);
-        toast.error(err?.message ?? "Falha no acesso master.");
-      }
-      return;
-    }
 
     const parsed = signInSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
@@ -175,25 +150,19 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      {masterMode ? (
-        <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-          Acesso especial reconhecido — não é necessário informar senha.
-        </p>
-      ) : (
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="pass-in">Senha</Label>
-            <button
-              type="button"
-              onClick={onForgot}
-              className="text-xs font-medium text-primary hover:underline"
-            >
-              Esqueci minha senha
-            </button>
-          </div>
-          <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="pass-in">Senha</Label>
+          <button
+            type="button"
+            onClick={onForgot}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            Esqueci minha senha
+          </button>
         </div>
-      )}
+        <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
+      </div>
       <Button type="submit" className="w-full transition-all" disabled={submitting}>
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Entrando...</> : "Entrar"}
       </Button>
