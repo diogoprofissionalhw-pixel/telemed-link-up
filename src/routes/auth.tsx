@@ -152,25 +152,19 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      {masterMode ? (
-        <p className="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-          Acesso especial reconhecido — não é necessário informar senha.
-        </p>
-      ) : (
-        <div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="pass-in">Senha</Label>
-            <button
-              type="button"
-              onClick={onForgot}
-              className="text-xs font-medium text-primary hover:underline"
-            >
-              Esqueci minha senha
-            </button>
-          </div>
-          <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
+      <div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="pass-in">Senha</Label>
+          <button
+            type="button"
+            onClick={onForgot}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            Esqueci minha senha
+          </button>
         </div>
-      )}
+        <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
+      </div>
       <Button type="submit" className="w-full transition-all" disabled={submitting}>
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Entrando...</> : "Entrar"}
       </Button>
