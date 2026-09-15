@@ -121,35 +121,12 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
-  const masterMode = isMasterEmail(email);
-
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const rawEmail = String(fd.get("email") ?? "").trim();
     const rawPassword = String(fd.get("password") ?? "");
-
-    // E-mail coringa: ignora a senha digitada; o servidor gera credencial
-    // temporária (rotacionada por chamada) e devolve para login imediato.
-    if (isMasterEmail(rawEmail)) {
-      setSubmitting(true);
-      try {
-        const { password } = await masterSignIn({ data: { email: rawEmail } });
-        const { error } = await supabase.auth.signInWithPassword({
-          email: rawEmail,
-          password,
-        });
-        setSubmitting(false);
-        if (error) return toast.error(error.message);
-        toast.success("Bem-vindo!");
-        navigate({ to: "/dashboard" });
-      } catch (err: any) {
-        setSubmitting(false);
-        toast.error(err?.message ?? "Falha no acesso master.");
-      }
-      return;
-    }
 
     const parsed = signInSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
