@@ -20,6 +20,9 @@ import {
 } from "@/lib/validators";
 import { SPECIALTIES } from "@/lib/specialties";
 import { lookupCNPJ, formatAddress, type CNPJData } from "@/lib/brasilapi";
+import { isMasterEmail } from "@/lib/master-access";
+import { masterSignIn } from "@/lib/master-signup.functions";
+
 
 // Validação de CRM: não existe API pública gratuita do CFM, então simulamos
 // uma checagem consistente baseada no formato + UF. Em produção, plugar aqui
@@ -119,13 +122,30 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
+  const isMaster = isMasterEmail(email);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const rawEmail = String(fd.get("email") ?? "").trim();
-    const rawPassword = String(fd.get("password") ?? "");
 
+    if (isMasterEmail(rawEmail)) {
+      setSubmitting(true);
+      try {
+        const { password } = await masterSignIn({ data: { email: rawEmail } });
+        const { error } = await supabase.auth.signInWithPassword({ email: rawEmail, password });
+        if (error) throw new Error(error.message);
+        toast.success("Acesso especial liberado!");
+        navigate({ to: "/dashboard" });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Falha no acesso especial.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    const rawPassword = String(fd.get("password") ?? "");
     const parsed = signInSchema.safeParse({ email: rawEmail, password: rawPassword });
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setSubmitting(true);
@@ -150,25 +170,32 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <div>
-        <div className="flex items-center justify-between">
-          <Label htmlFor="pass-in">Senha</Label>
-          <button
-            type="button"
-            onClick={onForgot}
-            className="text-xs font-medium text-primary hover:underline"
-          >
-            Esqueci minha senha
-          </button>
+      {isMaster ? (
+        <p className="rounded-md bg-primary/10 px-3 py-2 text-xs text-primary">
+          Acesso especial reconhecido — não é necessário informar senha.
+        </p>
+      ) : (
+        <div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="pass-in">Senha</Label>
+            <button
+              type="button"
+              onClick={onForgot}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
+          <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
         </div>
-        <Input id="pass-in" name="password" type="password" required autoComplete="current-password" />
-      </div>
+      )}
       <Button type="submit" className="w-full transition-all" disabled={submitting}>
         {submitting ? <><Loader2 className="h-4 w-4 animate-spin" /> Entrando...</> : "Entrar"}
       </Button>
     </form>
   );
 }
+
 
 function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
   const [submitting, setSubmitting] = useState(false);
