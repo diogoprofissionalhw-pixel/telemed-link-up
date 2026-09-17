@@ -30,8 +30,12 @@ export type CourseProgress = {
   quizzes: QuizStatus[];
   unlockedModuleIds: string[];
   completedModuleIds: string[];
+  unlockedLessonIds: string[];
   courseCompleted: boolean;
 };
+
+/** % mínimo assistido para liberar o quiz da aula. */
+export const WATCHED_THRESHOLD = 95;
 
 async function loadCourseProgress(userId: string, courseId: string): Promise<CourseProgress> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
