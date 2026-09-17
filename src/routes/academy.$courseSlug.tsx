@@ -248,8 +248,6 @@ function CoursePage() {
   };
 
   const currentState = current ? lessonState(current.id) : { percent: 0, completed: false };
-  const quizUnlocked =
-    isMaster || currentState.completed || currentState.percent >= WATCHED_THRESHOLD;
 
   return (
     <div className="min-h-screen bg-background">
