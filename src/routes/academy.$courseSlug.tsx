@@ -214,13 +214,23 @@ function CoursePage() {
 
   const openQuizForLesson = (lessonId: string) => {
     const st = lessonState(lessonId);
-    if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
-      toast.error("Assista a aula até o fim para liberar o quiz.");
+    const q = lessonQuiz(lessonId);
+    if (!isMaster && !st.completed && st.percent < WATCHED_THRESHOLD) {
+      toast.error(
+        `Quiz bloqueado: você assistiu ${Math.round(st.percent)}% desta aula. É preciso assistir pelo menos ${WATCHED_THRESHOLD}% (até o fim do vídeo) para liberar o quiz.`,
+      );
+      return;
+    }
+    if (q && !q.passed && q.attemptsUsed >= q.maxAttempts) {
+      toast.error(
+        `Quiz bloqueado: você usou as ${q.maxAttempts} tentativas. Assista a aula novamente até o fim para liberar novas tentativas.`,
+      );
       return;
     }
     setQuizTarget({ scope: "lesson", lessonId });
     setQuizOpen(true);
   };
+
 
   const openLessonQuiz = () => {
     if (!current) return;
