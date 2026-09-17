@@ -37,6 +37,11 @@ function formatBRL(v: number) {
 }
 
 export const Route = createFileRoute("/valores")({
+  // Página ocultada temporariamente pela chave features.showPricing.
+  beforeLoad: () => {
+    if (!features.showPricing) throw redirect({ to: "/" });
+  },
+
   head: () => ({
     meta: [
       { title: "Planos e Preços — Connect-Med" },
