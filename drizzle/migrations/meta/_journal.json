@@ -8,6 +8,13 @@
       "when": 1789042947895,
       "tag": "0000_create_academy_courses_lessons",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789647841760,
+      "tag": "0001_academy_modules_quizzes_progress",
+      "breakpoints": true
     }
   ]
 }

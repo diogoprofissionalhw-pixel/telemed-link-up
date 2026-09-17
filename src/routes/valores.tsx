@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
+import { features } from "@/lib/features";
+
 
 const PLANS = [
   {
@@ -37,6 +39,11 @@ function formatBRL(v: number) {
 }
 
 export const Route = createFileRoute("/valores")({
+  // Página ocultada temporariamente pela chave features.showPricing.
+  beforeLoad: () => {
+    if (!features.showPricing) throw redirect({ to: "/" });
+  },
+
   head: () => ({
     meta: [
       { title: "Planos e Preços — Connect-Med" },

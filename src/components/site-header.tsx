@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationsBell } from "@/components/notifications-bell";
+import { features } from "@/lib/features";
+
 
 export function SiteHeader() {
   const { user, profile, signOut } = useAuth();
@@ -36,9 +38,14 @@ export function SiteHeader() {
             <span className="text-sm text-muted-foreground">/</span>
             <Link to="/academy" className={linkClass("/academy")}>Academy</Link>
             <span className="text-sm text-muted-foreground">/</span>
-            <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
-            <span className="text-sm text-muted-foreground">/</span>
+            {features.showPricing && (
+              <>
+                <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
+                <span className="text-sm text-muted-foreground">/</span>
+              </>
+            )}
             <a
+
               href="https://bot-atendimento.vercel.app"
               target="_blank"
               rel="noreferrer"
