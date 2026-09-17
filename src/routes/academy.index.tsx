@@ -114,6 +114,8 @@ const tracks: TrackCard[] = [
 
 function AcademyPage() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const { user, profile } = useAuth();
+
 
   const scrollBy = (dir: 1 | -1) => {
     const el = trackRef.current;
