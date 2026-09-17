@@ -735,38 +735,66 @@ function ManageCoursePage() {
                     Nenhuma aula cadastrada nesta trilha.
                   </div>
                 ) : (
-                  <ul className="flex flex-col gap-2">
-                    {lessons.map((l) => (
-                      <li key={l.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
-                          {l.is_intro ? "0" : l.position}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {l.title} {l.is_intro && <span className="text-xs text-primary">(introdução)</span>}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {modules.find((m) => m.id === l.module_id)?.title ?? "Sem módulo"}
-                            {" · "}
-                            {l.source_type === "upload" ? "Arquivo enviado" : "Link externo"}
-                            {formatDuration(l.duration_seconds) ? ` · ${formatDuration(l.duration_seconds)}` : ""}
-                          </p>
+                  <div className="flex flex-col gap-5">
+                    {[
+                      ...modules.map((m) => ({ id: m.id as string | null, title: m.title })),
+                      { id: null as string | null, title: "Sem módulo" },
+                    ]
+                      .map((group) => ({
+                        ...group,
+                        items: lessons
+                          .filter((l) => (l.module_id ?? null) === group.id)
+                          .slice()
+                          .sort(
+                            (a, b) =>
+                              Number(b.is_intro) - Number(a.is_intro) || a.position - b.position,
+                          ),
+                      }))
+                      .filter((group) => group.items.length > 0)
+                      .map((group) => (
+                        <div key={group.id ?? "sem-modulo"}>
+                          <div className="mb-2 flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-bold text-royal">{group.title}</h3>
+                            <span className="text-xs text-muted-foreground">
+                              {group.items.length} aula{group.items.length > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                          <ul className="flex flex-col gap-2">
+                            {group.items.map((l) => (
+                              <li key={l.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
+                                  {l.is_intro ? "0" : l.position}
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-medium">
+                                    {l.title}{" "}
+                                    {l.is_intro && <span className="text-xs text-primary">(introdução)</span>}
+                                  </p>
+                                  <p className="truncate text-xs text-muted-foreground">
+                                    {l.source_type === "upload" ? "Arquivo enviado" : "Link externo"}
+                                    {formatDuration(l.duration_seconds)
+                                      ? ` · ${formatDuration(l.duration_seconds)}`
+                                      : ""}
+                                  </p>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={() => editLesson(l)} disabled={busy}>
+                                  Editar
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Remover aula"
+                                  onClick={() => removeLesson(l.id)}
+                                  disabled={busy}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => editLesson(l)} disabled={busy}>
-                          Editar
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Remover aula"
-                          onClick={() => removeLesson(l.id)}
-                          disabled={busy}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
+                      ))}
+                  </div>
                 )}
               </section>
             </div>
