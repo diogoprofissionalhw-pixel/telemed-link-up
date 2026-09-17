@@ -14,6 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
+      academy_company_members: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          id: string
+          network_id: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          id?: string
+          network_id: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          id?: string
+          network_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_company_members_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_members_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_members_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_members_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: false
+            referencedRelation: "networks_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_company_track_items: {
+        Row: {
+          course_id: string
+          created_at: string
+          id: string
+          module_id: string | null
+          position: number
+          track_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          position?: number
+          track_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          position?: number
+          track_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_company_track_items_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_track_items_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_track_items_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "academy_company_tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_company_tracks: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          network_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          network_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          network_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_company_tracks_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: true
+            referencedRelation: "networks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_company_tracks_network_id_fkey"
+            columns: ["network_id"]
+            isOneToOne: true
+            referencedRelation: "networks_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academy_courses: {
         Row: {
           accent: string
@@ -50,6 +191,47 @@ export type Database = {
         }
         Relationships: []
       }
+      academy_lesson_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          lesson_id: string
+          percent: number
+          updated_at: string
+          user_id: string
+          watched_seconds: number
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id: string
+          percent?: number
+          updated_at?: string
+          user_id: string
+          watched_seconds?: number
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          percent?: number
+          updated_at?: string
+          user_id?: string
+          watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academy_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academy_lessons: {
         Row: {
           course_id: string
@@ -59,8 +241,12 @@ export type Database = {
           id: string
           is_intro: boolean
           is_published: boolean
+          module_id: string | null
           position: number
           source_type: string
+          summary: string | null
+          summary_images: Json
+          summary_references: string[]
           title: string
           updated_at: string
           video_path: string | null
@@ -74,8 +260,12 @@ export type Database = {
           id?: string
           is_intro?: boolean
           is_published?: boolean
+          module_id?: string | null
           position?: number
           source_type?: string
+          summary?: string | null
+          summary_images?: Json
+          summary_references?: string[]
           title: string
           updated_at?: string
           video_path?: string | null
@@ -89,8 +279,12 @@ export type Database = {
           id?: string
           is_intro?: boolean
           is_published?: boolean
+          module_id?: string | null
           position?: number
           source_type?: string
+          summary?: string | null
+          summary_images?: Json
+          summary_references?: string[]
           title?: string
           updated_at?: string
           video_path?: string | null
@@ -102,6 +296,210 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_lessons_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          position?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academy_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_quiz_attempts: {
+        Row: {
+          attempt_no: number
+          correct_count: number
+          created_at: string
+          id: string
+          passed: boolean
+          quiz_id: string
+          total_count: number
+          user_id: string
+        }
+        Insert: {
+          attempt_no?: number
+          correct_count?: number
+          created_at?: string
+          id?: string
+          passed?: boolean
+          quiz_id: string
+          total_count?: number
+          user_id: string
+        }
+        Update: {
+          attempt_no?: number
+          correct_count?: number
+          created_at?: string
+          id?: string
+          passed?: boolean
+          quiz_id?: string
+          total_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "academy_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_quiz_options: {
+        Row: {
+          id: string
+          is_correct: boolean
+          label: string
+          position: number
+          question_id: string
+        }
+        Insert: {
+          id?: string
+          is_correct?: boolean
+          label: string
+          position?: number
+          question_id: string
+        }
+        Update: {
+          id?: string
+          is_correct?: boolean
+          label?: string
+          position?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_quiz_options_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "academy_quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_quiz_questions: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          prompt: string
+          quiz_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          prompt: string
+          quiz_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          prompt?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "academy_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academy_quizzes: {
+        Row: {
+          created_at: string
+          id: string
+          is_published: boolean
+          lesson_id: string | null
+          max_attempts: number
+          module_id: string | null
+          scope: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          lesson_id?: string | null
+          max_attempts?: number
+          module_id?: string | null
+          scope: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          lesson_id?: string | null
+          max_attempts?: number
+          module_id?: string | null
+          scope?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academy_quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academy_lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academy_quizzes_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "academy_modules"
             referencedColumns: ["id"]
           },
         ]
