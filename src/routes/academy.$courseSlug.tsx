@@ -212,15 +212,19 @@ function CoursePage() {
     saveProgress(Math.round(el.currentTime), percent);
   };
 
-  const openLessonQuiz = () => {
-    if (!current) return;
-    const st = lessonState(current.id);
+  const openQuizForLesson = (lessonId: string) => {
+    const st = lessonState(lessonId);
     if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
       toast.error("Assista a aula até o fim para liberar o quiz.");
       return;
     }
-    setQuizTarget({ scope: "lesson", lessonId: current.id });
+    setQuizTarget({ scope: "lesson", lessonId });
     setQuizOpen(true);
+  };
+
+  const openLessonQuiz = () => {
+    if (!current) return;
+    openQuizForLesson(current.id);
   };
 
   const downloadSummary = async () => {
@@ -244,8 +248,6 @@ function CoursePage() {
   };
 
   const currentState = current ? lessonState(current.id) : { percent: 0, completed: false };
-  const quizUnlocked =
-    isMaster || currentState.completed || currentState.percent >= WATCHED_THRESHOLD;
 
   return (
     <div className="min-h-screen bg-background">
@@ -396,17 +398,8 @@ function CoursePage() {
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                           <CheckCircle2 className="h-4 w-4" /> Aula concluída
                         </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="gap-2"
-                          disabled={!quizUnlocked}
-                          onClick={openLessonQuiz}
-                        >
-                          <ListChecks className="h-4 w-4" /> Fazer o quiz da aula
-                        </Button>
-                      )}
-                      {playback?.kind === "embed" && (
+                      ) : null}
+                      {playback?.kind === "embed" && !currentState.completed && (
                         <Button size="sm" variant="outline" onClick={() => saveProgress(0, 100)}>
                           Já assisti este vídeo
                         </Button>
@@ -417,17 +410,6 @@ function CoursePage() {
                         </Button>
                       )}
                     </div>
-                    {!currentState.completed && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {quizUnlocked
-                          ? "A aula é marcada como concluída somente após você acertar todo o quiz"
-                          : "Assista a aula até o fim para liberar o quiz"}
-                        {lessonQuiz(current.id)
-                          ? ` (tentativas usadas: ${lessonQuiz(current.id)?.attemptsUsed}/${lessonQuiz(current.id)?.maxAttempts})`
-                          : ""}
-                        .
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
@@ -517,6 +499,36 @@ function CoursePage() {
                                 <PlayCircle className="h-4 w-4 shrink-0 text-primary" />
                               )}
                             </button>
+
+                            {(() => {
+                              const q = lessonQuiz(l.id);
+                              if (!q || q.questionCount === 0) return null;
+                              const canTakeQuiz = isMaster || st.completed || st.percent >= WATCHED_THRESHOLD;
+                              return (
+                                <div className="mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-dashed px-3 py-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {q.passed
+                                      ? "Quiz aprovado"
+                                      : canTakeQuiz
+                                        ? `Quiz · ${q.attemptsUsed}/${q.maxAttempts} tentativas`
+                                        : "Assista a aula até o fim para liberar o quiz"}
+                                  </span>
+                                  {q.passed ? (
+                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 gap-1.5 text-xs"
+                                      disabled={!canTakeQuiz}
+                                      onClick={() => openQuizForLesson(l.id)}
+                                    >
+                                      <ListChecks className="h-3.5 w-3.5" /> Fazer quiz
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </li>
                         );
                       })}
