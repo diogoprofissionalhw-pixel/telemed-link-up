@@ -84,7 +84,7 @@ export const getAcademyCourse = createServerFn({ method: "GET" })
         .order("position", { ascending: true }),
     ]);
 
-    if (lErr) return { course: course as AcademyCourse, ...empty, error: lErr.message };
+    if (lErr) return { ...empty, course: course as AcademyCourse, error: lErr.message };
 
     const allLessons: AcademyLessonMeta[] = (lessons ?? []).map((l) => ({
       id: l.id,

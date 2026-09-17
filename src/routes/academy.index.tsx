@@ -17,6 +17,9 @@ import logoAcademy from "@/assets/connect-academy-logo-v5.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
+import { useAuth } from "@/lib/auth-context";
+import { isMasterEmail } from "@/lib/master-access";
+
 
 export const Route = createFileRoute("/academy/")({
   head: () => ({
@@ -111,6 +114,8 @@ const tracks: TrackCard[] = [
 
 function AcademyPage() {
   const trackRef = useRef<HTMLDivElement>(null);
+  const { user, profile } = useAuth();
+
 
   const scrollBy = (dir: 1 | -1) => {
     const el = trackRef.current;
@@ -123,9 +128,22 @@ function AcademyPage() {
       <SiteHeader />
 
       <main>
-        <div className="mx-auto max-w-6xl px-4 pt-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 pt-6">
           <BackButton to="/" label="Voltar ao Connect-Med" />
+          <div className="flex flex-wrap gap-2">
+            {profile?.account_type === "network" && (
+              <Link to="/academy/empresa">
+                <Button variant="outline">Painel da minha empresa</Button>
+              </Link>
+            )}
+            {isMasterEmail(user?.email) && (
+              <Link to="/academy/progresso">
+                <Button variant="outline">Progresso dos alunos</Button>
+              </Link>
+            )}
+          </div>
         </div>
+
 
         {/* Hero */}
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
