@@ -113,7 +113,8 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
   for (const m of modules ?? []) {
     if (previousDone) unlockedModuleIds.push(m.id);
     const moduleLessons = lessonRows.filter((l) => l.moduleId === m.id);
-    const lessonsDone = moduleLessons.length > 0 && moduleLessons.every((l) => l.completed);
+    // Módulo sem aulas publicadas não pode travar a progressão.
+    const lessonsDone = moduleLessons.every((l) => l.completed);
     const moduleQuiz = quizStatuses.find((q) => q.scope === "module" && q.moduleId === m.id);
     const quizDone = !moduleQuiz || moduleQuiz.questionCount === 0 || moduleQuiz.passed;
     const done = lessonsDone && quizDone;
@@ -298,6 +299,31 @@ export const submitQuizAttempt = createServerFn({ method: "POST" })
       .eq("id", data.quizId)
       .maybeSingle();
     if (!quiz) return { ok: false as const, error: "Quiz não encontrado.", passed: false };
+
+    // Quiz de módulo só pode ser respondido com todas as aulas do módulo concluídas.
+    if (quiz.scope === "module" && quiz.module_id) {
+      const { data: moduleLessons } = await supabaseAdmin
+        .from("academy_lessons")
+        .select("id")
+        .eq("module_id", quiz.module_id)
+        .eq("is_published", true);
+      const ids = (moduleLessons ?? []).map((l) => l.id);
+      if (ids.length > 0) {
+        const { data: done } = await supabaseAdmin
+          .from("academy_lesson_progress")
+          .select("lesson_id")
+          .eq("user_id", context.userId)
+          .in("lesson_id", ids)
+          .not("completed_at", "is", null);
+        if ((done ?? []).length < ids.length) {
+          return {
+            ok: false as const,
+            error: "Conclua todas as aulas do módulo antes do quiz final.",
+            passed: false,
+          };
+        }
+      }
+    }
 
     const { data: attempts } = await supabaseAdmin
       .from("academy_quiz_attempts")
