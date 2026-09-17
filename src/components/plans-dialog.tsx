@@ -71,6 +71,28 @@ export function PlansDialog({
     navigate({ to: "/auth", search: { mode: "signup" } });
   };
 
+  // Planos ocultos temporariamente (features.showPricing): mostramos apenas o
+  // aviso de liberação de conteúdo, sem preços.
+  if (!features.showPricing) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>
+              Este conteúdo é liberado pela sua empresa parceira ou pelo administrador da Academy.
+            </DialogDescription>
+          </DialogHeader>
+          <Button className="w-full" onClick={goSignup}>
+            Criar minha conta
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
