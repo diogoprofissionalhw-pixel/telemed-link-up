@@ -214,13 +214,23 @@ function CoursePage() {
 
   const openQuizForLesson = (lessonId: string) => {
     const st = lessonState(lessonId);
-    if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
-      toast.error("Assista a aula até o fim para liberar o quiz.");
+    const q = lessonQuiz(lessonId);
+    if (!isMaster && !st.completed && st.percent < WATCHED_THRESHOLD) {
+      toast.error(
+        `Quiz bloqueado: você assistiu ${Math.round(st.percent)}% desta aula. É preciso assistir pelo menos ${WATCHED_THRESHOLD}% (até o fim do vídeo) para liberar o quiz.`,
+      );
+      return;
+    }
+    if (q && !q.passed && q.attemptsUsed >= q.maxAttempts) {
+      toast.error(
+        `Quiz bloqueado: você usou as ${q.maxAttempts} tentativas. Assista a aula novamente até o fim para liberar novas tentativas.`,
+      );
       return;
     }
     setQuizTarget({ scope: "lesson", lessonId });
     setQuizOpen(true);
   };
+
 
   const openLessonQuiz = () => {
     if (!current) return;
@@ -503,32 +513,62 @@ function CoursePage() {
                             {(() => {
                               const q = lessonQuiz(l.id);
                               if (!q || q.questionCount === 0) return null;
-                              const canTakeQuiz = isMaster || st.completed || st.percent >= WATCHED_THRESHOLD;
+                              if (!isCurrent) return null;
+                              const watched = isMaster || st.completed || st.percent >= WATCHED_THRESHOLD;
+                              const attemptsLeft = Math.max(0, q.maxAttempts - q.attemptsUsed);
+                              const locked = !q.passed && (!watched || attemptsLeft === 0);
+                              const reason = !watched
+                                ? `Bloqueado · assista até o fim (${Math.round(st.percent)}% de ${WATCHED_THRESHOLD}%)`
+                                : attemptsLeft === 0
+                                  ? "Bloqueado · tentativas esgotadas, reveja a aula"
+                                  : `${q.questionCount} perguntas · ${attemptsLeft} tentativa(s) restante(s)`;
                               return (
-                                <div className="mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-dashed px-3 py-2">
-                                  <span className="text-xs text-muted-foreground">
-                                    {q.passed
-                                      ? "Quiz aprovado"
-                                      : canTakeQuiz
-                                        ? `Quiz · ${q.attemptsUsed}/${q.maxAttempts} tentativas`
-                                        : "Assista a aula até o fim para liberar o quiz"}
+                                <div
+                                  className={`mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-dashed px-3 py-2 ${
+                                    q.passed
+                                      ? "border-primary/40 bg-primary/5"
+                                      : locked
+                                        ? "border-muted-foreground/30 bg-muted/50"
+                                        : "border-primary/40 bg-primary/5"
+                                  }`}
+                                >
+                                  <span className="min-w-0 flex-1">
+                                    <span className="flex items-center gap-1.5 text-xs font-medium">
+                                      {locked ? (
+                                        <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+                                      ) : (
+                                        <ListChecks className="h-3.5 w-3.5 text-primary" />
+                                      )}
+                                      Quiz da aula
+                                    </span>
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                      {q.passed ? "Aprovado" : reason}
+                                    </span>
                                   </span>
                                   {q.passed ? (
                                     <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                                   ) : (
                                     <Button
                                       size="sm"
-                                      variant="outline"
-                                      className="h-7 gap-1.5 text-xs"
-                                      disabled={!canTakeQuiz}
+                                      variant={locked ? "secondary" : "outline"}
+                                      className="h-7 shrink-0 gap-1.5 text-xs"
                                       onClick={() => openQuizForLesson(l.id)}
                                     >
-                                      <ListChecks className="h-3.5 w-3.5" /> Fazer quiz
+                                      {locked ? (
+                                        <>
+                                          <Lock className="h-3.5 w-3.5" /> Bloqueado
+                                        </>
+                                      ) : (
+                                        <>
+                                          <ListChecks className="h-3.5 w-3.5" /> Fazer quiz
+                                        </>
+                                      )}
                                     </Button>
                                   )}
                                 </div>
                               );
                             })()}
+
                           </li>
                         );
                       })}
