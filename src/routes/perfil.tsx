@@ -603,22 +603,6 @@ function DoctorRegistration({
                 </div>
               )}
 
-              {crmStatus !== "verified" && (
-                <CrmCtaBanner
-                  onClick={() => setBenefitsOpen(true)}
-                />
-              )}
-
-              <CrmBenefitsDialog
-                open={benefitsOpen}
-                onOpenChange={setBenefitsOpen}
-                onValidate={() => {
-                  setBenefitsOpen(false);
-                  setTimeout(() => {
-                    document.getElementById("crm-validation-card")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  }, 150);
-                }}
-              />
 
 
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)}>
