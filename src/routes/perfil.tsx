@@ -156,7 +156,6 @@ function DoctorRegistration({
 }: { userId: string; fullName: string; email: string; onSaved: () => void }) {
   // Section state
   const [linkedinConnected, setLinkedinConnected] = useState(false);
-  const [showForm, setShowForm] = useState(false);
 
   // Basic
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -272,7 +271,6 @@ function DoctorRegistration({
         setIsPremium(!!(doc as any).is_premium);
         setPremiumUntil((doc as any).premium_until ?? null);
 
-        if (doc.crm) setShowForm(true);
       }
       if (exps?.length) setExperiences(exps.map(e => ({ id: e.id, role: e.role, institution: e.institution, start_date: e.start_date, end_date: e.end_date ?? "", description: e.description ?? "" })));
       if (certs?.length) setCertifications(certs.map(c => ({ id: c.id, title: c.title, issuer: c.issuer ?? "", issued_year: c.issued_year ?? "" })));
@@ -310,7 +308,6 @@ function DoctorRegistration({
       setPublications(m.publications.map(p => ({ ...p })));
       setCrmUf(m.state);
       setLinkedinConnected(true);
-      setShowForm(true);
       toast.success("Dados do LinkedIn importados! Preencha os campos médicos para finalizar.", { id: "li", duration: 5000 });
     }, 1100);
   };
@@ -583,10 +580,23 @@ function DoctorRegistration({
       <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* MAIN COLUMN */}
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {!showForm ? (
-            <AuthChoice onLinkedIn={connectLinkedIn} onManual={() => setShowForm(true)} />
-          ) : (
-            <>
+          <>
+              <div className="flex flex-col gap-4 rounded-xl border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <Linkedin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Preencha mais rápido com o LinkedIn</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Opcional. Você também pode preencher todos os campos manualmente.</p>
+                  </div>
+                </div>
+                <Button type="button" variant="outline" onClick={connectLinkedIn} className="shrink-0 gap-2">
+                  <Linkedin className="h-4 w-4" />
+                  Usar LinkedIn
+                </Button>
+              </div>
+
               {linkedinConnected && (
                 <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                   <Check className="h-4 w-4" /> Dados importados. Revise e preencha os campos médicos abaixo.
@@ -1077,51 +1087,14 @@ function DoctorRegistration({
                 </Button>
               </div>
             </>
-          )}
         </div>
 
         {/* SIDEBAR */}
-        {showForm && (
-          <aside className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto space-y-4 pr-1">
-            <SummaryCard avatarUrl={avatarUrl} name={name} headline={headline} extras={extraSpecs} progressPct={progressPct} />
-            <ChecklistCard items={checklist} progressPct={progressPct} onItemClick={goTab} />
-          </aside>
-        )}
+        <aside className="lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto space-y-4 pr-1">
+          <SummaryCard avatarUrl={avatarUrl} name={name} headline={headline} extras={extraSpecs} progressPct={progressPct} />
+          <ChecklistCard items={checklist} progressPct={progressPct} onItemClick={goTab} />
+        </aside>
       </div>
-    </div>
-  );
-}
-
-/* ================== AUTH CHOICE ================== */
-
-function AuthChoice({ onLinkedIn, onManual }: { onLinkedIn: () => void; onManual: () => void }) {
-  return (
-    <div className="rounded-2xl border bg-white p-6 sm:p-8 shadow-sm">
-      <h1 className="text-3xl font-bold text-gray-900 tracking-tight"
-        style={{ fontFamily: '"Poppins", "Inter", system-ui, sans-serif' }}>
-        Crie seu Perfil Profissional
-      </h1>
-      <p className="mt-2 text-gray-600">
-        Conecte-se com redes de telemedicina e acesse plantões.
-      </p>
-
-      <button onClick={onLinkedIn}
-        className="mt-8 inline-flex w-full items-center justify-center gap-2.5 rounded-lg px-5 py-3.5 text-base font-semibold text-white shadow-sm transition hover:opacity-95"
-        style={{ backgroundColor: "#0A66C2" }}>
-        <Linkedin className="h-5 w-5" /> Entrar com LinkedIn
-      </button>
-      <p className="mt-2 text-sm text-gray-500 text-center">
-        Conecte sua conta LinkedIn para auto-preencher 70% dos seus dados profissionais.
-      </p>
-
-      <div className="my-6 flex items-center gap-3 text-xs uppercase text-gray-400">
-        <div className="h-px flex-1 bg-gray-200" /> ou <div className="h-px flex-1 bg-gray-200" />
-      </div>
-
-      <button onClick={onManual}
-        className="block w-full text-center text-sm font-semibold text-emerald-700 hover:text-emerald-800">
-        Preencher formulário manualmente →
-      </button>
     </div>
   );
 }
