@@ -124,18 +124,13 @@ export const getAcademyCourse = createServerFn({ method: "GET" })
     };
   });
 
-async function hasProAccess(context: {
+// Acesso à Academy: basta estar autenticado (login).
+async function hasProAccess(_context: {
   supabase: { from: (t: "doctors") => any };
   userId: string;
   claims: Record<string, unknown>;
 }) {
-  if (isMasterEmail(context.claims["email"] as string | undefined)) return true;
-  const { data } = await context.supabase
-    .from("doctors")
-    .select("is_premium")
-    .eq("id", context.userId)
-    .maybeSingle();
-  return Boolean(data?.is_premium);
+  return true;
 }
 
 function requireMaster(claims: Record<string, unknown>) {
