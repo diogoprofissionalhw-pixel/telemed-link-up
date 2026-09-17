@@ -157,6 +157,11 @@ function CoursePage() {
   };
   const lessonState = (lessonId: string) =>
     progress?.lessons.find((l) => l.lessonId === lessonId) ?? { percent: 0, completed: false };
+  const isLessonUnlocked = (lessonId: string, moduleIndex: number, lessonIndex: number) => {
+    if (isMaster) return true;
+    if (!progress) return moduleIndex === 0 && lessonIndex === 0;
+    return progress.unlockedLessonIds.includes(lessonId);
+  };
   const moduleQuiz = (moduleId: string) =>
     progress?.quizzes.find((q) => q.scope === "module" && q.moduleId === moduleId);
   const lessonQuiz = (lessonId: string) =>
@@ -166,8 +171,14 @@ function CoursePage() {
     m.lessons.some((l) => l.id === current?.id),
   );
   const currentModule = currentModuleIndex >= 0 ? modules[currentModuleIndex] : null;
+  const currentLessonIndex = currentModule
+    ? currentModule.lessons.findIndex((l) => l.id === current?.id)
+    : -1;
   const currentLessonLocked =
-    !!current && !!currentModule && !isModuleUnlocked(currentModule.id, currentModuleIndex);
+    !!current &&
+    !!currentModule &&
+    (!isModuleUnlocked(currentModule.id, currentModuleIndex) ||
+      !isLessonUnlocked(current.id, currentModuleIndex, currentLessonIndex));
 
   useEffect(() => {
     if (!current || locked || currentLessonLocked) {
