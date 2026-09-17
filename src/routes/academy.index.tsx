@@ -123,9 +123,22 @@ function AcademyPage() {
       <SiteHeader />
 
       <main>
-        <div className="mx-auto max-w-6xl px-4 pt-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 pt-6">
           <BackButton to="/" label="Voltar ao Connect-Med" />
+          <div className="flex flex-wrap gap-2">
+            {profile?.account_type === "network" && (
+              <Link to="/academy/empresa">
+                <Button variant="outline">Painel da minha empresa</Button>
+              </Link>
+            )}
+            {isMasterEmail(user?.email) && (
+              <Link to="/academy/progresso">
+                <Button variant="outline">Progresso dos alunos</Button>
+              </Link>
+            )}
+          </div>
         </div>
+
 
         {/* Hero */}
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
