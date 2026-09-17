@@ -113,11 +113,24 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
 
   const completedModuleIds: string[] = [];
   const unlockedModuleIds: string[] = [];
+  const unlockedLessonIds: string[] = [];
   let previousDone = true;
 
   for (const m of modules ?? []) {
-    if (previousDone) unlockedModuleIds.push(m.id);
+    const moduleUnlocked = previousDone;
+    if (moduleUnlocked) unlockedModuleIds.push(m.id);
     const moduleLessons = lessonRows.filter((l) => l.moduleId === m.id);
+
+    // Aula seguinte só abre depois da anterior concluída.
+    if (moduleUnlocked) {
+      let previousLessonDone = true;
+      for (const l of moduleLessons) {
+        if (!previousLessonDone) break;
+        unlockedLessonIds.push(l.lessonId);
+        previousLessonDone = l.completed;
+      }
+    }
+
     // Módulo sem aulas publicadas não pode travar a progressão.
     const lessonsDone = moduleLessons.every((l) => l.completed);
     const moduleQuiz = quizStatuses.find((q) => q.scope === "module" && q.moduleId === m.id);
@@ -132,6 +145,7 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
     quizzes: quizStatuses,
     unlockedModuleIds,
     completedModuleIds,
+    unlockedLessonIds,
     courseCompleted: (modules ?? []).length > 0 && completedModuleIds.length === (modules ?? []).length,
   };
 }
