@@ -36,6 +36,7 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as ValoresRouteImport } from './routes/valores'
 import { Route as AcademyIndexRouteImport } from './routes/academy.index'
 import { Route as AcademyCourseSlugRouteImport } from './routes/academy.$courseSlug'
+import { Route as AcademyProgressoRouteImport } from './routes/academy.progresso'
 import { Route as RedeNetworkIdRouteImport } from './routes/rede.$networkId'
 import { Route as AcademyGerenciarCourseSlugRouteImport } from './routes/academy.gerenciar.$courseSlug'
 
@@ -174,6 +175,11 @@ const AcademyCourseSlugRoute = AcademyCourseSlugRouteImport.update({
   path: '/$courseSlug',
   getParentRoute: () => AcademyRoute,
 } as any)
+const AcademyProgressoRoute = AcademyProgressoRouteImport.update({
+  id: '/progresso',
+  path: '/progresso',
+  getParentRoute: () => AcademyRoute,
+} as any)
 const RedeNetworkIdRoute = RedeNetworkIdRouteImport.update({
   id: '/rede/$networkId',
   path: '/rede/$networkId',
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/progresso': typeof AcademyProgressoRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy/': typeof AcademyIndexRoute
   '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/progresso': typeof AcademyProgressoRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy': typeof AcademyIndexRoute
   '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
@@ -275,6 +283,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/valores': typeof ValoresRoute
   '/academy/$courseSlug': typeof AcademyCourseSlugRoute
+  '/academy/progresso': typeof AcademyProgressoRoute
   '/rede/$networkId': typeof RedeNetworkIdRoute
   '/academy/': typeof AcademyIndexRoute
   '/academy/gerenciar/$courseSlug': typeof AcademyGerenciarCourseSlugRoute
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/valores'
     | '/academy/$courseSlug'
+    | '/academy/progresso'
     | '/rede/$networkId'
     | '/academy/'
     | '/academy/gerenciar/$courseSlug'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/valores'
     | '/academy/$courseSlug'
+    | '/academy/progresso'
     | '/rede/$networkId'
     | '/academy'
     | '/academy/gerenciar/$courseSlug'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/valores'
     | '/academy/$courseSlug'
+    | '/academy/progresso'
     | '/rede/$networkId'
     | '/academy/'
     | '/academy/gerenciar/$courseSlug'
@@ -594,6 +606,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AcademyCourseSlugRouteImport
       parentRoute: typeof AcademyRoute
     }
+    '/academy/progresso': {
+      id: '/academy/progresso'
+      path: '/progresso'
+      fullPath: '/academy/progresso'
+      preLoaderRoute: typeof AcademyProgressoRouteImport
+      parentRoute: typeof AcademyRoute
+    }
     '/rede/$networkId': {
       id: '/rede/$networkId'
       path: '/rede/$networkId'
@@ -613,12 +632,14 @@ declare module '@tanstack/react-router' {
 
 interface AcademyRouteChildren {
   AcademyCourseSlugRoute: typeof AcademyCourseSlugRoute
+  AcademyProgressoRoute: typeof AcademyProgressoRoute
   AcademyIndexRoute: typeof AcademyIndexRoute
   AcademyGerenciarCourseSlugRoute: typeof AcademyGerenciarCourseSlugRoute
 }
 
 const AcademyRouteChildren: AcademyRouteChildren = {
   AcademyCourseSlugRoute: AcademyCourseSlugRoute,
+  AcademyProgressoRoute: AcademyProgressoRoute,
   AcademyIndexRoute: AcademyIndexRoute,
   AcademyGerenciarCourseSlugRoute: AcademyGerenciarCourseSlugRoute,
 }
