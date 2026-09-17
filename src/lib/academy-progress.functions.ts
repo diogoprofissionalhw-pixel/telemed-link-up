@@ -49,9 +49,10 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
       .order("position", { ascending: true }),
     supabaseAdmin
       .from("academy_lessons")
-      .select("id, module_id")
+      .select("id, module_id, position")
       .eq("course_id", courseId)
-      .eq("is_published", true),
+      .eq("is_published", true)
+      .order("position", { ascending: true }),
   ]);
 
   const lessonIds = (lessons ?? []).map((l) => l.id);
