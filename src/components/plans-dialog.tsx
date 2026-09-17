@@ -9,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { features } from "@/lib/features";
+
 
 type Plan = {
   id: "free" | "pro" | "premium";
