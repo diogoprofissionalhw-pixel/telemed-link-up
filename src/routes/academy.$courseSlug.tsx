@@ -474,15 +474,16 @@ function CoursePage() {
                         const isCurrent = current?.id === l.id;
                         const st = lessonState(l.id);
                         const dur = formatDuration(l.duration_seconds);
+                        const lessonOpen = unlocked && isLessonUnlocked(l.id, mi, i);
                         return (
                           <li key={l.id}>
                             <button
                               type="button"
-                              disabled={!unlocked}
+                              disabled={!lessonOpen}
                               onClick={() => setCurrent(l)}
                               className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
                                 isCurrent ? "border-primary bg-primary/5" : "hover:bg-muted/60"
-                              } ${unlocked ? "" : "cursor-not-allowed opacity-60"}`}
+                              } ${lessonOpen ? "" : "cursor-not-allowed opacity-60"}`}
                             >
                               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
                                 {l.is_intro ? "0" : i + (m.lessons[0]?.is_intro ? 0 : 1)}
@@ -492,9 +493,13 @@ function CoursePage() {
                                   {l.is_intro ? "Introdução" : l.title}
                                 </span>
                                 <span className="block truncate text-xs text-muted-foreground">
-                                  {l.is_intro ? l.title : l.description ?? "Aula em vídeo"}
+                                  {!lessonOpen
+                                    ? "Conclua a aula anterior para liberar"
+                                    : l.is_intro
+                                      ? l.title
+                                      : l.description ?? "Aula em vídeo"}
                                 </span>
-                                {user && unlocked && st.percent > 0 && !st.completed && (
+                                {user && lessonOpen && st.percent > 0 && !st.completed && (
                                   <Progress value={st.percent} className="mt-1.5 h-1" />
                                 )}
                               </span>
@@ -503,7 +508,7 @@ function CoursePage() {
                                   {dur}
                                 </span>
                               )}
-                              {!unlocked ? (
+                              {!lessonOpen ? (
                                 <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                               ) : st.completed ? (
                                 <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
