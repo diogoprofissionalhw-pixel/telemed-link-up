@@ -212,15 +212,19 @@ function CoursePage() {
     saveProgress(Math.round(el.currentTime), percent);
   };
 
-  const openLessonQuiz = () => {
-    if (!current) return;
-    const st = lessonState(current.id);
+  const openQuizForLesson = (lessonId: string) => {
+    const st = lessonState(lessonId);
     if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
       toast.error("Assista a aula até o fim para liberar o quiz.");
       return;
     }
-    setQuizTarget({ scope: "lesson", lessonId: current.id });
+    setQuizTarget({ scope: "lesson", lessonId });
     setQuizOpen(true);
+  };
+
+  const openLessonQuiz = () => {
+    if (!current) return;
+    openQuizForLesson(current.id);
   };
 
   const downloadSummary = async () => {
