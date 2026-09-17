@@ -400,17 +400,8 @@ function CoursePage() {
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
                           <CheckCircle2 className="h-4 w-4" /> Aula concluída
                         </span>
-                      ) : (
-                        <Button
-                          size="sm"
-                          className="gap-2"
-                          disabled={!quizUnlocked}
-                          onClick={openLessonQuiz}
-                        >
-                          <ListChecks className="h-4 w-4" /> Fazer o quiz da aula
-                        </Button>
-                      )}
-                      {playback?.kind === "embed" && (
+                      ) : null}
+                      {playback?.kind === "embed" && !currentState.completed && (
                         <Button size="sm" variant="outline" onClick={() => saveProgress(0, 100)}>
                           Já assisti este vídeo
                         </Button>
@@ -421,17 +412,6 @@ function CoursePage() {
                         </Button>
                       )}
                     </div>
-                    {!currentState.completed && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        {quizUnlocked
-                          ? "A aula é marcada como concluída somente após você acertar todo o quiz"
-                          : "Assista a aula até o fim para liberar o quiz"}
-                        {lessonQuiz(current.id)
-                          ? ` (tentativas usadas: ${lessonQuiz(current.id)?.attemptsUsed}/${lessonQuiz(current.id)?.maxAttempts})`
-                          : ""}
-                        .
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
