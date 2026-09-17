@@ -326,7 +326,8 @@ function CoursePage() {
                   <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-navy-foreground">
                     <Lock className="h-9 w-9" />
                     <p className="max-w-sm text-sm">
-                      Este módulo abre depois de concluir todas as aulas e o quiz do módulo anterior.
+                      Esta aula abre depois de concluir a aula anterior. Cada módulo é liberado após
+                      concluir todas as aulas e o quiz do módulo anterior.
                     </p>
                   </div>
                 ) : loadingVideo ? (
