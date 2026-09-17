@@ -319,6 +319,25 @@ export const submitQuizAttempt = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!quiz) return { ok: false as const, error: "Quiz não encontrado.", passed: false };
 
+    // Quiz da aula só pode ser respondido depois de assistir a aula até o fim.
+    if (quiz.scope === "lesson" && quiz.lesson_id) {
+      const { data: row } = await supabaseAdmin
+        .from("academy_lesson_progress")
+        .select("percent, completed_at")
+        .eq("user_id", context.userId)
+        .eq("lesson_id", quiz.lesson_id)
+        .maybeSingle();
+      const watched = row?.percent ?? 0;
+      if (!row?.completed_at && watched < WATCHED_THRESHOLD) {
+        return {
+          ok: false as const,
+          error: "Assista a aula até o fim para liberar o quiz.",
+          passed: false,
+        };
+      }
+    }
+
+
     // Quiz de módulo só pode ser respondido com todas as aulas do módulo concluídas.
     if (quiz.scope === "module" && quiz.module_id) {
       const { data: moduleLessons } = await supabaseAdmin
