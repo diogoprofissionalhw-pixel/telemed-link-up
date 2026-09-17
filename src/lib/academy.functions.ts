@@ -5,7 +5,7 @@ import { isMasterEmail } from "@/lib/master-access";
 
 // Connect-Academy: trilhas > módulos > aulas em vídeo.
 // Leitura pública: apenas metadados (nunca a URL/caminho do vídeo).
-// Reprodução: exige conta + plano Pro (ou conta mestre).
+// Reprodução: basta estar logado (qualquer conta autenticada).
 // Escrita: apenas a conta mestre.
 //
 // Backlog (próxima etapa): certificado de conclusão do curso e benefícios
