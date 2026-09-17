@@ -294,7 +294,7 @@ function CoursePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
           {/* Player */}
           <div>
             <div className="overflow-hidden rounded-2xl border bg-navy" style={{ boxShadow: "var(--shadow-card)" }}>
