@@ -34,6 +34,7 @@ import {
 import {
   getMyCourseProgress,
   saveLessonProgress,
+  WATCHED_THRESHOLD,
   type CourseProgress,
 } from "@/lib/academy-progress.functions";
 import { getMyCompanyTrack } from "@/lib/academy-company.functions";
@@ -157,6 +158,11 @@ function CoursePage() {
   };
   const lessonState = (lessonId: string) =>
     progress?.lessons.find((l) => l.lessonId === lessonId) ?? { percent: 0, completed: false };
+  const isLessonUnlocked = (lessonId: string, moduleIndex: number, lessonIndex: number) => {
+    if (isMaster) return true;
+    if (!progress) return moduleIndex === 0 && lessonIndex === 0;
+    return progress.unlockedLessonIds.includes(lessonId);
+  };
   const moduleQuiz = (moduleId: string) =>
     progress?.quizzes.find((q) => q.scope === "module" && q.moduleId === moduleId);
   const lessonQuiz = (lessonId: string) =>
@@ -166,8 +172,14 @@ function CoursePage() {
     m.lessons.some((l) => l.id === current?.id),
   );
   const currentModule = currentModuleIndex >= 0 ? modules[currentModuleIndex] : null;
+  const currentLessonIndex = currentModule
+    ? currentModule.lessons.findIndex((l) => l.id === current?.id)
+    : -1;
   const currentLessonLocked =
-    !!current && !!currentModule && !isModuleUnlocked(currentModule.id, currentModuleIndex);
+    !!current &&
+    !!currentModule &&
+    (!isModuleUnlocked(currentModule.id, currentModuleIndex) ||
+      !isLessonUnlocked(current.id, currentModuleIndex, currentLessonIndex));
 
   useEffect(() => {
     if (!current || locked || currentLessonLocked) {
@@ -202,6 +214,11 @@ function CoursePage() {
 
   const openLessonQuiz = () => {
     if (!current) return;
+    const st = lessonState(current.id);
+    if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
+      toast.error("Assista a aula até o fim para liberar o quiz.");
+      return;
+    }
     setQuizTarget({ scope: "lesson", lessonId: current.id });
     setQuizOpen(true);
   };
@@ -227,6 +244,8 @@ function CoursePage() {
   };
 
   const currentState = current ? lessonState(current.id) : { percent: 0, completed: false };
+  const quizUnlocked =
+    isMaster || currentState.completed || currentState.percent >= WATCHED_THRESHOLD;
 
   return (
     <div className="min-h-screen bg-background">
@@ -307,7 +326,8 @@ function CoursePage() {
                   <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-navy-foreground">
                     <Lock className="h-9 w-9" />
                     <p className="max-w-sm text-sm">
-                      Este módulo abre depois de concluir todas as aulas e o quiz do módulo anterior.
+                      Esta aula abre depois de concluir a aula anterior. Cada módulo é liberado após
+                      concluir todas as aulas e o quiz do módulo anterior.
                     </p>
                   </div>
                 ) : loadingVideo ? (
@@ -377,7 +397,12 @@ function CoursePage() {
                           <CheckCircle2 className="h-4 w-4" /> Aula concluída
                         </span>
                       ) : (
-                        <Button size="sm" className="gap-2" onClick={openLessonQuiz}>
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          disabled={!quizUnlocked}
+                          onClick={openLessonQuiz}
+                        >
                           <ListChecks className="h-4 w-4" /> Fazer o quiz da aula
                         </Button>
                       )}
@@ -394,7 +419,9 @@ function CoursePage() {
                     </div>
                     {!currentState.completed && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        A aula é marcada como concluída somente após você acertar todo o quiz
+                        {quizUnlocked
+                          ? "A aula é marcada como concluída somente após você acertar todo o quiz"
+                          : "Assista a aula até o fim para liberar o quiz"}
                         {lessonQuiz(current.id)
                           ? ` (tentativas usadas: ${lessonQuiz(current.id)?.attemptsUsed}/${lessonQuiz(current.id)?.maxAttempts})`
                           : ""}
@@ -448,15 +475,16 @@ function CoursePage() {
                         const isCurrent = current?.id === l.id;
                         const st = lessonState(l.id);
                         const dur = formatDuration(l.duration_seconds);
+                        const lessonOpen = unlocked && isLessonUnlocked(l.id, mi, i);
                         return (
                           <li key={l.id}>
                             <button
                               type="button"
-                              disabled={!unlocked}
+                              disabled={!lessonOpen}
                               onClick={() => setCurrent(l)}
                               className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors ${
                                 isCurrent ? "border-primary bg-primary/5" : "hover:bg-muted/60"
-                              } ${unlocked ? "" : "cursor-not-allowed opacity-60"}`}
+                              } ${lessonOpen ? "" : "cursor-not-allowed opacity-60"}`}
                             >
                               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold">
                                 {l.is_intro ? "0" : i + (m.lessons[0]?.is_intro ? 0 : 1)}
@@ -466,9 +494,13 @@ function CoursePage() {
                                   {l.is_intro ? "Introdução" : l.title}
                                 </span>
                                 <span className="block truncate text-xs text-muted-foreground">
-                                  {l.is_intro ? l.title : l.description ?? "Aula em vídeo"}
+                                  {!lessonOpen
+                                    ? "Conclua a aula anterior para liberar"
+                                    : l.is_intro
+                                      ? l.title
+                                      : l.description ?? "Aula em vídeo"}
                                 </span>
-                                {user && unlocked && st.percent > 0 && !st.completed && (
+                                {user && lessonOpen && st.percent > 0 && !st.completed && (
                                   <Progress value={st.percent} className="mt-1.5 h-1" />
                                 )}
                               </span>
@@ -477,7 +509,7 @@ function CoursePage() {
                                   {dur}
                                 </span>
                               )}
-                              {!unlocked ? (
+                              {!lessonOpen ? (
                                 <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                               ) : st.completed ? (
                                 <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />

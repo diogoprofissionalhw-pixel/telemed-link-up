@@ -30,8 +30,12 @@ export type CourseProgress = {
   quizzes: QuizStatus[];
   unlockedModuleIds: string[];
   completedModuleIds: string[];
+  unlockedLessonIds: string[];
   courseCompleted: boolean;
 };
+
+/** % mínimo assistido para liberar o quiz da aula. */
+export const WATCHED_THRESHOLD = 95;
 
 async function loadCourseProgress(userId: string, courseId: string): Promise<CourseProgress> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -45,9 +49,10 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
       .order("position", { ascending: true }),
     supabaseAdmin
       .from("academy_lessons")
-      .select("id, module_id")
+      .select("id, module_id, position")
       .eq("course_id", courseId)
-      .eq("is_published", true),
+      .eq("is_published", true)
+      .order("position", { ascending: true }),
   ]);
 
   const lessonIds = (lessons ?? []).map((l) => l.id);
@@ -108,11 +113,24 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
 
   const completedModuleIds: string[] = [];
   const unlockedModuleIds: string[] = [];
+  const unlockedLessonIds: string[] = [];
   let previousDone = true;
 
   for (const m of modules ?? []) {
-    if (previousDone) unlockedModuleIds.push(m.id);
+    const moduleUnlocked = previousDone;
+    if (moduleUnlocked) unlockedModuleIds.push(m.id);
     const moduleLessons = lessonRows.filter((l) => l.moduleId === m.id);
+
+    // Aula seguinte só abre depois da anterior concluída.
+    if (moduleUnlocked) {
+      let previousLessonDone = true;
+      for (const l of moduleLessons) {
+        if (!previousLessonDone) break;
+        unlockedLessonIds.push(l.lessonId);
+        previousLessonDone = l.completed;
+      }
+    }
+
     // Módulo sem aulas publicadas não pode travar a progressão.
     const lessonsDone = moduleLessons.every((l) => l.completed);
     const moduleQuiz = quizStatuses.find((q) => q.scope === "module" && q.moduleId === m.id);
@@ -127,6 +145,7 @@ async function loadCourseProgress(userId: string, courseId: string): Promise<Cou
     quizzes: quizStatuses,
     unlockedModuleIds,
     completedModuleIds,
+    unlockedLessonIds,
     courseCompleted: (modules ?? []).length > 0 && completedModuleIds.length === (modules ?? []).length,
   };
 }
@@ -299,6 +318,25 @@ export const submitQuizAttempt = createServerFn({ method: "POST" })
       .eq("id", data.quizId)
       .maybeSingle();
     if (!quiz) return { ok: false as const, error: "Quiz não encontrado.", passed: false };
+
+    // Quiz da aula só pode ser respondido depois de assistir a aula até o fim.
+    if (quiz.scope === "lesson" && quiz.lesson_id) {
+      const { data: row } = await supabaseAdmin
+        .from("academy_lesson_progress")
+        .select("percent, completed_at")
+        .eq("user_id", context.userId)
+        .eq("lesson_id", quiz.lesson_id)
+        .maybeSingle();
+      const watched = row?.percent ?? 0;
+      if (!row?.completed_at && watched < WATCHED_THRESHOLD) {
+        return {
+          ok: false as const,
+          error: "Assista a aula até o fim para liberar o quiz.",
+          passed: false,
+        };
+      }
+    }
+
 
     // Quiz de módulo só pode ser respondido com todas as aulas do módulo concluídas.
     if (quiz.scope === "module" && quiz.module_id) {
