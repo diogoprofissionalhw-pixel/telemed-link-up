@@ -501,6 +501,36 @@ function CoursePage() {
                                 <PlayCircle className="h-4 w-4 shrink-0 text-primary" />
                               )}
                             </button>
+
+                            {(() => {
+                              const q = lessonQuiz(l.id);
+                              if (!q || q.questionCount === 0) return null;
+                              const canTakeQuiz = isMaster || st.completed || st.percent >= WATCHED_THRESHOLD;
+                              return (
+                                <div className="mt-1.5 flex items-center justify-between gap-2 rounded-xl border border-dashed px-3 py-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {q.passed
+                                      ? "Quiz aprovado"
+                                      : canTakeQuiz
+                                        ? `Quiz · ${q.attemptsUsed}/${q.maxAttempts} tentativas`
+                                        : "Assista a aula até o fim para liberar o quiz"}
+                                  </span>
+                                  {q.passed ? (
+                                    <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 gap-1.5 text-xs"
+                                      disabled={!canTakeQuiz}
+                                      onClick={() => openQuizForLesson(l.id)}
+                                    >
+                                      <ListChecks className="h-3.5 w-3.5" /> Fazer quiz
+                                    </Button>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </li>
                         );
                       })}
