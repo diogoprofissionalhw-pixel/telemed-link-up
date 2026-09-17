@@ -36,9 +36,14 @@ export function SiteHeader() {
             <span className="text-sm text-muted-foreground">/</span>
             <Link to="/academy" className={linkClass("/academy")}>Academy</Link>
             <span className="text-sm text-muted-foreground">/</span>
-            <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
-            <span className="text-sm text-muted-foreground">/</span>
+            {features.showPricing && (
+              <>
+                <Link to="/valores" className={linkClass("/valores")}>Valores</Link>
+                <span className="text-sm text-muted-foreground">/</span>
+              </>
+            )}
             <a
+
               href="https://bot-atendimento.vercel.app"
               target="_blank"
               rel="noreferrer"
