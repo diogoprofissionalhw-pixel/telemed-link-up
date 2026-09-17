@@ -213,6 +213,11 @@ function CoursePage() {
 
   const openLessonQuiz = () => {
     if (!current) return;
+    const st = lessonState(current.id);
+    if (!st.completed && st.percent < WATCHED_THRESHOLD && !isMaster) {
+      toast.error("Assista a aula até o fim para liberar o quiz.");
+      return;
+    }
     setQuizTarget({ scope: "lesson", lessonId: current.id });
     setQuizOpen(true);
   };
