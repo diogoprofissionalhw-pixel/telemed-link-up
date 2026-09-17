@@ -136,11 +136,6 @@ function AcademyPage() {
                 <Button variant="outline">Painel da minha empresa</Button>
               </Link>
             )}
-            {isMasterEmail(user?.email) && (
-              <Link to="/academy/progresso">
-                <Button variant="outline">Progresso dos alunos</Button>
-              </Link>
-            )}
           </div>
         </div>
 
