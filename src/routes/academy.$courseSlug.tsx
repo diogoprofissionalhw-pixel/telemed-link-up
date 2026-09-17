@@ -34,6 +34,7 @@ import {
 import {
   getMyCourseProgress,
   saveLessonProgress,
+  WATCHED_THRESHOLD,
   type CourseProgress,
 } from "@/lib/academy-progress.functions";
 import { getMyCompanyTrack } from "@/lib/academy-company.functions";
