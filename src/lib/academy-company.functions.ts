@@ -225,7 +225,8 @@ export const getCompanyAcademyOverview = createServerFn({ method: "POST" })
     const { data: members } = await supabaseAdmin
       .from("academy_company_members")
       .select("doctor_id")
-      .eq("network_id", context.userId);
+      .eq("network_id", context.userId)
+      .eq("status", "accepted");
     const memberIds = (members ?? []).map((m) => m.doctor_id);
     if (memberIds.length === 0) return { items: [] as CompanyStudentOverview[] };
 
@@ -301,6 +302,7 @@ export const getMyCompanyTrack = createServerFn({ method: "POST" })
       .from("academy_company_members")
       .select("network_id")
       .eq("doctor_id", context.userId)
+      .eq("status", "accepted")
       .maybeSingle();
     if (!link) return { track: null, moduleIds: [] as string[], companyName: null };
 
