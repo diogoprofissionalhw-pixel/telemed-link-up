@@ -21,6 +21,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
 
 import { NetworkAnalytics } from "@/components/network-analytics";
+import { AcademyTeamProgress } from "@/components/academy-team-progress";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -792,6 +793,9 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
 
 
 
+
+      {/* ACADEMY — progresso dos profissionais vinculados pela empresa */}
+      <AcademyTeamProgress />
 
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
