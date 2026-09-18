@@ -310,12 +310,14 @@ export function AppShell({ userType, children }: { userType: UserType; children:
             )}
           </div>
           <div className="flex items-center gap-1">
+            {userType === "doctor" && <AcademyDoctorButton />}
             {userType === "network" && <AcademyTeamButton />}
             <HeaderProfile />
             {user && <NotificationsBell userId={user.id} />}
             {user && <MessagesButton />}
             {hideSidebar && <HeaderActions onSignOut={signOut} />}
           </div>
+
         </div>
         <div>{children}</div>
       </div>
