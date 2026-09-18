@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2, Users } from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
@@ -65,7 +65,9 @@ function CompanyPanelPage() {
   const [courses, setCourses] = useState<AcademyCourse[]>([]);
   const [courseId, setCourseId] = useState("");
   const [courseModules, setCourseModules] = useState<AcademyModuleMeta[]>([]);
-  const [roster, setRoster] = useState<{ doctorId: string; name: string; specialty: string | null }[]>([]);
+  const [roster, setRoster] = useState<
+    { doctorId: string; name: string; specialty: string | null; status: "pending" | "accepted" }[]
+  >([]);
   const [linkable, setLinkable] = useState<{ doctorId: string; name: string; specialty: string | null }[]>([]);
   const [progressRows, setProgressRows] = useState<StudentProgressRow[]>([]);
   const [trackTitle, setTrackTitle] = useState("Trilha da equipe");
@@ -152,7 +154,11 @@ function CompanyPanelPage() {
     try {
       const res = await memberFn({ data: { doctorId, linked } });
       if (!res.ok) throw new Error(res.error ?? "Erro ao atualizar equipe");
-      toast.success(linked ? "Profissional vinculado." : "Vínculo removido.");
+      toast.success(
+        linked
+          ? "Convite enviado — o profissional precisa aceitar para entrar na equipe."
+          : "Vínculo removido.",
+      );
       reload();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao atualizar equipe");
@@ -274,6 +280,15 @@ function CompanyPanelPage() {
                           <p className="truncate text-sm font-medium">{m.name}</p>
                           <p className="truncate text-xs text-muted-foreground">{m.specialty ?? "Médico"}</p>
                         </div>
+                        {m.status === "pending" ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-600">
+                            <Clock3 className="h-3.5 w-3.5" /> Convite pendente
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Na equipe
+                          </span>
+                        )}
                         <Button variant="outline" size="sm" onClick={() => toggleMember(m.doctorId, false)}>
                           Remover
                         </Button>
@@ -297,7 +312,7 @@ function CompanyPanelPage() {
                           <p className="truncate text-xs text-muted-foreground">{d.specialty ?? "Médico"}</p>
                         </div>
                         <Button size="sm" onClick={() => toggleMember(d.doctorId, true)}>
-                          Vincular
+                          Convidar
                         </Button>
                       </li>
                     ))}
