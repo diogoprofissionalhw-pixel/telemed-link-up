@@ -305,9 +305,62 @@ function CompanyPanelPage() {
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Profissionais verificados
                 </h2>
+
+                <div className="mb-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <div className="relative">
+                    <Input
+                      placeholder="Buscar por nome ou especialidade..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pr-8"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        aria-label="Limpar busca"
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+                    <SelectTrigger className="min-w-[10rem]">
+                      <SelectValue placeholder="Especialidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as especialidades</SelectItem>
+                      {Array.from(
+                        new Set(
+                          linkable
+                            .filter((d) => d.specialty?.trim())
+                            .map((d) => d.specialty as string),
+                        ),
+                      )
+                        .sort()
+                        .map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <ul className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto pr-1">
                   {linkable
                     .filter((d) => !roster.some((m) => m.doctorId === d.doctorId))
+                    .filter((d) => {
+                      const q = searchQuery.trim().toLowerCase();
+                      const matchesQuery =
+                        !q ||
+                        d.name.toLowerCase().includes(q) ||
+                        (d.specialty?.toLowerCase() ?? "").includes(q);
+                      const matchesSpecialty =
+                        specialtyFilter === "all" || d.specialty === specialtyFilter;
+                      return matchesQuery && matchesSpecialty;
+                    })
                     .map((d) => (
                       <li key={d.doctorId} className="flex items-center gap-3 rounded-xl border bg-card p-3">
                         <div className="min-w-0 flex-1">
@@ -321,6 +374,7 @@ function CompanyPanelPage() {
                     ))}
                 </ul>
               </section>
+
             </div>
           </TabsContent>
 
