@@ -14,6 +14,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import logoAcademy from "@/assets/connect-academy-logo-v5.png.asset.json";
+import trackFundamentals from "@/assets/academy-tracks/trilha-1-fundamentos.jpeg.asset.json";
+import trackPreparation from "@/assets/academy-tracks/trilha-2-preparacao.jpeg.asset.json";
+import trackSafety from "@/assets/academy-tracks/trilha-3-etica-seguranca.jpeg.asset.json";
+import trackCommunication from "@/assets/academy-tracks/trilha-4-comunicacao.jpg.asset.json";
+import trackAssessment from "@/assets/academy-tracks/trilha-5-avaliacao.jpeg.asset.json";
+import trackTools from "@/assets/academy-tracks/trilha-6-ferramentas.jpeg.asset.json";
+import trackAdvanced from "@/assets/academy-tracks/trilha-7-pratica-avancada.jpg.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
@@ -60,7 +67,7 @@ const tracks: TrackCard[] = [
     description: "Conheça os conceitos, as modalidades e os princípios essenciais do atendimento em saúde a distância.",
     icon: BookOpen,
     bar: "bg-cat-orange",
-    photo: "from-cat-orange/70 to-navy",
+    photo: trackFundamentals.url,
   },
   {
     title: "Trilha 2 — Preparação para o Atendimento Digital",
@@ -68,7 +75,7 @@ const tracks: TrackCard[] = [
     description: "Prepare o ambiente, organize a jornada do paciente e conduza uma consulta remota com qualidade.",
     icon: GraduationCap,
     bar: "bg-cat-purple",
-    photo: "from-cat-purple/70 to-navy",
+    photo: trackPreparation.url,
   },
   {
     title: "Trilha 3 — Ética e Segurança",
@@ -76,7 +83,7 @@ const tracks: TrackCard[] = [
     description: "Aplique consentimento, sigilo, proteção de dados e boas práticas éticas em cada atendimento.",
     icon: ScrollText,
     bar: "bg-cat-sky",
-    photo: "from-cat-sky/70 to-navy",
+    photo: trackSafety.url,
   },
   {
     title: "Trilha 4 — Comunicação Clínica a Distância",
@@ -84,7 +91,7 @@ const tracks: TrackCard[] = [
     description: "Desenvolva escuta ativa, acolhimento e comunicação clara para fortalecer a relação com o paciente.",
     icon: Hospital,
     bar: "bg-cat-green",
-    photo: "from-cat-green/70 to-navy",
+    photo: trackCommunication.url,
   },
   {
     title: "Trilha 5 — Avaliação e Conduta Remota",
@@ -92,7 +99,7 @@ const tracks: TrackCard[] = [
     description: "Aprenda a avaliar riscos, reconhecer limites e decidir com segurança entre acompanhar ou encaminhar.",
     icon: Award,
     bar: "bg-cat-lime",
-    photo: "from-cat-lime/70 to-navy",
+    photo: trackAssessment.url,
   },
   {
     title: "Trilha 6 — Ferramentas e Rotina Profissional",
@@ -100,7 +107,7 @@ const tracks: TrackCard[] = [
     description: "Integre prontuário, prescrição, documentos e acompanhamento à rotina digital do consultório.",
     icon: Users,
     bar: "bg-cat-gold",
-    photo: "from-cat-gold/70 to-navy",
+    photo: trackTools.url,
   },
   {
     title: "Trilha 7 — Prática Avançada em Telemedicina",
@@ -108,7 +115,7 @@ const tracks: TrackCard[] = [
     description: "Consolide toda a jornada com casos clínicos, decisões integradas e situações reais de atendimento.",
     icon: Stethoscope,
     bar: "bg-cat-navy",
-    photo: "from-cat-navy/70 to-navy",
+    photo: trackAdvanced.url,
   },
 ];
 
@@ -186,7 +193,11 @@ function AcademyPage() {
                 className="flex w-[80%] shrink-0 snap-center flex-col sm:w-[46%] lg:w-[31%]"
               >
                 <div className="overflow-hidden rounded-2xl shadow-[var(--shadow-card)]">
-                  <div className={`aspect-square w-full bg-gradient-to-br ${t.photo}`} aria-hidden="true" />
+                  <img
+                    src={t.photo}
+                    alt={`Imagem da ${t.title}`}
+                    className="aspect-square w-full object-cover"
+                  />
                   <div className={`h-1.5 w-full ${t.bar}`} aria-hidden="true" />
                   <div className="flex flex-col gap-3 bg-navy p-5 text-navy-foreground">
                     <div className="flex min-w-0 items-center gap-2">
