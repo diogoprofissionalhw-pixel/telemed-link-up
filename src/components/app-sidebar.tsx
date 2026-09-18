@@ -161,6 +161,13 @@ export function AppSidebar({ userType }: { userType: UserType }) {
           <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
         <div className="flex items-center gap-1">
+          {userType === "doctor" && (
+            <Link to="/academy" aria-label="Connect-Academy">
+              <Button variant="ghost" size="icon">
+                <GraduationCap className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
           {userType === "network" && (
             <Link to="/academy/empresa" aria-label="Academy da equipe">
               <Button variant="ghost" size="icon">
@@ -173,6 +180,7 @@ export function AppSidebar({ userType }: { userType: UserType }) {
           {user && <MessagesButton />}
           {hideSidebar && <HeaderActions onSignOut={signOut} />}
         </div>
+
       </div>
 
       {/* Desktop fixed sidebar */}
