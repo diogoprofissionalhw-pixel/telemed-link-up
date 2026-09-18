@@ -237,6 +237,17 @@ function MessagesButton() {
   );
 }
 
+function AcademyTeamButton() {
+  return (
+    <Link to="/academy/empresa" aria-label="Academy da equipe">
+      <Button variant="outline" size="sm" className="gap-2">
+        <GraduationCap className="h-4 w-4" />
+        <span className="hidden lg:inline">Academy da equipe</span>
+      </Button>
+    </Link>
+  );
+}
+
 function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
