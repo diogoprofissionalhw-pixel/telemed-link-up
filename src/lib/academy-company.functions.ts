@@ -18,7 +18,12 @@ async function assertNetwork(context: { supabase: any; userId: string }) {
   }
 }
 
-export type CompanyMember = { doctorId: string; name: string; specialty: string | null };
+export type CompanyMember = {
+  doctorId: string;
+  name: string;
+  specialty: string | null;
+  status: "pending" | "accepted";
+};
 
 export const getCompanyPanel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -29,9 +34,10 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
 
     const { data: members } = await supabaseAdmin
       .from("academy_company_members")
-      .select("doctor_id")
+      .select("doctor_id, status")
       .eq("network_id", context.userId);
     const memberIds = (members ?? []).map((m) => m.doctor_id);
+    const acceptedIds = (members ?? []).filter((m) => m.status === "accepted").map((m) => m.doctor_id);
 
     const [{ data: profiles }, { data: doctors }] = await Promise.all([
       memberIds.length
