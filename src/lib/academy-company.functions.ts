@@ -327,3 +327,77 @@ export const getMyCompanyTrack = createServerFn({ method: "POST" })
       companyName: network?.network_name ?? null,
     };
   });
+
+export type AcademyInvite = { networkId: string; companyName: string; invitedAt: string | null };
+
+/** Convites pendentes de equipe da Academy para o médico logado. */
+export const listMyAcademyInvites = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: invites } = await supabaseAdmin
+      .from("academy_company_members")
+      .select("network_id, invited_at")
+      .eq("doctor_id", context.userId)
+      .eq("status", "pending");
+    const networkIds = (invites ?? []).map((i) => i.network_id);
+    const { data: networks } = networkIds.length
+      ? await supabaseAdmin.from("networks").select("id, network_name").in("id", networkIds)
+      : { data: [] as { id: string; network_name: string }[] };
+
+    return {
+      items: (invites ?? []).map((i) => ({
+        networkId: i.network_id,
+        companyName:
+          (networks ?? []).find((n) => n.id === i.network_id)?.network_name ?? "Empresa parceira",
+        invitedAt: i.invited_at,
+      })) as AcademyInvite[],
+    };
+  });
+
+/** Médico responde ao convite: aceita (entra na equipe) ou recusa (convite removido). */
+export const respondAcademyInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ networkId: z.string().uuid(), accept: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: invite } = await supabaseAdmin
+      .from("academy_company_members")
+      .select("id, status")
+      .eq("network_id", data.networkId)
+      .eq("doctor_id", context.userId)
+      .maybeSingle();
+    if (!invite || invite.status !== "pending") {
+      return { ok: false, error: "Convite não encontrado ou já respondido." };
+    }
+
+    if (data.accept) {
+      const { error } = await supabaseAdmin
+        .from("academy_company_members")
+        .update({ status: "accepted", responded_at: new Date().toISOString() })
+        .eq("id", invite.id);
+      if (error) return { ok: false, error: error.message };
+    } else {
+      const { error } = await supabaseAdmin
+        .from("academy_company_members")
+        .delete()
+        .eq("id", invite.id);
+      if (error) return { ok: false, error: error.message };
+    }
+
+    const [{ data: profile }, { data: network }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("full_name").eq("id", context.userId).maybeSingle(),
+      supabaseAdmin.from("networks").select("network_name").eq("id", data.networkId).maybeSingle(),
+    ]);
+    await supabaseAdmin.from("notifications").insert({
+      user_id: data.networkId,
+      type: "academy_invite_response",
+      title: data.accept ? "Convite da Academy aceito" : "Convite da Academy recusado",
+      body: `${profile?.full_name ?? "O profissional"} ${data.accept ? "aceitou" : "recusou"} o convite para a equipe da ${network?.network_name ?? "sua empresa"} na Connect-Academy.`,
+    });
+
+    return { ok: true, error: null };
+  });
