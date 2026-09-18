@@ -19,19 +19,28 @@ export type Database = {
           created_at: string
           doctor_id: string
           id: string
+          invited_at: string | null
           network_id: string
+          responded_at: string | null
+          status: string
         }
         Insert: {
           created_at?: string
           doctor_id: string
           id?: string
+          invited_at?: string | null
           network_id: string
+          responded_at?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
           doctor_id?: string
           id?: string
+          invited_at?: string | null
           network_id?: string
+          responded_at?: string | null
+          status?: string
         }
         Relationships: [
           {
