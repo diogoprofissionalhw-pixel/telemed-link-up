@@ -73,7 +73,10 @@ function CompanyPanelPage() {
   const [trackTitle, setTrackTitle] = useState("Trilha da equipe");
   const [trackDescription, setTrackDescription] = useState("");
   const [selectedModules, setSelectedModules] = useState<{ courseId: string; moduleId: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [specialtyFilter, setSpecialtyFilter] = useState<string>("all");
   const [busy, setBusy] = useState(false);
+
 
   useEffect(() => {
     coursesFn({ data: undefined as never })
