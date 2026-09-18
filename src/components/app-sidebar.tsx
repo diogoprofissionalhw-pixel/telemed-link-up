@@ -2,7 +2,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home, Inbox, User, Settings, MessageCircle,
-  Users, Briefcase, BarChart3, Building2, Menu, X, LogOut, UserCircle2,
+  Users, Briefcase, BarChart3, Building2, Menu, X, LogOut, UserCircle2, GraduationCap,
 } from "lucide-react";
 import logo from "@/assets/connect-med-logo.webp";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,13 @@ export function AppSidebar({ userType }: { userType: UserType }) {
           <img src={logo} alt="Connect-Med" className="h-11 w-auto object-contain" />
         </Link>
         <div className="flex items-center gap-1">
+          {userType === "network" && (
+            <Link to="/academy/empresa" aria-label="Academy da equipe">
+              <Button variant="ghost" size="icon">
+                <GraduationCap className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
           <HeaderProfile />
           {user && <NotificationsBell userId={user.id} />}
           {user && <MessagesButton />}
@@ -237,6 +244,17 @@ function MessagesButton() {
   );
 }
 
+function AcademyTeamButton() {
+  return (
+    <Link to="/academy/empresa" aria-label="Academy da equipe">
+      <Button variant="outline" size="sm" className="gap-2">
+        <GraduationCap className="h-4 w-4" />
+        <span className="hidden lg:inline">Academy da equipe</span>
+      </Button>
+    </Link>
+  );
+}
+
 function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
@@ -272,6 +290,7 @@ export function AppShell({ userType, children }: { userType: UserType; children:
             )}
           </div>
           <div className="flex items-center gap-1">
+            {userType === "network" && <AcademyTeamButton />}
             <HeaderProfile />
             {user && <NotificationsBell userId={user.id} />}
             {user && <MessagesButton />}
