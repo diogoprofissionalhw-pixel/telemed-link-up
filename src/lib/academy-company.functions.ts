@@ -86,13 +86,41 @@ export const setCompanyMember = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (data.linked) {
+      const { data: existing } = await supabaseAdmin
+        .from("academy_company_members")
+        .select("status")
+        .eq("network_id", context.userId)
+        .eq("doctor_id", data.doctorId)
+        .maybeSingle();
+      if (existing?.status === "accepted") {
+        return { ok: false, error: "Este profissional já faz parte da sua equipe." };
+      }
+
       const { error } = await supabaseAdmin
         .from("academy_company_members")
         .upsert(
-          { network_id: context.userId, doctor_id: data.doctorId },
+          {
+            network_id: context.userId,
+            doctor_id: data.doctorId,
+            status: "pending",
+            invited_at: new Date().toISOString(),
+            responded_at: null,
+          },
           { onConflict: "network_id,doctor_id" },
         );
       if (error) return { ok: false, error: error.message };
+
+      const { data: network } = await supabaseAdmin
+        .from("networks")
+        .select("network_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      await supabaseAdmin.from("notifications").insert({
+        user_id: data.doctorId,
+        type: "academy_invite",
+        title: "Convite para a equipe da Connect-Academy",
+        body: `A empresa ${network?.network_name ?? "parceira"} convidou você para a equipe dela na Connect-Academy. Abra a Academy para aceitar ou recusar.`,
+      });
     } else {
       const { error } = await supabaseAdmin
         .from("academy_company_members")
