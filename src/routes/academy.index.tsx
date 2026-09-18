@@ -17,6 +17,7 @@ import logoAcademy from "@/assets/connect-academy-logo-v5.png.asset.json";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
+import { AcademyInvitesCard } from "@/components/academy-invites-card";
 import { useAuth } from "@/lib/auth-context";
 import { isMasterEmail } from "@/lib/master-access";
 
@@ -139,6 +140,7 @@ function AcademyPage() {
           </div>
         </div>
 
+        {user && profile?.account_type === "doctor" && <AcademyInvitesCard />}
 
         {/* Hero */}
         <section className="bg-muted/60 px-4 py-14 sm:py-20">

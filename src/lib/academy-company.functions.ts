@@ -18,7 +18,12 @@ async function assertNetwork(context: { supabase: any; userId: string }) {
   }
 }
 
-export type CompanyMember = { doctorId: string; name: string; specialty: string | null };
+export type CompanyMember = {
+  doctorId: string;
+  name: string;
+  specialty: string | null;
+  status: "pending" | "accepted";
+};
 
 export const getCompanyPanel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -29,9 +34,10 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
 
     const { data: members } = await supabaseAdmin
       .from("academy_company_members")
-      .select("doctor_id")
+      .select("doctor_id, status")
       .eq("network_id", context.userId);
     const memberIds = (members ?? []).map((m) => m.doctor_id);
+    const acceptedIds = (members ?? []).filter((m) => m.status === "accepted").map((m) => m.doctor_id);
 
     const [{ data: profiles }, { data: doctors }] = await Promise.all([
       memberIds.length
@@ -42,10 +48,11 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
         : Promise.resolve({ data: [] as { id: string; specialty: string }[] }),
     ]);
 
-    const roster: CompanyMember[] = memberIds.map((id) => ({
-      doctorId: id,
-      name: (profiles ?? []).find((p) => p.id === id)?.full_name ?? "Profissional",
-      specialty: (doctors ?? []).find((d) => d.id === id)?.specialty ?? null,
+    const roster: CompanyMember[] = (members ?? []).map((m) => ({
+      doctorId: m.doctor_id,
+      name: (profiles ?? []).find((p) => p.id === m.doctor_id)?.full_name ?? "Profissional",
+      specialty: (doctors ?? []).find((d) => d.id === m.doctor_id)?.specialty ?? null,
+      status: m.status as "pending" | "accepted",
     }));
 
     const { data: track } = await supabaseAdmin
@@ -63,7 +70,7 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
       : { data: [] as { id: string; course_id: string; module_id: string | null; position: number }[] };
 
     const progress: StudentProgressRow[] = data.courseId
-      ? await collectProgressRows(supabaseAdmin, data.courseId, memberIds)
+      ? await collectProgressRows(supabaseAdmin, data.courseId, acceptedIds)
       : [];
 
     return { roster, track: track ?? null, items: items ?? [], progress };
@@ -79,13 +86,41 @@ export const setCompanyMember = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (data.linked) {
+      const { data: existing } = await supabaseAdmin
+        .from("academy_company_members")
+        .select("status")
+        .eq("network_id", context.userId)
+        .eq("doctor_id", data.doctorId)
+        .maybeSingle();
+      if (existing?.status === "accepted") {
+        return { ok: false, error: "Este profissional já faz parte da sua equipe." };
+      }
+
       const { error } = await supabaseAdmin
         .from("academy_company_members")
         .upsert(
-          { network_id: context.userId, doctor_id: data.doctorId },
+          {
+            network_id: context.userId,
+            doctor_id: data.doctorId,
+            status: "pending",
+            invited_at: new Date().toISOString(),
+            responded_at: null,
+          },
           { onConflict: "network_id,doctor_id" },
         );
       if (error) return { ok: false, error: error.message };
+
+      const { data: network } = await supabaseAdmin
+        .from("networks")
+        .select("network_name")
+        .eq("id", context.userId)
+        .maybeSingle();
+      await supabaseAdmin.from("notifications").insert({
+        user_id: data.doctorId,
+        type: "academy_invite",
+        title: "Convite para a equipe da Connect-Academy",
+        body: `A empresa ${network?.network_name ?? "parceira"} convidou você para a equipe dela na Connect-Academy. Abra a Academy para aceitar ou recusar.`,
+      });
     } else {
       const { error } = await supabaseAdmin
         .from("academy_company_members")
@@ -190,7 +225,8 @@ export const getCompanyAcademyOverview = createServerFn({ method: "POST" })
     const { data: members } = await supabaseAdmin
       .from("academy_company_members")
       .select("doctor_id")
-      .eq("network_id", context.userId);
+      .eq("network_id", context.userId)
+      .eq("status", "accepted");
     const memberIds = (members ?? []).map((m) => m.doctor_id);
     if (memberIds.length === 0) return { items: [] as CompanyStudentOverview[] };
 
@@ -266,6 +302,7 @@ export const getMyCompanyTrack = createServerFn({ method: "POST" })
       .from("academy_company_members")
       .select("network_id")
       .eq("doctor_id", context.userId)
+      .eq("status", "accepted")
       .maybeSingle();
     if (!link) return { track: null, moduleIds: [] as string[], companyName: null };
 
@@ -289,4 +326,78 @@ export const getMyCompanyTrack = createServerFn({ method: "POST" })
       moduleIds: (items ?? []).map((i) => i.module_id).filter((v): v is string => Boolean(v)),
       companyName: network?.network_name ?? null,
     };
+  });
+
+export type AcademyInvite = { networkId: string; companyName: string; invitedAt: string | null };
+
+/** Convites pendentes de equipe da Academy para o médico logado. */
+export const listMyAcademyInvites = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: invites } = await supabaseAdmin
+      .from("academy_company_members")
+      .select("network_id, invited_at")
+      .eq("doctor_id", context.userId)
+      .eq("status", "pending");
+    const networkIds = (invites ?? []).map((i) => i.network_id);
+    const { data: networks } = networkIds.length
+      ? await supabaseAdmin.from("networks").select("id, network_name").in("id", networkIds)
+      : { data: [] as { id: string; network_name: string }[] };
+
+    return {
+      items: (invites ?? []).map((i) => ({
+        networkId: i.network_id,
+        companyName:
+          (networks ?? []).find((n) => n.id === i.network_id)?.network_name ?? "Empresa parceira",
+        invitedAt: i.invited_at,
+      })) as AcademyInvite[],
+    };
+  });
+
+/** Médico responde ao convite: aceita (entra na equipe) ou recusa (convite removido). */
+export const respondAcademyInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) =>
+    z.object({ networkId: z.string().uuid(), accept: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: invite } = await supabaseAdmin
+      .from("academy_company_members")
+      .select("id, status")
+      .eq("network_id", data.networkId)
+      .eq("doctor_id", context.userId)
+      .maybeSingle();
+    if (!invite || invite.status !== "pending") {
+      return { ok: false, error: "Convite não encontrado ou já respondido." };
+    }
+
+    if (data.accept) {
+      const { error } = await supabaseAdmin
+        .from("academy_company_members")
+        .update({ status: "accepted", responded_at: new Date().toISOString() })
+        .eq("id", invite.id);
+      if (error) return { ok: false, error: error.message };
+    } else {
+      const { error } = await supabaseAdmin
+        .from("academy_company_members")
+        .delete()
+        .eq("id", invite.id);
+      if (error) return { ok: false, error: error.message };
+    }
+
+    const [{ data: profile }, { data: network }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("full_name").eq("id", context.userId).maybeSingle(),
+      supabaseAdmin.from("networks").select("network_name").eq("id", data.networkId).maybeSingle(),
+    ]);
+    await supabaseAdmin.from("notifications").insert({
+      user_id: data.networkId,
+      type: "academy_invite_response",
+      title: data.accept ? "Convite da Academy aceito" : "Convite da Academy recusado",
+      body: `${profile?.full_name ?? "O profissional"} ${data.accept ? "aceitou" : "recusou"} o convite para a equipe da ${network?.network_name ?? "sua empresa"} na Connect-Academy.`,
+    });
+
+    return { ok: true, error: null };
   });

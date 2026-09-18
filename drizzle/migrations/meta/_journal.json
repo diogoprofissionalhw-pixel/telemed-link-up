@@ -15,6 +15,13 @@
       "when": 1789647841760,
       "tag": "0001_academy_modules_quizzes_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789732261035,
+      "tag": "0002_academy_company_invites",
+      "breakpoints": true
     }
   ]
 }
