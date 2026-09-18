@@ -21,6 +21,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { EmptyState as EmptyStateBox } from "@/components/dashboard/empty-state";
 
 import { NetworkAnalytics } from "@/components/network-analytics";
+import { AcademyTeamProgress } from "@/components/academy-team-progress";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
