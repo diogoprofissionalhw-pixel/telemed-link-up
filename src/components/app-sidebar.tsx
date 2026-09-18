@@ -272,6 +272,7 @@ export function AppShell({ userType, children }: { userType: UserType; children:
             )}
           </div>
           <div className="flex items-center gap-1">
+            {userType === "network" && <AcademyTeamButton />}
             <HeaderProfile />
             {user && <NotificationsBell userId={user.id} />}
             {user && <MessagesButton />}
