@@ -140,6 +140,7 @@ function AcademyPage() {
           </div>
         </div>
 
+        {user && profile?.account_type === "doctor" && <AcademyInvitesCard />}
 
         {/* Hero */}
         <section className="bg-muted/60 px-4 py-14 sm:py-20">
