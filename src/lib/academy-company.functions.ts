@@ -48,10 +48,11 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
         : Promise.resolve({ data: [] as { id: string; specialty: string }[] }),
     ]);
 
-    const roster: CompanyMember[] = memberIds.map((id) => ({
-      doctorId: id,
-      name: (profiles ?? []).find((p) => p.id === id)?.full_name ?? "Profissional",
-      specialty: (doctors ?? []).find((d) => d.id === id)?.specialty ?? null,
+    const roster: CompanyMember[] = (members ?? []).map((m) => ({
+      doctorId: m.doctor_id,
+      name: (profiles ?? []).find((p) => p.id === m.doctor_id)?.full_name ?? "Profissional",
+      specialty: (doctors ?? []).find((d) => d.id === m.doctor_id)?.specialty ?? null,
+      status: m.status as "pending" | "accepted",
     }));
 
     const { data: track } = await supabaseAdmin
@@ -69,7 +70,7 @@ export const getCompanyPanel = createServerFn({ method: "POST" })
       : { data: [] as { id: string; course_id: string; module_id: string | null; position: number }[] };
 
     const progress: StudentProgressRow[] = data.courseId
-      ? await collectProgressRows(supabaseAdmin, data.courseId, memberIds)
+      ? await collectProgressRows(supabaseAdmin, data.courseId, acceptedIds)
       : [];
 
     return { roster, track: track ?? null, items: items ?? [], progress };
