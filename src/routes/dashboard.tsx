@@ -793,6 +793,9 @@ function NetworkPanel({ userId, userEmail }: { userId: string; userEmail?: strin
 
 
 
+      {/* ACADEMY — progresso dos profissionais vinculados pela empresa */}
+      <AcademyTeamProgress />
+
       {/* INFERIOR — Médicos a serem solicitados | Em andamento */}
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="flex flex-col">
