@@ -71,7 +71,7 @@ const tracks: TrackCard[] = [
     photo: "from-cat-purple/70 to-navy",
   },
   {
-    title: "Trilha 3 — Ética, Segurança e LGPD",
+    title: "Trilha 3 — Ética e Segurança",
     slug: "pos-graduacao",
     description: "Aplique consentimento, sigilo, proteção de dados e boas práticas éticas em cada atendimento.",
     icon: ScrollText,
