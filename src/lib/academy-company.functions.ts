@@ -166,6 +166,97 @@ export const listLinkableDoctors = createServerFn({ method: "POST" })
     };
   });
 
+export type CompanyStudentOverview = {
+  doctorId: string;
+  name: string;
+  specialty: string | null;
+  lessonsCompleted: number;
+  lessonsTotal: number;
+  quizzesPassed: number;
+  percent: number;
+  coursesCompleted: number;
+};
+
+/**
+ * Resumo do progresso na Academy de todos os profissionais vinculados pela
+ * empresa, somando todas as trilhas publicadas. Usado no painel da empresa.
+ */
+export const getCompanyAcademyOverview = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertNetwork(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: members } = await supabaseAdmin
+      .from("academy_company_members")
+      .select("doctor_id")
+      .eq("network_id", context.userId);
+    const memberIds = (members ?? []).map((m) => m.doctor_id);
+    if (memberIds.length === 0) return { items: [] as CompanyStudentOverview[] };
+
+    const [{ data: profiles }, { data: doctors }, { data: courses }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name").in("id", memberIds),
+      supabaseAdmin.from("doctors").select("id, specialty").in("id", memberIds),
+      supabaseAdmin.from("academy_courses").select("id").eq("is_published", true),
+    ]);
+
+    const courseIds = (courses ?? []).map((c) => c.id);
+    const { data: lessons } = courseIds.length
+      ? await supabaseAdmin
+          .from("academy_lessons")
+          .select("id, course_id")
+          .in("course_id", courseIds)
+          .eq("is_published", true)
+      : { data: [] as { id: string; course_id: string }[] };
+
+    const lessonIds = (lessons ?? []).map((l) => l.id);
+    const { data: progress } = lessonIds.length
+      ? await supabaseAdmin
+          .from("academy_lesson_progress")
+          .select("user_id, lesson_id, completed_at")
+          .in("lesson_id", lessonIds)
+          .in("user_id", memberIds)
+      : { data: [] as { user_id: string; lesson_id: string; completed_at: string | null }[] };
+
+    const { data: quizzes } = await supabaseAdmin.from("academy_quizzes").select("id");
+    const quizIds = (quizzes ?? []).map((q) => q.id);
+    const { data: attempts } = quizIds.length
+      ? await supabaseAdmin
+          .from("academy_quiz_attempts")
+          .select("user_id, quiz_id, passed")
+          .in("quiz_id", quizIds)
+          .in("user_id", memberIds)
+      : { data: [] as { user_id: string; quiz_id: string; passed: boolean }[] };
+
+    const lessonsTotal = lessonIds.length;
+    const items: CompanyStudentOverview[] = memberIds.map((id) => {
+      const doneLessonIds = new Set(
+        (progress ?? []).filter((p) => p.user_id === id && p.completed_at).map((p) => p.lesson_id),
+      );
+      const passed = new Set(
+        (attempts ?? []).filter((a) => a.user_id === id && a.passed).map((a) => a.quiz_id),
+      ).size;
+      const coursesCompleted = courseIds.filter((cid) => {
+        const ids = (lessons ?? []).filter((l) => l.course_id === cid).map((l) => l.id);
+        return ids.length > 0 && ids.every((lid) => doneLessonIds.has(lid));
+      }).length;
+
+      return {
+        doctorId: id,
+        name: (profiles ?? []).find((p) => p.id === id)?.full_name ?? "Profissional",
+        specialty: (doctors ?? []).find((d) => d.id === id)?.specialty ?? null,
+        lessonsCompleted: doneLessonIds.size,
+        lessonsTotal,
+        quizzesPassed: passed,
+        percent: lessonsTotal > 0 ? Math.round((doneLessonIds.size / lessonsTotal) * 100) : 0,
+        coursesCompleted,
+      };
+    });
+
+    items.sort((a, b) => b.percent - a.percent || a.name.localeCompare(b.name, "pt-BR"));
+    return { items };
+  });
+
 /** Módulos liberados pela empresa para o médico logado (conteúdo de empresa). */
 export const getMyCompanyTrack = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
