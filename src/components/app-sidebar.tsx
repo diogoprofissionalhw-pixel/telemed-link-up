@@ -255,6 +255,18 @@ function AcademyTeamButton() {
   );
 }
 
+function AcademyDoctorButton() {
+  return (
+    <Link to="/academy" aria-label="Connect-Academy">
+      <Button variant="outline" size="sm" className="gap-2">
+        <GraduationCap className="h-4 w-4" />
+        <span className="hidden lg:inline">Academy</span>
+      </Button>
+    </Link>
+  );
+}
+
+
 function HeaderActions({ onSignOut }: { onSignOut: () => void }) {
   return (
     <>
