@@ -1438,6 +1438,7 @@ export type Database = {
         }
       }
       is_blocked_between: { Args: { _a: string; _b: string }; Returns: boolean }
+      is_network: { Args: { _uid: string }; Returns: boolean }
       is_verified_network: { Args: { _uid: string }; Returns: boolean }
       networks_directory: {
         Args: never
