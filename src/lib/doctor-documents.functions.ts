@@ -26,7 +26,16 @@ function toStoragePath(raw: string, bucket: string): string {
 export const getDoctorDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ doctorId: z.string().uuid() }).parse(input))
-  .handler(async ({ data }): Promise<DoctorDocument[]> => {
+  .handler(async ({ data, context }): Promise<DoctorDocument[]> => {
+    // Só o próprio médico ou uma conta de empresa pode ver os documentos.
+    if (context.userId !== data.doctorId) {
+      const { data: me } = await context.supabase
+        .from("profiles")
+        .select("account_type")
+        .eq("id", context.userId)
+        .maybeSingle();
+      if (me?.account_type !== "network") return [];
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: doctor, error } = await supabaseAdmin

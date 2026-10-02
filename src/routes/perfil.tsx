@@ -317,15 +317,10 @@ function DoctorRegistration({
       return toast.error("Informe um número de CRM e UF válidos antes de validar.");
     }
     setVerifyingCrm(true);
-    // Mock: processamento do pagamento + consulta ao CRM
-    await new Promise((r) => setTimeout(r, 1500));
-    const { error } = await supabase.from("doctors").update({
-      crm_status: "verified",
-    } as any).eq("id", userId);
+    // A verificação do CRM é feita pela equipe; o selo não pode ser ativado pelo próprio médico.
     setVerifyingCrm(false);
-    if (error) return toast.error(error.message);
-    setCrmStatus("verified");
-    toast.success("Pagamento aprovado! Selo CRM verificado ativado.");
+    setCrmStatus((s) => (s === "verified" ? s : "pending"));
+    toast.info("Seu CRM está em análise. O selo será liberado após a verificação da equipe.");
   };
 
   /* ---------- CFM verification with payment (mock R$ 150 single payment) ---------- */
@@ -334,33 +329,15 @@ function DoctorRegistration({
       return toast.error("Informe o número e a UF do CFM na aba Carreira antes de validar.");
     }
     setVerifyingCfm(true);
-    // Mock: processamento do pagamento + consulta ao CFM
-    await new Promise((r) => setTimeout(r, 1500));
-    const { error } = await supabase.from("doctors").update({
-      cfm_status: "verified",
-    } as any).eq("id", userId);
+    // A verificação do CFM é feita pela equipe; o selo não pode ser ativado pelo próprio médico.
     setVerifyingCfm(false);
-    if (error) return toast.error(error.message);
-    setCfmStatus("verified");
-    toast.success("Pagamento aprovado! Selo CFM verificado ativado.");
+    toast.info("Seu CFM está em análise. O selo será liberado após a verificação da equipe.");
   };
 
 
   const activatePremium = async () => {
-    setPremiumLoading(true);
-    await new Promise((r) => setTimeout(r, 1200)); // mock pagamento
-    const now = new Date();
-    const until = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const { error } = await supabase.from("doctors").update({
-      is_premium: true,
-      premium_since: now.toISOString(),
-      premium_until: until.toISOString(),
-    } as any).eq("id", userId);
-    setPremiumLoading(false);
-    if (error) return toast.error(error.message);
-    setIsPremium(true);
-    setPremiumUntil(until.toISOString());
-    toast.success("Selo Premium ativado por 30 dias!");
+    // Premium só é ativado no servidor após pagamento confirmado.
+    toast.info("A assinatura Premium ainda não está disponível. Em breve!");
   };
 
   const cancelPremium = async () => {

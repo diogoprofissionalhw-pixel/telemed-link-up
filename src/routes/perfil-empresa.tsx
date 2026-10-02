@@ -106,22 +106,8 @@ function NetworkProfilePage() {
   const handleVerifyCnpj = async () => {
     if (!user) return;
     if (!isValidCNPJ(cnpj)) return toast.error("CNPJ inválido. Salve antes de verificar.");
-    setVerifying(true);
-    // Simulação de consulta à Receita Federal
-    await new Promise((r) => setTimeout(r, 1500));
-    const activity = "Atividades de atendimento hospitalar (CNAE 86.10-1-01)";
-    const verifiedAtIso = new Date().toISOString();
-    const { error } = await supabase.from("networks").update({
-      is_verified: true,
-      cnpj_verified_at: verifiedAtIso,
-      cnpj_activity: activity,
-    } as any).eq("id", user.id);
-    setVerifying(false);
-    if (error) return toast.error(error.message);
-    setIsVerified(true);
-    setCnpjActivity(activity);
-    setVerifiedAt(verifiedAtIso);
-    toast.success("Rede verificada com sucesso!");
+    // A verificação do CNPJ é feita pela equipe; o selo não pode ser ativado pela própria empresa.
+    toast.info("Seu CNPJ está em análise. O selo será liberado após a verificação da equipe.");
   };
 
   if (authLoading || loading || !user) {

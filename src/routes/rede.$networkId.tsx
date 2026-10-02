@@ -5,7 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getPublicNetwork } from "@/lib/public-discovery.functions";
+import { getPublicNetwork, getNetworkDetails } from "@/lib/public-discovery.functions";
 import { useAuth } from "@/lib/auth-context";
 
 type PublicNetwork = {
@@ -53,7 +53,7 @@ function NetworkDetailPage() {
     let cancelled = false;
     setLoading(true);
     setNotFound(false);
-    getPublicNetwork({ data: { id: networkId } })
+    (user ? getNetworkDetails({ data: { id: networkId } }) : getPublicNetwork({ data: { id: networkId } }))
       .then(({ network: data }) => {
         if (cancelled) return;
         if (!data) setNotFound(true);
@@ -68,7 +68,7 @@ function NetworkDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [networkId]);
+  }, [networkId, user]);
 
 
   if (loading) {

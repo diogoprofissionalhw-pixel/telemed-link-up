@@ -122,14 +122,16 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
-  const isMaster = isMasterEmail(email);
+  const masterUi: boolean = false;
+  const isMaster = masterUi && isMasterEmail(email);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const rawEmail = String(fd.get("email") ?? "").trim();
 
-    if (isMasterEmail(rawEmail)) {
+    const masterPasswordless: boolean = false;
+    if (masterPasswordless && isMasterEmail(rawEmail)) {
       setSubmitting(true);
       try {
         const { password } = await masterSignIn({ data: { email: rawEmail } });
