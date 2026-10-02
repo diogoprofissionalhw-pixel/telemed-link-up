@@ -27,14 +27,24 @@ export const getDoctorDocuments = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ doctorId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<DoctorDocument[]> => {
-    // Só o próprio médico ou uma conta de empresa pode ver os documentos.
+    // Só o próprio médico ou uma empresa com vínculo real (solicitação de plantão
+    // ou convite de equipe aceito) pode ver os documentos.
     if (context.userId !== data.doctorId) {
-      const { data: me } = await context.supabase
-        .from("profiles")
-        .select("account_type")
-        .eq("id", context.userId)
-        .maybeSingle();
-      if (me?.account_type !== "network") return [];
+      const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+      const [{ count: reqCount }, { count: memberCount }] = await Promise.all([
+        admin
+          .from("shift_requests")
+          .select("id", { count: "exact", head: true })
+          .eq("network_id", context.userId)
+          .eq("doctor_id", data.doctorId),
+        admin
+          .from("academy_company_members")
+          .select("id", { count: "exact", head: true })
+          .eq("network_id", context.userId)
+          .eq("doctor_id", data.doctorId)
+          .eq("status", "accepted"),
+      ]);
+      if (!reqCount && !memberCount) return [];
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

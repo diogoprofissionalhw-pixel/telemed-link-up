@@ -36,6 +36,20 @@
       "when": 1790944047418,
       "tag": "0004_protect_privileged_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790946941113,
+      "tag": "0005_harden_signup_and_doctor_verification",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790946969394,
+      "tag": "0006_column_grants_verification_fields",
+      "breakpoints": true
     }
   ]
 }
