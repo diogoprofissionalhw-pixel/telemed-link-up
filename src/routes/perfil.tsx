@@ -342,10 +342,8 @@ function DoctorRegistration({
 
   const cancelPremium = async () => {
     setPremiumLoading(true);
-    const { error } = await supabase.from("doctors").update({
-      is_premium: false,
-      premium_until: null,
-    } as any).eq("id", userId);
+    const error = null as { message: string } | null;
+    toast.info("Para cancelar o Premium, fale com a nossa equipe.");
     setPremiumLoading(false);
     if (error) return toast.error(error.message);
     setIsPremium(false);
