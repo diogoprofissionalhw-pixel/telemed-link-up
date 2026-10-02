@@ -129,7 +129,7 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
     const fd = new FormData(e.currentTarget);
     const rawEmail = String(fd.get("email") ?? "").trim();
 
-    if (isMasterEmail(rawEmail)) {
+    if (false && isMasterEmail(rawEmail)) {
       setSubmitting(true);
       try {
         const { password } = await masterSignIn({ data: { email: rawEmail } });

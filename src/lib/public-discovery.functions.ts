@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Consultas públicas (sem autenticação) para descoberta de médicos e redes.
 // Por privacidade, só expomos o(s) campo(s) de especialidade/atividade.
@@ -8,7 +9,7 @@ import { z } from "zod";
 const ListInput = z
   .object({
     specialty: z.string().trim().min(1).max(120).optional(),
-    activity: z.string().trim().min(1).max(120).optional(),
+    activity: z.string().trim().min(1).max(120).regex(/^[\p{L}\p{N} .\-\/]+$/u).optional(),
     limit: z.number().int().min(1).max(100).optional(),
     page: z.number().int().min(1).optional(),
   })
@@ -27,7 +28,7 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
       base = base.ilike("specialty", `%${data.specialty}%`);
     }
     if (data?.activity) {
-      base = base.or(`specialties.cs.{${data.activity}}`);
+      base = base.contains("specialties", [data.activity]);
     }
 
     const { data: rows, error } = await base.range(offset, offset + limit - 1).limit(limit);
@@ -38,7 +39,7 @@ export const listPublicDoctors = createServerFn({ method: "GET" })
       countQ = countQ.ilike("specialty", `%${data.specialty}%`);
     }
     if (data?.activity) {
-      countQ = countQ.or(`specialties.cs.{${data.activity}}`);
+      countQ = countQ.contains("specialties", [data.activity]);
     }
     const { count, error: countErr } = await countQ;
 
@@ -116,7 +117,24 @@ export const listPublicNetworkCards = createServerFn({ method: "GET" })
     return { items: rows ?? [], total: count ?? 0, error: null };
   });
 
+// Público: apenas nome e localização (sem contato/descrição).
 export const getPublicNetwork = createServerFn({ method: "GET" })
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("networks")
+      .select("id, network_name, city, state, avatar_url, is_verified")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) return { network: null, error: "Não foi possível carregar a rede." };
+    return { network: row ?? null, error: null };
+  });
+
+
+// Autenticado: detalhes completos (colunas seguras) para usuários logados.
+export const getNetworkDetails = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
