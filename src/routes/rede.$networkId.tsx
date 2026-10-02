@@ -68,7 +68,7 @@ function NetworkDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [networkId]);
+  }, [networkId, user]);
 
 
   if (loading) {

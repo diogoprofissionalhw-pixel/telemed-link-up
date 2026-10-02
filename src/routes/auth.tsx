@@ -122,7 +122,7 @@ function SignInForm({ onForgot }: { onForgot: () => void }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [email, setEmail] = useState("");
-  const isMaster = isMasterEmail(email);
+  const isMaster = false && isMasterEmail(email);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
