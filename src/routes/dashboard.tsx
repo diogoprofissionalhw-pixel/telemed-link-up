@@ -121,11 +121,18 @@ function DashboardPage() {
       breadcrumbs={[{ label: "Dashboard" }]}
       actions={
         isDoctor ? (
-          <Link to="/profile">
-            <Button variant="outline" size="sm" className="gap-2">
-              <UserCog className="h-4 w-4" /> Editar perfil
-            </Button>
-          </Link>
+          <>
+            <a href="https://chat.whatsapp.com/FXifR44QvcN5mqxSNc5mlq" target="_blank" rel="noopener noreferrer">
+              <Button size="sm" className="gap-2">
+                <MessageSquare className="h-4 w-4" /> Acessar comunidade
+              </Button>
+            </a>
+            <Link to="/profile">
+              <Button variant="outline" size="sm" className="gap-2">
+                <UserCog className="h-4 w-4" /> Editar perfil
+              </Button>
+            </Link>
+          </>
         ) : undefined
       }
     >
